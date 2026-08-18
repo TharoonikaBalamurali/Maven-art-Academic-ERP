@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
+import { useDebouncedSearch } from '@/shared/hooks/useDebouncedSearch';
 import { useListQueryState } from '@/shared/hooks/useListQueryState';
 import { FilterBar, PageHeader } from '@/shared/layout/page';
 import {
@@ -118,13 +117,7 @@ export function NotificationsPage() {
 
   // The input stays responsive while the debounced value drives the request,
   // so typing costs one backend call rather than one per keystroke (§31).
-  const [searchDraft, setSearchDraft] = useState(list.query.search ?? '');
-  const debouncedSearch = useDebouncedValue(searchDraft.trim(), 300);
-  const committedSearch = list.query.search ?? '';
-
-  useEffect(() => {
-    if (debouncedSearch !== committedSearch) list.setSearch(debouncedSearch);
-  }, [debouncedSearch, committedSearch, list]);
+  const [searchDraft, setSearchDraft] = useDebouncedSearch(list.query.search ?? '', list.setSearch);
 
   const query = useNotifications(list.query);
   const rows = query.data?.data ?? [];

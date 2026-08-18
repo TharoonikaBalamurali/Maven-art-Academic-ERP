@@ -53,7 +53,9 @@ non-foundation modules are `PLACEHOLDER` by design.
 
 | Module | Route | Permission (view / create) | Status |
 | --- | --- | --- | --- |
-| Students | `/management/students`, `/students/new` | `students.view` / `students.create` | PLACEHOLDER |
+| Students — **list** | `/management/students` | `students.view` | **DONE** — §14.1 columns, server search/filter(course,status)/sort/pagination, permission-gated New + row actions, all data states |
+| Students — details | `/management/students/:id` | `students.view` | PLACEHOLDER (next unit — 8 tabs per §14.1) |
+| Students — create | `/management/students/new` | `students.create` | PLACEHOLDER |
 | Parents | `/management/parents` | `parents.view` | PLACEHOLDER |
 | Faculty | `/management/faculty` | `faculty.view` | PLACEHOLDER |
 | Courses | `/management/courses` | `courses.view` | PLACEHOLDER |
@@ -104,7 +106,8 @@ non-foundation modules are `PLACEHOLDER` by design.
 | auth | `auth.contract.ts` | login, logout, me | DONE |
 | notifications | `notifications.contract.ts` | list | DONE |
 | dashboard | `dashboard.contract.ts` | summary (role-scoped) | DONE |
-| students, parents, faculty, courses, batches, attendance, enquiries, applications, admissions, enrollments, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 2+) |
+| students | `students.contract.ts` | list, filter-options | DONE (list; detail endpoint pending with the details unit) |
+| parents, faculty, courses, batches, attendance, enquiries, applications, admissions, enrollments, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 2+) |
 
 ---
 

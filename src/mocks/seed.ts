@@ -82,6 +82,12 @@ const STUDENT_NAMES = [
   'Vikram Rao', 'Sneha Kulkarni', 'Imran Qureshi', 'Divya Nambiar', 'Karthik Subramanian',
   'Riya Chandra', 'Aditya Bose', 'Lakshmi Iyer', 'Zoya Khan', 'Rohan Gupta',
   'Meghna Das', 'Sanjay Varma', 'Tara Krishnan', 'Nikhil Joseph', 'Pooja Shetty',
+  'Ishaan Verma', 'Aisha Rahman', 'Manoj Pillai', 'Sruthi Warrier', 'Dev Anand',
+  'Reema Sen', 'Harish Nair', 'Fatima Sheikh', 'Gaurav Malhotra', 'Ishita Roy',
+  'Vivek Menon', 'Anjali Deshmukh', 'Kabir Singh', 'Neha Kapoor', 'Suhas Kamath',
+  'Ritu Agarwal', 'Aravind Krishnan', 'Sana Mirza', 'Deepak Raju', 'Preeti Nanda',
+  'Yash Thakur', 'Leela Menon', 'Omar Farooq', 'Charita Reddy', 'Nandini Ghosh',
+  'Rahul Pillai', 'Bhavya Shah', 'Tanvi Joshi', 'Aryan Nair', 'Keerthana Rao',
 ];
 
 export const SEED_STUDENTS: readonly SeedStudent[] = STUDENT_NAMES.map((name, index) => {
@@ -115,6 +121,14 @@ export const SEED_CLASSES_TODAY: readonly SeedClass[] = [
 
 export function batchName(id: string): string {
   return SEED_BATCHES.find((b) => b.id === id)?.name ?? id;
+}
+
+export function courseName(id: string): string {
+  return SEED_COURSES.find((c) => c.id === id)?.name ?? id;
+}
+
+export function courseCode(id: string): string {
+  return SEED_COURSES.find((c) => c.id === id)?.code ?? id;
 }
 
 // --- Admissions pipeline (Enquiry → Application → Admission) ----------------

@@ -8,6 +8,7 @@ import {
   type MockNotification,
 } from './fixtures';
 import { buildDashboardSummary } from './dashboard-data';
+import { listStudents, studentFilterOptions } from './students-data';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -182,6 +183,43 @@ const routes: Route[] = [
       const summary = buildDashboardSummary(identity.role as Role);
       if (!summary) fail('forbidden');
       return summary;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/students$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'students.view');
+
+      // Same demo-state control as notifications, so every §28 state is
+      // reachable from the running list without editing code. Mock-only.
+      const demoState = String(ctx.request.query?.demoState ?? '');
+      if (demoState === 'error') fail('server');
+      if (demoState === 'forbidden') fail('forbidden');
+
+      const result = listStudents({
+        page: Number(ctx.request.query?.page) || undefined,
+        limit: Number(ctx.request.query?.limit) || undefined,
+        search: typeof ctx.request.query?.search === 'string' ? ctx.request.query.search : undefined,
+        sortBy: typeof ctx.request.query?.sortBy === 'string' ? ctx.request.query.sortBy : undefined,
+        sortDir: ctx.request.query?.sortDir === 'desc' ? 'desc' : 'asc',
+        filters: {
+          course: typeof ctx.request.query?.course === 'string' ? ctx.request.query.course : undefined,
+          status: typeof ctx.request.query?.status === 'string' ? ctx.request.query.status : undefined,
+        },
+      });
+      if (demoState === 'empty') return { ...result, data: [], total: 0, totalPages: 1, page: 1 };
+      return result;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/students\/filter-options$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'students.view');
+      return studentFilterOptions();
     },
   },
 ];

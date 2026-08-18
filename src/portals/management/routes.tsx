@@ -77,7 +77,48 @@ export const managementRoutes: RouteObject[] = [
     ),
   },
 
-  ...MODULES.flatMap<RouteObject>((module) => {
+  {
+    // Students list — the first real Management module (§14.1). Its create and
+    // detail routes remain placeholders (separate units).
+    path: 'students',
+    element: (
+      <RequirePermission anyOf={['students.view']}>
+        {lazyRoute(
+          () => import('@/features/students/components/StudentsPage'),
+          (m) => m.StudentsPage,
+        )}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'students/new',
+    element: (
+      <RequirePermission anyOf={['students.create']}>
+        <ModulePlaceholder
+          title="New Student"
+          description="Creating a student requires a stronger permission than viewing the list."
+          permission="students.create"
+          phase="Phase 2"
+        />
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'students/:studentId',
+    element: (
+      <RequirePermission anyOf={['students.view']}>
+        <ModulePlaceholder
+          title="Student Details"
+          description="Personal, academic, parent, enrolment, attendance, fees, progress and certificates (§14.1)."
+          permission="students.view"
+          phase="Phase 2"
+        />
+      </RequirePermission>
+    ),
+  },
+
+  // The `students` module is handled explicitly above; the rest stay placeholders.
+  ...MODULES.filter((module) => module.path !== 'students').flatMap<RouteObject>((module) => {
     const routes: RouteObject[] = [
       {
         path: module.path,

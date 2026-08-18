@@ -1,5 +1,6 @@
 export { Badge, type BadgeTone } from './Badge';
 export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from './Button';
+export { buttonClasses } from './button-classes';
 export { Card, CardBody, CardHeader } from './Card';
 export { ConfirmDialog } from './ConfirmDialog';
 export { DatePicker } from './DatePicker';
