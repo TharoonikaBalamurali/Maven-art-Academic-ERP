@@ -136,17 +136,48 @@ export interface MockNotification {
   createdAt: string;
 }
 
-/** Notifications (§25) are the neutral, read-only resource used to exercise the
- *  list/table/pagination/data-state architecture without building a business module. */
+/** Notifications (§25) are the read-oriented resource used to exercise the
+ *  list/table/pagination/data-state architecture. Believable per-category copy,
+ *  not placeholder text — the interface should read like a functioning ERP. */
+const NOTIFICATION_TEMPLATES: Record<MockNotification['category'], readonly [string, string][]> = {
+  attendance: [
+    ['Attendance submitted', 'Life Drawing attendance for BFA Year 1 · A has been recorded.'],
+    ['Low attendance alert', 'Three students in VCD Year 1 · A are below 75% this month.'],
+    ['Attendance pending', 'Colour Theory (BFA Year 2 · A) attendance is awaiting submission.'],
+  ],
+  fees: [
+    ['Payment received', 'A fee payment of ₹45,000 was recorded against MAA20260002.'],
+    ['Installment due soon', 'An installment of ₹45,000 for Farhan Sheikh is due on 25 Aug 2026.'],
+    ['Outstanding balance', 'Second-term fees for Sculpture Year 1 · A remain partly unpaid.'],
+  ],
+  academic: [
+    ['Progress updated', 'Assessment scores for Typography have been published.'],
+    ['New assessment scheduled', 'A portfolio review for BFA Year 2 · A is set for next week.'],
+    ['Grades released', 'Term 1 grades for Animation Year 1 · A are now available.'],
+  ],
+  admission: [
+    ['New enquiry received', 'Ishita Malhotra enquired about the Bachelor of Fine Arts programme.'],
+    ['Application under review', "Dev Patel's application for Animation is ready for review."],
+    ['Admission confirmed', 'Neha Krishnan has been admitted to the Bachelor of Fine Arts.'],
+  ],
+  system: [
+    ['Scheduled maintenance', 'The portal will be briefly unavailable on Sunday at 02:00.'],
+    ['Timetable published', 'The timetable for the new term has been published.'],
+    ['Profile reminder', 'Please review your contact details in your profile.'],
+  ],
+};
+
 export const MOCK_NOTIFICATIONS: readonly MockNotification[] = Array.from({ length: 47 }, (_, index) => {
   const categories: MockNotification['category'][] = ['attendance', 'fees', 'academic', 'admission', 'system'];
   const category = categories[index % categories.length] ?? 'system';
+  const templates = NOTIFICATION_TEMPLATES[category];
+  const [title, body] = templates[index % templates.length]!;
   const day = String((index % 28) + 1).padStart(2, '0');
   return {
     id: `ntf-${String(index + 1).padStart(3, '0')}`,
     category,
-    title: `${category[0]?.toUpperCase()}${category.slice(1)} update #${index + 1}`,
-    body: 'Placeholder notification body supplied by the mock API.',
+    title,
+    body,
     read: index % 3 === 0,
     createdAt: `2026-07-${day}T08:${String(index % 60).padStart(2, '0')}:00.000Z`,
   };

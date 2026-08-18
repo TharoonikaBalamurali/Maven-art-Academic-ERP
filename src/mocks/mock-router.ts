@@ -1,12 +1,13 @@
 import { ApiError, messageForKind } from '@/lib/api/api-error';
 import type { ApiRequest } from '@/lib/api/types';
-import type { AuthenticatedIdentity, Paginated, PermissionKey } from '@/shared/types';
+import type { AuthenticatedIdentity, Paginated, PermissionKey, Role } from '@/shared/types';
 import {
   findAccount,
   findAccountByUserId,
   MOCK_NOTIFICATIONS,
   type MockNotification,
 } from './fixtures';
+import { buildDashboardSummary } from './dashboard-data';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -170,6 +171,18 @@ const routes: Route[] = [
     method: 'GET',
     pattern: /^\/notifications$/,
     handler: listNotifications,
+  },
+  {
+    method: 'GET',
+    pattern: /^\/dashboard$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      // The Student/Parent dashboard is a separate portal experience (Phase 6);
+      // this endpoint serves the three management authorities (§13).
+      const summary = buildDashboardSummary(identity.role as Role);
+      if (!summary) fail('forbidden');
+      return summary;
+    },
   },
 ];
 
