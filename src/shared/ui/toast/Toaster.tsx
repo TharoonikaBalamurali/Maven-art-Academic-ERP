@@ -25,15 +25,15 @@ function ToastRow({ toast }: { toast: Toast }) {
   return (
     <li
       className={cn(
-        'surface-card pointer-events-auto flex items-start gap-3 rounded-lg border-l-4 p-3 shadow-lg',
+        'surface-card pointer-events-auto flex items-start gap-3 rounded-surface border-l-4 p-3 shadow-overlay',
         TONE_STYLES[toast.tone],
       )}
     >
       <Icon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium">{toast.title}</p>
+        <p className="text-body font-medium">{toast.title}</p>
         {toast.description && (
-          <p className="mt-0.5 text-xs text-[var(--text-muted)]">{toast.description}</p>
+          <p className="mt-0.5 text-body-sm text-[var(--text-muted)]">{toast.description}</p>
         )}
       </div>
       <button

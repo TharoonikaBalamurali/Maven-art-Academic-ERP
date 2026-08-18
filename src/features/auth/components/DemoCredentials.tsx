@@ -14,7 +14,7 @@ const ACCOUNTS = [
 
 export function DemoCredentials() {
   return (
-    <aside className="surface-card mt-4 rounded-lg p-3 text-xs">
+    <aside className="surface-card mt-4 p-3 text-body-sm">
       <p className="font-medium">Mock API is active</p>
       <p className="mt-1 text-[var(--text-muted)]">
         Sign in with any account below. Password: <code className="font-mono">password</code>

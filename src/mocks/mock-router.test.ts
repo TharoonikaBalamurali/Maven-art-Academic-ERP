@@ -80,14 +80,20 @@ describe('mock API', () => {
     expect(me.permissions).toContain('students.create');
   });
 
-  it('enforces the permission an endpoint declares', () => {
-    // Notifications carry a portal permission (§25, §37); management roles do
-    // not hold it, so the endpoint must refuse them even with a valid session.
-    const facultyToken = loginAs('faculty@mavenart.test');
-
-    expect(() =>
-      handleMockRequest(request({ method: 'GET', path: '/notifications' }), facultyToken),
-    ).toThrowError(expect.objectContaining({ kind: 'forbidden' }));
+  it('serves notifications to every role — they are centralised (§25)', () => {
+    for (const email of [
+      'admin@mavenart.test',
+      'accounts@mavenart.test',
+      'faculty@mavenart.test',
+      'student@mavenart.test',
+      'parent@mavenart.test',
+    ]) {
+      const page = handleMockRequest(
+        request({ method: 'GET', path: '/notifications' }),
+        loginAs(email),
+      ) as Paginated<unknown>;
+      expect(page.data.length).toBeGreaterThan(0);
+    }
   });
 
   it('scopes permissions to the role the backend assigned', () => {

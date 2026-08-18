@@ -61,7 +61,7 @@ export function Tabs({ tabs, activeId, onChange, label, className }: TabsProps) 
               tabIndex={selected ? 0 : -1}
               onClick={() => onChange(tab.id)}
               className={cn(
-                'min-h-11 shrink-0 border-b-2 px-3 text-sm font-medium transition-colors',
+                'min-h-11 shrink-0 border-b-2 px-3 text-body font-medium transition-colors',
                 selected
                   ? 'border-[var(--accent)] text-[var(--accent)]'
                   : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text)]',

@@ -3,23 +3,34 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'link';
-export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 
+/**
+ * Variants carry meaning, not decoration:
+ *   primary   — the one affirmative action on a screen
+ *   secondary — supporting actions
+ *   ghost     — toolbar / icon actions inside dense chrome
+ *   danger    — destructive, always paired with confirmation
+ *   link      — inline navigation that must not look like a button
+ */
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary:
-    'bg-[var(--accent)] text-[var(--accent-contrast)] hover:opacity-90 disabled:opacity-50',
+  primary: 'bg-[var(--accent)] text-[var(--accent-contrast)] hover:bg-[var(--accent-hover)]',
   secondary:
-    'bg-[var(--surface-raised)] text-[var(--text)] border border-[var(--border)] hover:bg-[var(--surface-sunken)] disabled:opacity-50',
-  ghost: 'text-[var(--text)] hover:bg-[var(--surface-sunken)] disabled:opacity-50',
-  danger: 'bg-[var(--danger)] text-white hover:opacity-90 disabled:opacity-50',
-  link: 'text-[var(--accent)] underline underline-offset-4 hover:opacity-80 disabled:opacity-50',
+    'bg-[var(--surface-raised)] text-[var(--text)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:border-[var(--border-strong)]',
+  ghost: 'text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]',
+  danger: 'bg-[var(--danger)] text-white hover:opacity-90',
+  link: 'text-[var(--accent)] underline underline-offset-4 hover:text-[var(--accent-hover)]',
 };
 
+/**
+ * `md` and above meet the 44px touch target. `sm` is reserved for controls
+ * inside dense data tables, where a 44px row would waste vertical space.
+ */
 const SIZES: Record<ButtonSize, string> = {
-  // min-h-11 (44px) keeps every button a comfortable touch target (step 19).
-  sm: 'min-h-9 px-3 text-sm gap-1.5',
-  md: 'min-h-11 px-4 text-sm gap-2',
-  lg: 'min-h-12 px-5 text-base gap-2',
+  sm: 'min-h-8 px-2.5 text-body-sm gap-1.5',
+  md: 'min-h-11 px-3.5 text-body gap-2',
+  lg: 'min-h-12 px-5 text-title gap-2',
+  icon: 'min-h-11 min-w-11 px-0 gap-0',
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -27,7 +38,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize;
   /** Shows a spinner and blocks interaction. */
   loading?: boolean;
-  /** Announced to assistive tech while `loading` is true. */
+  /** Announced to assistive technology while `loading` is true. */
   loadingLabel?: string;
   leadingIcon?: ReactNode;
   trailingIcon?: ReactNode;
@@ -58,8 +69,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       disabled={disabled === true || loading}
       aria-busy={loading || undefined}
       className={cn(
-        'inline-flex items-center justify-center rounded-md font-medium transition-colors',
-        'disabled:cursor-not-allowed',
+        'inline-flex shrink-0 items-center justify-center rounded-control font-medium',
+        'transition-colors duration-150',
+        'disabled:pointer-events-none disabled:opacity-50',
         VARIANTS[variant],
         SIZES[size],
         fullWidth && 'w-full',
@@ -67,12 +79,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       )}
       {...rest}
     >
-      {loading ? (
-        <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-      ) : (
-        leadingIcon
-      )}
-      <span>{children}</span>
+      {loading ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : leadingIcon}
+      {children != null && children !== '' && <span>{children}</span>}
       {loading ? <span className="sr-only">{loadingLabel}</span> : trailingIcon}
     </button>
   );

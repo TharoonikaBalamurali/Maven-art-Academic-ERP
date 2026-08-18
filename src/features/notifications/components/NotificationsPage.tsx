@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PageHeader } from '@/shared/layout/PageHeader';
+import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
 import { useListQueryState } from '@/shared/hooks/useListQueryState';
 import {
   Badge,
@@ -55,7 +56,7 @@ const columns: readonly Column<Notification>[] = [
     cell: (row) => (
       <div className="min-w-0">
         <p className="truncate font-medium">{row.title}</p>
-        <p className="truncate text-xs text-[var(--text-muted)]">{row.body}</p>
+        <p className="truncate text-body-sm text-[var(--text-muted)]">{row.body}</p>
       </div>
     ),
   },
@@ -96,7 +97,16 @@ export function NotificationsPage() {
     filterKeys: FILTER_KEYS,
   });
 
+  // The input stays responsive while the debounced value drives the request,
+  // so typing costs one backend call rather than one per keystroke (§31).
   const [searchDraft, setSearchDraft] = useState(list.query.search ?? '');
+  const debouncedSearch = useDebouncedValue(searchDraft.trim(), 300);
+  const committedSearch = list.query.search ?? '';
+
+  useEffect(() => {
+    if (debouncedSearch !== committedSearch) list.setSearch(debouncedSearch);
+  }, [debouncedSearch, committedSearch, list]);
+
   const query = useNotifications(list.query);
 
   const rows = query.data?.data ?? [];
@@ -112,10 +122,8 @@ export function NotificationsPage() {
         <CardBody className="flex flex-col gap-4">
           <form
             className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              list.setSearch(searchDraft.trim());
-            }}
+            role="search"
+            onSubmit={(event) => event.preventDefault()}
           >
             <Input
               label="Search"
@@ -139,11 +147,6 @@ export function NotificationsPage() {
               value={list.query.filters?.demoState?.toString() ?? ''}
               onChange={(event) => list.setFilter('demoState', event.target.value)}
             />
-            <div className="flex items-end">
-              <button type="submit" className="sr-only">
-                Apply search
-              </button>
-            </div>
           </form>
 
           <QueryBoundary
@@ -181,15 +184,15 @@ export function NotificationsPage() {
                   }
                   onSortChange={list.setSort}
                   renderMobileCard={(row) => (
-                    <div className="surface-card rounded-lg p-3">
+                    <div className="surface-card p-3">
                       <div className="flex items-start justify-between gap-2">
                         <p className="font-medium">{row.title}</p>
                         <Badge tone={row.read ? 'neutral' : 'warning'}>
                           {row.read ? 'Read' : 'Unread'}
                         </Badge>
                       </div>
-                      <p className="mt-1 text-sm text-[var(--text-muted)]">{row.body}</p>
-                      <p className="mt-2 text-xs text-[var(--text-muted)]">
+                      <p className="mt-1 text-body text-[var(--text-muted)]">{row.body}</p>
+                      <p className="mt-2 text-body-sm text-[var(--text-muted)]">
                         {row.category} · {formatDate(row.createdAt)}
                       </p>
                     </div>

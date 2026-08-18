@@ -1,87 +1,141 @@
 @import 'tailwindcss';
 
-/*
- * Design tokens (Day 1 steps 16, 19, 20).
+/* ============================================================================
+ * MAVEN ART ACADEMIC ERP — DESIGN SYSTEM
  *
- * Every colour used by a component is a token, so theming and contrast can be
- * adjusted centrally. Light and dark are both defined; dark follows the OS
- * unless the user picks a preference (see ui.store + ThemeEffect).
- */
+ * This file is the single source of visual truth. Components must not invent
+ * radii, shadows, font sizes or colours; they compose the utilities generated
+ * here, so a change to the product's look happens in one place.
+ *
+ * Design direction: a calm, structured, information-dense administrative
+ * interface. Restrained colour (colour carries meaning, never decoration),
+ * one shadow per elevation level, and a tight type scale that keeps dense
+ * tables readable without shouting.
+ * ==========================================================================*/
+
 @theme {
-  --color-brand-50: oklch(0.97 0.02 264);
-  --color-brand-100: oklch(0.93 0.04 264);
-  --color-brand-200: oklch(0.87 0.07 264);
-  --color-brand-300: oklch(0.78 0.11 264);
-  --color-brand-400: oklch(0.68 0.15 264);
-  --color-brand-500: oklch(0.58 0.18 264);
-  --color-brand-600: oklch(0.5 0.18 264);
-  --color-brand-700: oklch(0.43 0.15 264);
-  --color-brand-800: oklch(0.36 0.12 264);
-  --color-brand-900: oklch(0.29 0.09 264);
+  /* --- Brand ramp ---------------------------------------------------------
+   * A desaturated indigo. Deliberately muted: an ERP is looked at for eight
+   * hours a day, so the accent has to survive repetition.
+   */
+  --color-brand-50: oklch(0.97 0.014 264);
+  --color-brand-100: oklch(0.94 0.028 264);
+  --color-brand-200: oklch(0.88 0.055 264);
+  --color-brand-300: oklch(0.79 0.09 264);
+  --color-brand-400: oklch(0.69 0.13 264);
+  --color-brand-500: oklch(0.59 0.155 264);
+  --color-brand-600: oklch(0.51 0.155 264);
+  --color-brand-700: oklch(0.44 0.13 264);
+  --color-brand-800: oklch(0.37 0.1 264);
+  --color-brand-900: oklch(0.3 0.075 264);
 
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  /* Tabular figures matter for fee and attendance columns. */
+  --font-mono: ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', 'Roboto Mono', monospace;
+
+  /* --- Type scale ---------------------------------------------------------
+   * Named by role rather than by size, so a future change to "how big is a
+   * table cell" is one edit here instead of a find-and-replace.
+   */
+  --text-caption: 0.6875rem; /* 11px — table meta, nav section headings      */
+  --text-caption--line-height: 1rem;
+  --text-body-sm: 0.8125rem; /* 13px — dense table content                   */
+  --text-body-sm--line-height: 1.125rem;
+  --text-body: 0.875rem; /*     14px — default UI text                       */
+  --text-body--line-height: 1.25rem;
+  --text-title: 1rem; /*        16px — card titles                          */
+  --text-title--line-height: 1.5rem;
+  --text-page: 1.25rem; /*      20px — page h1                              */
+  --text-page--line-height: 1.75rem;
+  --text-metric: 1.5rem; /*     24px — dashboard figures                    */
+  --text-metric--line-height: 2rem;
+
+  /* --- Radius -------------------------------------------------------------
+   * Three levels, each tied to a purpose. Prevents the "every component picks
+   * its own roundness" drift found in the Day 1 audit.
+   */
+  --radius-control: 0.375rem; /* buttons, inputs, badges-as-buttons */
+  --radius-surface: 0.5rem; /*   cards, panels, table wrappers      */
+  --radius-overlay: 0.75rem; /*  modals, drawers, popovers          */
+
+  /* --- Elevation ----------------------------------------------------------
+   * One shadow per elevation level. Deliberately shallow — an ERP reads as a
+   * document, not as a stack of floating cards.
+   */
+  --shadow-raised: 0 1px 2px 0 oklch(0 0 0 / 0.05);
+  --shadow-overlay: 0 4px 12px -2px oklch(0 0 0 / 0.12), 0 2px 4px -2px oklch(0 0 0 / 0.06);
+  --shadow-modal: 0 16px 40px -8px oklch(0 0 0 / 0.24);
+
+  /* --- Layout -------------------------------------------------------------*/
+  --container-content: 90rem; /* max width of the main content column */
 }
 
 @layer base {
+  /* --- Theme switching ----------------------------------------------------
+   * `color-scheme` is the only thing that changes per theme; every token below
+   * is declared ONCE using light-dark(). The Day 1 implementation duplicated
+   * the entire dark palette in two blocks, which would drift the moment
+   * someone edited one and not the other.
+   *
+   * Order matters: the explicit user choice must win over the OS preference.
+   */
   :root {
-    --surface: oklch(0.99 0.002 264);
-    --surface-raised: oklch(1 0 0);
-    --surface-sunken: oklch(0.96 0.004 264);
-    --border: oklch(0.9 0.006 264);
-    --text: oklch(0.24 0.015 264);
-    --text-muted: oklch(0.5 0.015 264);
-    --accent: var(--color-brand-600);
-    --accent-contrast: oklch(1 0 0);
-    --danger: oklch(0.55 0.19 25);
-    --danger-surface: oklch(0.96 0.03 25);
-    --success: oklch(0.55 0.14 155);
-    --success-surface: oklch(0.95 0.04 155);
-    --warning: oklch(0.62 0.14 75);
-    --warning-surface: oklch(0.96 0.05 75);
-
     color-scheme: light;
   }
 
-  :root[data-theme='dark'],
-  :root:not([data-theme='light']) {
-    @media (prefers-color-scheme: dark) {
-      --surface: oklch(0.19 0.012 264);
-      --surface-raised: oklch(0.23 0.014 264);
-      --surface-sunken: oklch(0.16 0.012 264);
-      --border: oklch(0.32 0.014 264);
-      --text: oklch(0.95 0.006 264);
-      --text-muted: oklch(0.72 0.012 264);
-      --accent: var(--color-brand-400);
-      --accent-contrast: oklch(0.16 0.012 264);
-      --danger: oklch(0.68 0.17 25);
-      --danger-surface: oklch(0.28 0.07 25);
-      --success: oklch(0.7 0.13 155);
-      --success-surface: oklch(0.26 0.06 155);
-      --warning: oklch(0.75 0.13 75);
-      --warning-surface: oklch(0.28 0.07 75);
-
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
       color-scheme: dark;
     }
   }
 
   :root[data-theme='dark'] {
-    --surface: oklch(0.19 0.012 264);
-    --surface-raised: oklch(0.23 0.014 264);
-    --surface-sunken: oklch(0.16 0.012 264);
-    --border: oklch(0.32 0.014 264);
-    --text: oklch(0.95 0.006 264);
-    --text-muted: oklch(0.72 0.012 264);
-    --accent: var(--color-brand-400);
-    --accent-contrast: oklch(0.16 0.012 264);
-    --danger: oklch(0.68 0.17 25);
-    --danger-surface: oklch(0.28 0.07 25);
-    --success: oklch(0.7 0.13 155);
-    --success-surface: oklch(0.26 0.06 155);
-    --warning: oklch(0.75 0.13 75);
-    --warning-surface: oklch(0.28 0.07 75);
-
     color-scheme: dark;
+  }
+
+  :root[data-theme='light'] {
+    color-scheme: light;
+  }
+
+  /* --- Semantic colour tokens --------------------------------------------
+   * Dark is not an inversion of light. Light uses a near-white page with pure
+   * white cards (paper). Dark uses a dark-grey page with a *lighter* card, so
+   * elevation still reads as "closer to the viewer", and the accent is
+   * lightened to hold contrast on a dark ground.
+   */
+  :root {
+    /* Surfaces */
+    --surface: light-dark(oklch(0.985 0.002 264), oklch(0.185 0.012 264));
+    --surface-raised: light-dark(oklch(1 0 0), oklch(0.225 0.013 264));
+    --surface-sunken: light-dark(oklch(0.955 0.004 264), oklch(0.155 0.011 264));
+    --surface-hover: light-dark(oklch(0.965 0.004 264), oklch(0.26 0.014 264));
+
+    /* Lines */
+    --border: light-dark(oklch(0.9 0.006 264), oklch(0.31 0.013 264));
+    --border-strong: light-dark(oklch(0.82 0.008 264), oklch(0.4 0.015 264));
+
+    /* Text — both pass WCAG AA on their intended surface. */
+    --text: light-dark(oklch(0.24 0.015 264), oklch(0.96 0.005 264));
+    --text-muted: light-dark(oklch(0.48 0.015 264), oklch(0.74 0.012 264));
+    --text-subtle: light-dark(oklch(0.58 0.013 264), oklch(0.62 0.012 264));
+
+    /* Accent */
+    --accent: light-dark(var(--color-brand-600), var(--color-brand-400));
+    --accent-hover: light-dark(var(--color-brand-700), var(--color-brand-300));
+    --accent-contrast: light-dark(oklch(1 0 0), oklch(0.17 0.012 264));
+    --accent-surface: light-dark(oklch(0.96 0.02 264), oklch(0.27 0.05 264));
+
+    /* Status. Each has a text colour and a tint for backgrounds. */
+    --danger: light-dark(oklch(0.52 0.19 25), oklch(0.72 0.16 25));
+    --danger-surface: light-dark(oklch(0.96 0.03 25), oklch(0.27 0.07 25));
+    --success: light-dark(oklch(0.5 0.13 155), oklch(0.74 0.13 155));
+    --success-surface: light-dark(oklch(0.95 0.04 155), oklch(0.25 0.055 155));
+    --warning: light-dark(oklch(0.55 0.13 75), oklch(0.79 0.13 75));
+    --warning-surface: light-dark(oklch(0.96 0.05 75), oklch(0.27 0.06 75));
+    --info: light-dark(oklch(0.52 0.13 235), oklch(0.75 0.12 235));
+    --info-surface: light-dark(oklch(0.95 0.035 235), oklch(0.26 0.06 235));
   }
 
   html {
@@ -92,22 +146,24 @@
     background-color: var(--surface);
     color: var(--text);
     font-family: var(--font-sans);
-    /* 16px base keeps mobile Safari from zooming on input focus. */
+    /* 16px root keeps mobile Safari from zooming on input focus; component
+     * text steps down from here via the named scale. */
     font-size: 1rem;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
-  /* Accessibility: a visible focus ring on every interactive element (step 20). */
+  /* A single, always-visible focus treatment (accessibility foundation). */
   :focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
-    border-radius: 0.25rem;
+    border-radius: var(--radius-control);
   }
 
   ::selection {
-    background-color: var(--color-brand-200);
-    color: var(--color-brand-900);
+    background-color: var(--accent-surface);
+    color: var(--text);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -122,7 +178,34 @@
   }
 }
 
+/* --- Composite utilities ---------------------------------------------------
+ * Recurring multi-property patterns, defined once. Anything used by more than
+ * two components belongs here rather than being retyped.
+ */
+
+/** Standard panel: card, table wrapper, dashboard widget. */
 @utility surface-card {
   background-color: var(--surface-raised);
   border: 1px solid var(--border);
+  border-radius: var(--radius-surface);
+  box-shadow: var(--shadow-raised);
+}
+
+/** Floating layer: dropdown, popover, toast. */
+@utility surface-overlay {
+  background-color: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-overlay);
+  box-shadow: var(--shadow-overlay);
+}
+
+/** Horizontal rhythm of the main content column, shared by every page. */
+@utility page-gutter {
+  padding-inline: 1rem;
+  @media (width >= 40rem) {
+    padding-inline: 1.5rem;
+  }
+  @media (width >= 80rem) {
+    padding-inline: 2rem;
+  }
 }

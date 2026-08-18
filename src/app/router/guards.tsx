@@ -24,7 +24,7 @@ export function RequireAuth() {
   if (status === 'restoring' || status === 'authenticating') {
     return (
       <div className="flex min-h-dvh items-center justify-center" role="status" aria-live="polite">
-        <p className="text-sm text-[var(--text-muted)]">Checking your session…</p>
+        <p className="text-body text-[var(--text-muted)]">Checking your session…</p>
       </div>
     );
   }

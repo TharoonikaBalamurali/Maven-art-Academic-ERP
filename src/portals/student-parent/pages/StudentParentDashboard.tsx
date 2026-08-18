@@ -1,15 +1,30 @@
-import { Link } from 'react-router-dom';
+import { Award, BookOpen, CalendarDays, ClipboardCheck, UsersRound, Wallet } from 'lucide-react';
 import { useCurrentIdentity } from '@/features/auth/hooks';
 import { PermissionGuard } from '@/features/auth/PermissionGuard';
+import {
+  ActivityList,
+  DashboardGrid,
+  EmptyWidget,
+  QuickAction,
+  SummaryCard,
+  WidgetCard,
+} from '@/shared/dashboard';
 import { PageHeader } from '@/shared/layout/PageHeader';
-import { Badge, Card, CardBody, CardHeader } from '@/shared/ui';
 
 /**
- * Student / Parent dashboard placeholder.
+ * Student / Parent dashboard — FOUNDATION, not a delivered module.
  *
- * Real widgets (§13) arrive in Phase 6. This verifies that the portal shell,
- * permission-driven sections and mobile layout work.
+ * Student and parent share one portal architecture but see different
+ * dashboards (§13). The difference is driven entirely by permissions, not by a
+ * role check: the parent-only sections below are gated on
+ * `portal.children.view`, which the backend grants only to parents (§8).
+ *
+ * No child, course, fee or attendance data is fabricated. The parent student
+ * switcher renders its empty state until the backend supplies the
+ * parent→student links.
  */
+const SUMMARY_NOTE = 'Connected to the backend in Phase 6';
+
 export function StudentParentDashboard() {
   const identity = useCurrentIdentity();
 
@@ -20,34 +35,84 @@ export function StudentParentDashboard() {
         description="Your dashboard is delivered in Phase 6. Navigation, permissions and layout are already active."
       />
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card>
-          <CardHeader title="Account" />
-          <CardBody className="flex flex-col gap-1 text-sm">
-            <p className="font-medium">{identity.profile.fullName}</p>
-            <p className="text-[var(--text-muted)]">{identity.user.email}</p>
-            <p className="mt-2">
-              <Badge tone="accent">{identity.role}</Badge>
-            </p>
-          </CardBody>
-        </Card>
+      {/* Parent-only. Selecting a student will change the contextual data shown
+          across the whole portal; the client-side seam for that selection
+          already exists in the UI store (`selectedStudentId`).
+          TBD — BACKEND CONTRACT: linked students come from `parent_students`. */}
+      <PermissionGuard permission="portal.children.view">
+        <div className="mb-4">
+          <WidgetCard
+            title="My Children"
+            description="Students linked to your account, as determined by the backend."
+          >
+            <EmptyWidget label="Linked students will appear here once the backend provides them." />
+          </WidgetCard>
+        </div>
+      </PermissionGuard>
 
-        {/* Parents only — the backend grants portal.children.view (§8, §37). */}
-        <PermissionGuard permission="portal.children.view">
-          <Card>
-            <CardHeader title="My Children" description="Parent-only section." />
-            <CardBody className="text-sm text-[var(--text-muted)]">
-              <p>
-                Student selection changes the contextual data shown across the portal. Delivered in
-                Phase 6.
-              </p>
-              <Link to="/portal/children" className="mt-2 inline-block text-[var(--accent)] underline">
-                Open My Children
-              </Link>
-            </CardBody>
-          </Card>
+      <DashboardGrid className="mb-4">
+        <PermissionGuard permission="portal.attendance.view">
+          <SummaryCard
+            label="Attendance"
+            icon={ClipboardCheck}
+            state="unavailable"
+            note={SUMMARY_NOTE}
+            to="/portal/attendance"
+          />
         </PermissionGuard>
-      </div>
+        <PermissionGuard permission="portal.fees.view">
+          <SummaryCard
+            label="Fee Status"
+            icon={Wallet}
+            state="unavailable"
+            note={SUMMARY_NOTE}
+            to="/portal/fees"
+          />
+        </PermissionGuard>
+        <PermissionGuard permission="portal.academic.view">
+          <SummaryCard
+            label="Course"
+            icon={BookOpen}
+            state="unavailable"
+            note={SUMMARY_NOTE}
+            to="/portal/course"
+          />
+        </PermissionGuard>
+        <PermissionGuard permission="portal.certificates.view">
+          <SummaryCard
+            label="Certificates"
+            icon={Award}
+            state="unavailable"
+            note={SUMMARY_NOTE}
+            to="/portal/certificates"
+          />
+        </PermissionGuard>
+      </DashboardGrid>
+
+      <DashboardGrid>
+        <PermissionGuard permission="portal.timetable.view">
+          <WidgetCard title="Today's schedule" description="From the published timetable." span={2}>
+            <ActivityList entries={[]} emptyLabel="No classes to show yet." />
+          </WidgetCard>
+        </PermissionGuard>
+
+        <WidgetCard title="Shortcuts" span={2}>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <PermissionGuard permission="portal.timetable.view">
+              <QuickAction label="Timetable" icon={CalendarDays} to="/portal/timetable" />
+            </PermissionGuard>
+            <PermissionGuard permission="portal.attendance.view">
+              <QuickAction label="Attendance" icon={ClipboardCheck} to="/portal/attendance" />
+            </PermissionGuard>
+            <PermissionGuard permission="portal.fees.view">
+              <QuickAction label="Fees" icon={Wallet} to="/portal/fees" />
+            </PermissionGuard>
+            <PermissionGuard permission="portal.children.view">
+              <QuickAction label="My Children" icon={UsersRound} to="/portal/children" />
+            </PermissionGuard>
+          </div>
+        </WidgetCard>
+      </DashboardGrid>
     </>
   );
 }

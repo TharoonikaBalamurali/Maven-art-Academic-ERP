@@ -4,13 +4,16 @@ import { AppShell } from '@/shared/layout/AppShell';
 /**
  * Management Portal shell (§1, §9).
  *
- * Desktop-first: a persistent sidebar from `lg` up, a drawer below that (§33).
+ * Desktop-first: a persistent, collapsible sidebar from `lg` up, a drawer
+ * below that (§33).
  */
 export function ManagementLayout() {
   return (
     <AppShell
       portalLabel="Management"
       navSections={MANAGEMENT_NAV}
+      portalRoot="/management"
+      notificationsPath="/management/notifications"
       collapsibleSidebar
     />
   );

@@ -82,6 +82,9 @@ export const PERMISSIONS = [
   'settings.view',
   'settings.update',
 
+  // Cross-portal: notifications are centralised for every role (§25).
+  'notifications.view',
+
   // Student / Parent portal
   'portal.dashboard.view',
   'portal.profile.view',
@@ -92,7 +95,6 @@ export const PERMISSIONS = [
   'portal.fees.view',
   'portal.payments.view',
   'portal.certificates.view',
-  'portal.notifications.view',
   'portal.children.view',
 ] as const;
 

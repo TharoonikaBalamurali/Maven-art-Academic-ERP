@@ -50,7 +50,7 @@ export const STUDENT_PARENT_NAV: readonly NavSection[] = [
     id: 'personal',
     items: [
       { id: 'certificates', label: 'Certificates', to: '/portal/certificates', icon: Award, anyOf: ['portal.certificates.view'] },
-      { id: 'notifications', label: 'Notifications', to: '/portal/notifications', icon: Bell, anyOf: ['portal.notifications.view'] },
+      { id: 'notifications', label: 'Notifications', to: '/portal/notifications', icon: Bell, anyOf: ['notifications.view'] },
       { id: 'profile', label: 'Profile', to: '/portal/profile', icon: User, anyOf: ['portal.profile.view'] },
     ],
   },

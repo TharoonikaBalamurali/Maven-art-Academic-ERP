@@ -40,7 +40,7 @@ export function Field({
       <label
         htmlFor={id}
         className={cn(
-          'text-sm font-medium text-[var(--text)]',
+          'text-body font-medium text-[var(--text)]',
           hideLabel && 'sr-only',
         )}
       >
@@ -56,7 +56,7 @@ export function Field({
       {children}
 
       {description && !error && (
-        <p id={descriptionId} className="text-xs text-[var(--text-muted)]">
+        <p id={descriptionId} className="text-body-sm text-[var(--text-muted)]">
           {description}
         </p>
       )}
@@ -66,7 +66,7 @@ export function Field({
           id={errorId}
           // role="alert" so the message is announced when it appears after submit.
           role="alert"
-          className="text-xs font-medium text-[var(--danger)]"
+          className="text-body-sm font-medium text-[var(--danger)]"
         >
           {error}
         </p>

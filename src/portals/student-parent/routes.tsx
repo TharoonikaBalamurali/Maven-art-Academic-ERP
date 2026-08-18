@@ -1,9 +1,8 @@
 import type { RouteObject } from 'react-router-dom';
 import { RequirePermission } from '@/app/router/guards';
-import { NotificationsPage } from '@/features/notifications/components/NotificationsPage';
+import { lazyRoute } from '@/app/router/lazyRoute';
 import { ModulePlaceholder } from '@/portals/shared/ModulePlaceholder';
 import type { PermissionKey } from '@/shared/types';
-import { StudentParentDashboard } from './pages/StudentParentDashboard';
 
 interface PortalRoute {
   path: string;
@@ -31,7 +30,10 @@ export const studentParentRoutes: RouteObject[] = [
     index: true,
     element: (
       <RequirePermission anyOf={['portal.dashboard.view']}>
-        <StudentParentDashboard />
+        {lazyRoute(
+          () => import('./pages/StudentParentDashboard'),
+          (m) => m.StudentParentDashboard,
+        )}
       </RequirePermission>
     ),
   },
@@ -39,8 +41,11 @@ export const studentParentRoutes: RouteObject[] = [
     // Implemented on Day 1 as the reference list page for the architecture.
     path: 'notifications',
     element: (
-      <RequirePermission anyOf={['portal.notifications.view']}>
-        <NotificationsPage />
+      <RequirePermission anyOf={['notifications.view']}>
+        {lazyRoute(
+          () => import('@/features/notifications/components/NotificationsPage'),
+          (m) => m.NotificationsPage,
+        )}
       </RequirePermission>
     ),
   },

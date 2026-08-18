@@ -5,12 +5,13 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
 }
 
+/**
+ * The standard content panel. Border, radius and elevation come from the
+ * `surface-card` utility so every panel in the ERP is identical.
+ */
 export function Card({ className, children, ...rest }: CardProps) {
   return (
-    <div
-      className={cn('surface-card rounded-lg shadow-sm', className)}
-      {...rest}
-    >
+    <div className={cn('surface-card', className)} {...rest}>
       {children}
     </div>
   );
@@ -26,7 +27,7 @@ export function CardHeader({
   title: string;
   description?: string;
   actions?: ReactNode;
-  /** Kept configurable so the document outline stays correct on every page. */
+  /** Configurable so the document outline stays correct on every page. */
   headingLevel?: 2 | 3 | 4;
   className?: string;
 }) {
@@ -40,9 +41,9 @@ export function CardHeader({
       )}
     >
       <div className="min-w-0">
-        <Heading className="truncate text-sm font-semibold text-[var(--text)]">{title}</Heading>
+        <Heading className="truncate text-title font-semibold text-[var(--text)]">{title}</Heading>
         {description && (
-          <p className="mt-0.5 text-xs text-[var(--text-muted)]">{description}</p>
+          <p className="mt-0.5 text-body-sm text-[var(--text-muted)]">{description}</p>
         )}
       </div>
       {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
@@ -52,4 +53,17 @@ export function CardHeader({
 
 export function CardBody({ className, children }: { className?: string; children: ReactNode }) {
   return <div className={cn('p-4', className)}>{children}</div>;
+}
+
+export function CardFooter({ className, children }: { className?: string; children: ReactNode }) {
+  return (
+    <div
+      className={cn(
+        'flex flex-wrap items-center justify-end gap-2 border-t border-[var(--border)] px-4 py-3',
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }

@@ -77,7 +77,7 @@ export function DataTable<TRow>({
           className,
         )}
       >
-        <table className="w-full min-w-[40rem] border-collapse text-sm">
+        <table className="w-full min-w-[40rem] border-collapse text-body">
           <caption className="sr-only">{caption}</caption>
           <thead>
             <tr className="border-b border-[var(--border)] text-left">
@@ -92,7 +92,7 @@ export function DataTable<TRow>({
                     // aria-sort tells assistive tech the current ordering.
                     aria-sort={isSorted ? (sort.sortDir === 'asc' ? 'ascending' : 'descending') : undefined}
                     className={cn(
-                      'px-3 py-2 text-xs font-semibold tracking-wide text-[var(--text-muted)] uppercase',
+                      'px-3 py-2 text-caption font-semibold tracking-wide text-[var(--text-muted)] uppercase',
                       column.align === 'right' && 'text-right',
                       column.headerClassName,
                     )}

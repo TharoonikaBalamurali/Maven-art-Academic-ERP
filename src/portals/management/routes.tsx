@@ -1,8 +1,8 @@
 import type { RouteObject } from 'react-router-dom';
 import { RequirePermission } from '@/app/router/guards';
+import { lazyRoute } from '@/app/router/lazyRoute';
 import { ModulePlaceholder } from '@/portals/shared/ModulePlaceholder';
 import type { PermissionKey } from '@/shared/types';
-import { ManagementDashboard } from './pages/ManagementDashboard';
 
 interface ModuleRoute {
   path: string;
@@ -54,7 +54,28 @@ const MODULES: readonly ModuleRoute[] = [
 ];
 
 export const managementRoutes: RouteObject[] = [
-  { index: true, element: <ManagementDashboard /> },
+  {
+    index: true,
+    element: lazyRoute(
+      () => import('./pages/ManagementDashboard'),
+      (m) => m.ManagementDashboard,
+    ),
+  },
+
+  {
+    // §25: notifications are centralised, so the same feature serves both
+    // portals. Reusing the page here is the proof that a feature is portable
+    // across portal boundaries.
+    path: 'notifications',
+    element: (
+      <RequirePermission anyOf={['notifications.view']}>
+        {lazyRoute(
+          () => import('@/features/notifications/components/NotificationsPage'),
+          (m) => m.NotificationsPage,
+        )}
+      </RequirePermission>
+    ),
+  },
 
   ...MODULES.flatMap<RouteObject>((module) => {
     const routes: RouteObject[] = [

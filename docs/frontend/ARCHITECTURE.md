@@ -19,7 +19,7 @@ Status: Day 1 foundation. No business modules are implemented.
 | Server state | **TanStack Query 5** | §27 requires server state to be separated from UI state. Query owns caching, deduplication, retry and cancellation, so no API response is ever copied into a global store. |
 | Auth + UI state | **Zustand** | Two small stores for the other two state categories in §27. Chosen over Context to keep re-renders narrow and to allow non-React code (the API client) to read the session. |
 | Forms | **react-hook-form + Zod** | §30: fast client-side feedback, uncontrolled inputs for large forms, and a resolver that maps cleanly onto backend 422 responses. |
-| Styling | **Tailwind CSS v4** | Utility-first with design tokens defined once in `src/styles/index.css`. No component library was adopted — see §7 below. |
+| Styling | **Tailwind CSS v4** | Utility-first over a token layer defined once in `src/styles/index.css`. No component library was adopted — see §7 below. |
 | Icons | **lucide-react** | Tree-shakeable SVG icons; navigation config references components directly. |
 | Testing | **Vitest + Testing Library** | Shares the Vite pipeline (no second build config); Testing Library keeps tests behavioural rather than implementation-coupled. |
 | Class merging | **clsx + tailwind-merge** | Two tiny utilities behind one `cn()` helper, so variant props can override base classes predictably. |
@@ -65,6 +65,28 @@ component, hook or service changes (§42).
 
 ---
 
+## 2b. Design system
+
+`src/styles/index.css` is the single source of visual truth. Components compose
+utilities generated from tokens; they never invent a radius, shadow or font
+size.
+
+* **Colour** — semantic tokens (`--surface`, `--text-muted`, `--accent`,
+  `--danger` …), each declared **once** with CSS `light-dark()`. Only
+  `color-scheme` changes between themes, so light and dark cannot drift apart.
+  Dark is not an inversion: light uses white cards on a near-white page, dark
+  uses a *lighter* card on a dark page so elevation still reads correctly.
+* **Radius by role** — `--radius-control` (buttons, inputs), `--radius-surface`
+  (cards, panels), `--radius-overlay` (modals, drawers).
+* **Elevation by level** — `--shadow-raised`, `--shadow-overlay`,
+  `--shadow-modal`. Deliberately shallow.
+* **Type scale by role** — `--text-caption` (11px) → `--text-metric` (24px),
+  named for purpose so "how big is a table cell" is one edit.
+* **Composite utilities** — `surface-card`, `surface-overlay`, `page-gutter`.
+
+Theme preference (`light` / `dark` / `system`) lives in `ui.store` and is
+applied as `data-theme` on the root element.
+
 ## 3. Directory structure
 
 ```
@@ -91,9 +113,10 @@ src/
   shared/
     types/                 Centralised domain + API types
     ui/                    Presentational primitives (§34)
-    layout/                AppShell, header, sidebar, page header
+    layout/                AppShell, header, sidebar, breadcrumbs, search
+    dashboard/             Dashboard grid, summary cards, widget states
     forms/                 useApiForm, FormError
-    hooks/                 useListQueryState
+    hooks/                 useListQueryState, useDebouncedValue
   test/                    Test render helpers
 ```
 
@@ -181,6 +204,24 @@ table into the browser.
 Students, Payments or Attendance.
 
 ---
+
+## 8b. Application shell (§9)
+
+Both portals render one `AppShell`, differing only by props. The header is
+`Logo · Search · Notification · Profile` in both, as the specification requires
+a consistent layout system across the two applications.
+
+* **Search** is a permission-filtered module jumper (`Ctrl`/`Cmd`+`K`). It does
+  not search records — that is server-side (§31) and awaits an endpoint.
+* **Breadcrumbs** are derived from the navigation config rather than a second
+  route-title registry, so they can never disagree with the sidebar.
+* **Dashboards** compose `DashboardGrid` / `SummaryCard` / `WidgetCard` /
+  `QuickAction` / `ActivityList` plus widget-scale loading, empty and error
+  states. Metrics render in an explicit `unavailable` state until the backend
+  supplies them — the foundation never displays an invented number.
+
+Every page element is loaded through `lazyRoute`, so a module's code is fetched
+only when someone navigates to it.
 
 ## 9. Responsive & accessibility (§33, Day 1 steps 19–20)
 

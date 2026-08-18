@@ -5,6 +5,17 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    // Deterministic port. `strictPort` makes a busy port fail loudly instead of
+    // silently starting a second dev server on 5174 — two servers serving the
+    // same app is a reliable way to end up debugging a stale tab.
+    port: Number(process.env.PORT ?? 5173),
+    strictPort: true,
+  },
+  preview: {
+    port: Number(process.env.PREVIEW_PORT ?? 4173),
+    strictPort: true,
+  },
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

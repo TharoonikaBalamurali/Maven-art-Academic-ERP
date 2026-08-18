@@ -35,8 +35,8 @@ function StateShell({ icon, title, description, action, live = 'polite', classNa
         {icon}
       </div>
       <div className="max-w-md">
-        <p className="text-sm font-semibold text-[var(--text)]">{title}</p>
-        {description && <p className="mt-1 text-sm text-[var(--text-muted)]">{description}</p>}
+        <p className="text-body font-semibold text-[var(--text)]">{title}</p>
+        {description && <p className="mt-1 text-body text-[var(--text-muted)]">{description}</p>}
       </div>
       {action}
     </div>

@@ -12,6 +12,6 @@ export const notificationsContract = {
     method: 'GET',
     path: '/notifications',
     auth: true,
-    permission: 'portal.notifications.view',
+    permission: 'notifications.view',
   }),
 } as const;

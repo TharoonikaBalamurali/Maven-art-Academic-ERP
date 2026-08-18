@@ -3,19 +3,24 @@ import { Bell, LogOut, Menu, Monitor, Moon, PanelLeft, Sun, User } from 'lucide-
 import { env } from '@/config/env';
 import { useUiStore } from '@/app/state/ui.store';
 import { useAuthActions, useCurrentIdentity } from '@/features/auth/hooks';
+import { PermissionGuard } from '@/features/auth/PermissionGuard';
+import type { NavSection, Role } from '@/shared/types';
 import { Button, Dropdown, DropdownItem } from '@/shared/ui';
+import { NavSearch } from './NavSearch';
 
 export interface AppHeaderProps {
-  /** Shown next to the product name, e.g. "Management". */
+  /** Contextual portal identity shown beside the product name. */
   portalLabel: string;
-  notificationsPath?: string;
-  /** Omitted when the portal has no profile page yet. */
+  /** Searchable navigation for this portal (§9 header search). */
+  navSections: readonly NavSection[];
+  notificationsPath: string;
+  /** Omitted when the portal has no profile page. */
   profilePath?: string;
   showSidebarToggle?: boolean;
   onOpenMobileNav: () => void;
 }
 
-const ROLE_LABELS: Record<string, string> = {
+const ROLE_LABELS: Record<Role, string> = {
   admin: 'Administrator',
   accounts: 'Accounts',
   faculty: 'Faculty',
@@ -23,9 +28,16 @@ const ROLE_LABELS: Record<string, string> = {
   parent: 'Parent',
 };
 
-/** Global header (§9): logo, portal label, notifications and profile menu. */
+/**
+ * Global header (§9): Logo · Search · Notification · Profile.
+ *
+ * Both portals render this same header — the specification requires "a
+ * consistent layout system" across the two applications — differing only by
+ * the props above.
+ */
 export function AppHeader({
   portalLabel,
+  navSections,
   notificationsPath,
   profilePath,
   showSidebarToggle = true,
@@ -43,98 +55,128 @@ export function AppHeader({
     navigate('/login', { replace: true });
   }
 
-  return (
-    <header className="sticky top-0 z-40 flex h-14 items-center gap-2 border-b border-[var(--border)] bg-[var(--surface-raised)] px-3">
-      <Button
-        variant="ghost"
-        className="px-2 lg:hidden"
-        onClick={onOpenMobileNav}
-        aria-label="Open navigation menu"
-      >
-        <Menu className="size-5" aria-hidden="true" />
-      </Button>
+  const initials = identity.profile.fullName
+    .split(' ')
+    .slice(0, 2)
+    .map((part) => part[0] ?? '')
+    .join('')
+    .toUpperCase();
 
-      {showSidebarToggle && (
+  return (
+    <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--surface-raised)]">
+      <div className="flex h-14 items-center gap-2 px-3 sm:px-4">
         <Button
           variant="ghost"
-          className="hidden px-2 lg:inline-flex"
-          onClick={toggleSidebar}
-          aria-label="Toggle sidebar"
+          size="icon"
+          className="lg:hidden"
+          onClick={onOpenMobileNav}
+          aria-label="Open navigation menu"
         >
-          <PanelLeft className="size-5" aria-hidden="true" />
+          <Menu className="size-5" aria-hidden="true" />
         </Button>
-      )}
 
-      <div className="flex min-w-0 items-center gap-2">
-        <span className="truncate text-sm font-semibold">{env.appName}</span>
-        <span className="hidden rounded bg-[var(--surface-sunken)] px-1.5 py-0.5 text-xs text-[var(--text-muted)] sm:inline">
-          {portalLabel}
-        </span>
-      </div>
-
-      <div className="ml-auto flex items-center gap-1">
-        {notificationsPath && (
+        {showSidebarToggle && (
           <Button
             variant="ghost"
-            className="px-2"
-            onClick={() => navigate(notificationsPath)}
-            aria-label="Notifications"
+            size="icon"
+            className="hidden lg:inline-flex"
+            onClick={toggleSidebar}
+            aria-label="Toggle sidebar"
           >
-            <Bell className="size-5" aria-hidden="true" />
+            <PanelLeft className="size-5" aria-hidden="true" />
           </Button>
         )}
 
-        <Dropdown
-          triggerLabel="Account menu"
-          trigger={
+        {/* Product identity + contextual portal identity */}
+        <div className="flex min-w-0 items-center gap-2">
+          <span
+            aria-hidden="true"
+            className="hidden size-7 shrink-0 items-center justify-center rounded-control bg-[var(--accent)] text-caption font-bold text-[var(--accent-contrast)] sm:flex"
+          >
+            MA
+          </span>
+          <span className="truncate text-body font-semibold text-[var(--text)]">
+            {env.appName}
+          </span>
+          <span className="hidden rounded-control bg-[var(--surface-sunken)] px-1.5 py-0.5 text-caption font-medium text-[var(--text-muted)] md:inline">
+            {portalLabel}
+          </span>
+        </div>
+
+        <div className="ml-auto flex items-center gap-1 sm:gap-2">
+          <NavSearch navSections={navSections} />
+
+          {/* §25: notifications are centralised, so both portals expose the bell. */}
+          <PermissionGuard permission="notifications.view">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(notificationsPath)}
+              aria-label="Notifications"
+            >
+              <Bell className="size-5" aria-hidden="true" />
+            </Button>
+          </PermissionGuard>
+
+          <Dropdown
+            triggerLabel="Account menu"
+            trigger={
+              <>
+                <span
+                  aria-hidden="true"
+                  className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent-surface)] text-caption font-semibold text-[var(--accent)]"
+                >
+                  {initials}
+                </span>
+                <span className="hidden max-w-32 truncate text-body sm:inline">
+                  {identity.profile.displayName}
+                </span>
+              </>
+            }
+          >
             <>
-              <span
-                aria-hidden="true"
-                className="flex size-7 items-center justify-center rounded-full bg-[var(--surface-sunken)] text-xs font-semibold"
-              >
-                {identity.profile.displayName.slice(0, 1).toUpperCase()}
-              </span>
-              <span className="hidden text-sm sm:inline">{identity.profile.displayName}</span>
+              <div className="border-b border-[var(--border)] px-3 py-2">
+                <p className="truncate text-body font-medium">{identity.profile.fullName}</p>
+                <p className="truncate text-body-sm text-[var(--text-muted)]">
+                  {identity.user.email}
+                </p>
+                <p className="mt-1 text-caption text-[var(--text-subtle)]">
+                  {ROLE_LABELS[identity.role]}
+                </p>
+              </div>
+
+              <div role="group" aria-label="Theme" className="border-b border-[var(--border)] py-1">
+                <p className="px-3 pb-1 text-caption text-[var(--text-subtle)]">Theme</p>
+                {(
+                  [
+                    ['light', 'Light', Sun],
+                    ['dark', 'Dark', Moon],
+                    ['system', 'System', Monitor],
+                  ] as const
+                ).map(([value, label, Icon]) => (
+                  <DropdownItem key={value} keepOpen onSelect={() => setTheme(value)}>
+                    <Icon className="size-4" aria-hidden="true" />
+                    {label}
+                    {theme === value && (
+                      <span className="ml-auto text-caption text-[var(--accent)]">Selected</span>
+                    )}
+                  </DropdownItem>
+                ))}
+              </div>
+
+              {profilePath && (
+                <DropdownItem onSelect={() => navigate(profilePath)}>
+                  <User className="size-4" aria-hidden="true" />
+                  Profile
+                </DropdownItem>
+              )}
+              <DropdownItem destructive onSelect={() => void handleLogout()}>
+                <LogOut className="size-4" aria-hidden="true" />
+                Sign out
+              </DropdownItem>
             </>
-          }
-        >
-          <>
-            <div className="border-b border-[var(--border)] px-3 py-2">
-              <p className="truncate text-sm font-medium">{identity.profile.fullName}</p>
-              <p className="truncate text-xs text-[var(--text-muted)]">{identity.user.email}</p>
-              <p className="mt-1 text-xs text-[var(--text-muted)]">
-                {ROLE_LABELS[identity.role] ?? identity.role}
-              </p>
-            </div>
-
-            <div className="border-b border-[var(--border)] py-1">
-              <p className="px-3 pb-1 text-xs text-[var(--text-muted)]">Theme</p>
-              <DropdownItem onSelect={() => setTheme('light')}>
-                <Sun className="size-4" aria-hidden="true" />
-                Light {theme === 'light' && <span className="ml-auto text-xs">Selected</span>}
-              </DropdownItem>
-              <DropdownItem onSelect={() => setTheme('dark')}>
-                <Moon className="size-4" aria-hidden="true" />
-                Dark {theme === 'dark' && <span className="ml-auto text-xs">Selected</span>}
-              </DropdownItem>
-              <DropdownItem onSelect={() => setTheme('system')}>
-                <Monitor className="size-4" aria-hidden="true" />
-                System {theme === 'system' && <span className="ml-auto text-xs">Selected</span>}
-              </DropdownItem>
-            </div>
-
-            {profilePath && (
-              <DropdownItem onSelect={() => navigate(profilePath)}>
-                <User className="size-4" aria-hidden="true" />
-                Profile
-              </DropdownItem>
-            )}
-            <DropdownItem destructive onSelect={() => void handleLogout()}>
-              <LogOut className="size-4" aria-hidden="true" />
-              Sign out
-            </DropdownItem>
-          </>
-        </Dropdown>
+          </Dropdown>
+        </div>
       </div>
     </header>
   );

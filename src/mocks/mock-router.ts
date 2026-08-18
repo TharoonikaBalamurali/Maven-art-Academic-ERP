@@ -84,7 +84,7 @@ function paginate<T>(rows: T[], page: number, limit: number): Paginated<T> {
 
 function listNotifications(ctx: MockContext): Paginated<MockNotification> {
   const identity = identityFromToken(ctx.token);
-  requirePermission(identity, 'portal.notifications.view');
+  requirePermission(identity, 'notifications.view');
 
   const query = ctx.request.query ?? {};
 

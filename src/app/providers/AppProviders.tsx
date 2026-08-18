@@ -52,7 +52,7 @@ function AuthBootstrap({ children }: { children: ReactNode }) {
   if (!ready) {
     return (
       <div className="flex min-h-dvh items-center justify-center" role="status" aria-live="polite">
-        <p className="text-sm text-[var(--text-muted)]">Loading…</p>
+        <p className="text-body text-[var(--text-muted)]">Loading…</p>
       </div>
     );
   }

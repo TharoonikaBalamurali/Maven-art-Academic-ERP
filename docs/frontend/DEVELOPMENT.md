@@ -21,7 +21,7 @@ in practice `npm install && npm run dev` is enough.
 
 | Command | Purpose |
 | --- | --- |
-| `npm run dev` | Dev server on http://localhost:5173 |
+| `npm run dev` | Dev server on http://localhost:5173 (override with `PORT`) |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint (includes the architecture boundary rules) |
 | `npm test` | Vitest, single run |
@@ -30,6 +30,10 @@ in practice `npm install && npm run dev` is enough.
 | `npm run build` | Typecheck then production build to `dist/` |
 | `npm run preview` | Serve the production build on :4173 |
 | `npm run verify` | typecheck → lint → test → build |
+
+The dev and preview servers use `strictPort`, so a busy port fails loudly
+rather than silently starting a second server on the next one — two servers
+serving the same app is a reliable way to end up debugging a stale tab.
 
 ## Signing in (mock mode)
 
@@ -86,7 +90,17 @@ branch on the role.
 ### Navigation
 
 `config/navigation/*.nav.ts` declare the trees with `anyOf` / `allOf`
-permissions; `filter.ts` prunes them per user. One config serves all roles.
+permissions; `filter.ts` prunes them per user. One config serves all roles, and
+it also drives the header search and the breadcrumbs — so a module is named in
+exactly one place.
+
+### Styling
+
+Use the tokens in `src/styles/index.css`: `rounded-control|surface|overlay`,
+`shadow-raised|overlay|modal`, `text-caption|body-sm|body|title|page|metric`,
+and the `surface-card` / `surface-overlay` / `page-gutter` utilities. Do not
+introduce raw `rounded-lg`, `shadow-md` or `text-sm` in components — the point
+of the token layer is that the product's look changes in one file.
 
 ### API
 
@@ -122,10 +136,12 @@ Do not mix.
 5. **Hook** — `hooks/useStudents.ts` with a `studentKeys` cache-key object.
 6. **Page** — copy `features/notifications/components/NotificationsPage.tsx`.
    It already wires `useListQueryState` → hook → `QueryBoundary` → `DataTable` →
-   `Pagination`, including the empty/no-results distinction.
+   `Pagination`, including debounced search and the empty/no-results
+   distinction.
 7. **Route** — replace the `students` placeholder in
-   `portals/management/routes.tsx` with the real element. The guard and the
-   navigation entry already exist.
+   `portals/management/routes.tsx`, loading the page through `lazyRoute` so it
+   is code-split like every other module. The guard and the navigation entry
+   already exist.
 8. **Permissions** — if a new permission is needed, add it to
    `shared/types/permission.ts` and tell the backend team; it must exist in the
    RBAC tables to have any effect.

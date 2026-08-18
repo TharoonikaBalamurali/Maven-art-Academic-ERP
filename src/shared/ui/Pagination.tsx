@@ -51,7 +51,7 @@ export function Pagination({
       aria-label="Pagination"
       className={cn('flex flex-wrap items-center justify-between gap-3', className)}
     >
-      <p className="text-xs text-[var(--text-muted)]" aria-live="polite">
+      <p className="text-body-sm text-[var(--text-muted)]" aria-live="polite">
         Showing <strong>{firstRow}</strong>–<strong>{lastRow}</strong> of <strong>{total}</strong>
       </p>
 

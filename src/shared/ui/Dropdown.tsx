@@ -97,7 +97,7 @@ export function Dropdown({
         aria-label={triggerLabel}
         onClick={() => setOpen((value) => !value)}
         className={cn(
-          'inline-flex min-h-11 items-center gap-2 rounded-md px-2 hover:bg-[var(--surface-sunken)]',
+          'inline-flex min-h-11 items-center gap-2 rounded-control px-2 hover:bg-[var(--surface-sunken)]',
           triggerClassName,
         )}
       >
@@ -109,7 +109,7 @@ export function Dropdown({
           id={id}
           role="menu"
           className={cn(
-            'surface-card absolute z-50 mt-1 min-w-52 rounded-md p-1 shadow-lg',
+            'surface-card absolute z-50 mt-1 min-w-52 rounded-control p-1 shadow-overlay',
             align === 'end' ? 'right-0' : 'left-0',
           )}
         >
@@ -143,7 +143,7 @@ export function DropdownItem({
         if (!keepOpen) context?.close();
       }}
       className={cn(
-        'flex min-h-11 w-full items-center gap-2 rounded px-3 text-left text-sm hover:bg-[var(--surface-sunken)]',
+        'flex min-h-11 w-full items-center gap-2 rounded px-3 text-left text-body hover:bg-[var(--surface-sunken)]',
         destructive ? 'text-[var(--danger)]' : 'text-[var(--text)]',
       )}
     >

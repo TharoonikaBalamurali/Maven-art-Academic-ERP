@@ -7,12 +7,16 @@ import { cn } from '@/lib/utils/cn';
 import type { NavItem, NavSection } from '@/shared/types';
 import { Drawer } from '@/shared/ui';
 import { AppHeader } from './AppHeader';
+import { Breadcrumbs } from './Breadcrumbs';
 import { SidebarNav } from './SidebarNav';
+import { useBreadcrumbs } from './useBreadcrumbs';
 
 export interface AppShellProps {
   portalLabel: string;
   navSections: readonly NavSection[];
-  notificationsPath?: string;
+  /** Root path of this portal; also the breadcrumb home. */
+  portalRoot: string;
+  notificationsPath: string;
   profilePath?: string;
   /**
    * Items pinned to a bottom tab bar on small screens. Used by the
@@ -25,16 +29,17 @@ export interface AppShellProps {
 }
 
 /**
- * The shared application shell (Day 1 step 8, specification §9).
+ * The shared application shell (§9).
  *
  * Both portals render the same structure — header, sidebar, main region — and
  * differ only by configuration. The navigation tree is filtered here against
- * the permission set the backend returned, so no role branching exists in the
- * layout at all (§36, §37).
+ * the permission set the backend returned, so the layout contains no role
+ * branching at all (§36, §37).
  */
 export function AppShell({
   portalLabel,
   navSections,
+  portalRoot,
   notificationsPath,
   profilePath,
   bottomNavItems,
@@ -52,6 +57,8 @@ export function AppShell({
     [navSections, permissionSet],
   );
 
+  const crumbs = useBreadcrumbs(sections, portalRoot);
+
   const bottomItems = useMemo(() => {
     if (!bottomNavItems) return [];
     return bottomNavItems.filter((item) =>
@@ -68,16 +75,17 @@ export function AppShell({
 
   return (
     <div className="min-h-dvh bg-[var(--surface)]">
-      {/* Keyboard users can jump past the navigation (step 20). */}
+      {/* Keyboard users can jump past the navigation. */}
       <a
         href="#main-content"
-        className="sr-only rounded bg-[var(--accent)] px-3 py-2 text-[var(--accent-contrast)] focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50"
+        className="sr-only rounded-control bg-[var(--accent)] px-3 py-2 text-body font-medium text-[var(--accent-contrast)] focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50"
       >
         Skip to main content
       </a>
 
       <AppHeader
         portalLabel={portalLabel}
+        navSections={sections}
         notificationsPath={notificationsPath}
         profilePath={profilePath}
         showSidebarToggle={collapsibleSidebar}
@@ -87,31 +95,36 @@ export function AppShell({
       <div className="flex">
         <aside
           className={cn(
-            'sticky top-14 hidden h-[calc(100dvh-3.5rem)] shrink-0 overflow-y-auto border-r border-[var(--border)] bg-[var(--surface-raised)] lg:block',
-            collapsed ? 'w-16' : 'w-64',
+            'sticky top-14 hidden h-[calc(100dvh-3.5rem)] shrink-0 overflow-y-auto',
+            'border-r border-[var(--border)] bg-[var(--surface-raised)] lg:block',
+            'transition-[width] duration-200',
+            collapsed ? 'w-16' : 'w-60',
           )}
         >
           <SidebarNav sections={sections} collapsed={collapsed} />
         </aside>
 
-        <Drawer
-          open={mobileNavOpen}
-          onClose={() => setMobileNavOpen(false)}
-          title={portalLabel}
-        >
-          <SidebarNav sections={sections} onNavigate={() => setMobileNavOpen(false)} />
+        <Drawer open={mobileNavOpen} onClose={() => setMobileNavOpen(false)} title={portalLabel}>
+          <SidebarNav
+            sections={sections}
+            label="Mobile"
+            onNavigate={() => setMobileNavOpen(false)}
+          />
         </Drawer>
 
         <main
           id="main-content"
           tabIndex={-1}
           className={cn(
-            'min-w-0 flex-1 px-4 py-5 sm:px-6',
+            'page-gutter min-w-0 flex-1 py-5',
             // Leave room for the bottom tab bar on mobile.
             bottomItems.length > 0 && 'pb-24 sm:pb-6',
           )}
         >
-          <div className="mx-auto w-full max-w-7xl">{children ?? <Outlet />}</div>
+          <div className="mx-auto w-full max-w-(--container-content)">
+            <Breadcrumbs crumbs={crumbs} />
+            {children ?? <Outlet />}
+          </div>
         </main>
       </div>
 
@@ -130,8 +143,10 @@ export function AppShell({
                     end={item.end}
                     className={({ isActive }) =>
                       cn(
-                        'flex min-h-14 flex-col items-center justify-center gap-0.5 text-[0.6875rem]',
-                        isActive ? 'text-[var(--accent)]' : 'text-[var(--text-muted)]',
+                        'flex min-h-14 flex-col items-center justify-center gap-0.5 text-caption',
+                        isActive
+                          ? 'font-medium text-[var(--accent)]'
+                          : 'text-[var(--text-muted)]',
                       )
                     }
                   >

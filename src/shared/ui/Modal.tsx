@@ -82,18 +82,18 @@ export function Modal({
     >
       <div
         className={cn(
-          'surface-card mx-auto flex max-h-[90dvh] w-full flex-col overflow-hidden shadow-xl',
-          variant === 'center' ? 'rounded-t-xl sm:rounded-xl' : 'rounded-t-xl sm:rounded-xl',
+          'surface-card mx-auto flex max-h-[90dvh] w-full flex-col overflow-hidden shadow-modal',
+          variant === 'center' ? 'rounded-t-overlay sm:rounded-overlay' : 'rounded-t-overlay sm:rounded-overlay',
           SIZES[size],
         )}
       >
         <div className="flex items-start justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
           <div className="min-w-0">
-            <h2 id={labelId} className="text-base font-semibold">
+            <h2 id={labelId} className="text-title font-semibold">
               {title}
             </h2>
             {description && (
-              <p id={descriptionId} className="mt-0.5 text-sm text-[var(--text-muted)]">
+              <p id={descriptionId} className="mt-0.5 text-body text-[var(--text-muted)]">
                 {description}
               </p>
             )}

@@ -9,7 +9,9 @@ import type { AuthenticatedIdentity, PermissionKey, Profile, Role, User } from '
  * at integration time (§42).
  */
 
-const MANAGEMENT_COMMON: PermissionKey[] = ['reports.view'];
+// §25: notifications are centralised — every role receives them; the backend
+// decides which notifications each user actually gets.
+const MANAGEMENT_COMMON: PermissionKey[] = ['reports.view', 'notifications.view'];
 
 const ADMIN_PERMISSIONS: PermissionKey[] = [
   'students.view', 'students.create', 'students.update', 'students.delete', 'students.export',
@@ -56,7 +58,7 @@ const STUDENT_PERMISSIONS: PermissionKey[] = [
   'portal.dashboard.view', 'portal.profile.view', 'portal.academic.view',
   'portal.timetable.view', 'portal.attendance.view', 'portal.progress.view',
   'portal.fees.view', 'portal.payments.view', 'portal.certificates.view',
-  'portal.notifications.view',
+  'notifications.view',
 ];
 
 const PARENT_PERMISSIONS: PermissionKey[] = [...STUDENT_PERMISSIONS, 'portal.children.view'];

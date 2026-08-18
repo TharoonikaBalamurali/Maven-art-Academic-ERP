@@ -56,7 +56,7 @@ export function Drawer({ open, onClose, title, side = 'left', children }: Drawer
     >
       <div className="surface-card flex h-dvh w-[85vw] max-w-xs flex-col">
         <div className="flex items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-3">
-          <h2 id={labelId} className="text-base font-semibold">
+          <h2 id={labelId} className="text-title font-semibold">
             {title}
           </h2>
           <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close menu">
