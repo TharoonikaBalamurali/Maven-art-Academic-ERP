@@ -47,6 +47,7 @@ Runs typecheck, lint, tests and the production build. See
 | Document | Contents |
 | --- | --- |
 | [ARCHITECTURE.md](docs/frontend/ARCHITECTURE.md) | Technology choices and why, project structure, auth/permission/state/API design |
+| [DESIGN_SYSTEM.md](docs/frontend/DESIGN_SYSTEM.md) | Colour, typography, spacing, components, states, responsive and accessibility rules |
 | [DEVELOPMENT.md](docs/frontend/DEVELOPMENT.md) | Running the project, environment variables, how to add a module, backend integration steps |
 | [ARCHITECTURE_REVIEW.md](docs/frontend/ARCHITECTURE_REVIEW.md) | Day 1 quality gate, known technical debt, deferred decisions, backend dependencies |
 

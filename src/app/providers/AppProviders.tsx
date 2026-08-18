@@ -15,8 +15,37 @@ function ThemeEffect() {
 
   useEffect(() => {
     const root = document.documentElement;
+
+    // Applying a theme must be instantaneous, not animated.
+    //
+    // Components use `transition-colors` for hover feedback. If the theme
+    // changes while those transitions are live, Chrome pins `background-color`
+    // to the value it was interpolating and never updates it again when the
+    // underlying custom property changes — cards were left showing the
+    // previous theme's surface indefinitely.
+    //
+    // The forced reflows matter: they commit `transition: none` *before* the
+    // colours change, so no transition is ever started and nothing can be
+    // pinned. Removing either reflow reintroduces the bug.
+    root.classList.add('theme-switching');
+    void root.offsetHeight;
+
     if (theme === 'system') root.removeAttribute('data-theme');
     else root.setAttribute('data-theme', theme);
+    void root.offsetHeight;
+
+    // rAF gives the right visual timing; the timeout is a fallback because rAF
+    // does not run in a background tab, and a stuck suppressor class would
+    // silently disable every transition in the app.
+    const release = () => root.classList.remove('theme-switching');
+    const frame = requestAnimationFrame(release);
+    const timeout = window.setTimeout(release, 120);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(timeout);
+      release();
+    };
   }, [theme]);
 
   return null;

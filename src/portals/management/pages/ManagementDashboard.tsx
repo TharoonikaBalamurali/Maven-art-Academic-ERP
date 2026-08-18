@@ -16,7 +16,7 @@ import {
   SummaryCard,
   WidgetCard,
 } from '@/shared/dashboard';
-import { PageHeader } from '@/shared/layout/PageHeader';
+import { PageHeader } from '@/shared/layout/page';
 import { Badge } from '@/shared/ui';
 
 /**

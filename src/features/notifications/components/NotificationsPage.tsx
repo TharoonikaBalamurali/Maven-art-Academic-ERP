@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
-import { PageHeader } from '@/shared/layout/PageHeader';
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
 import { useListQueryState } from '@/shared/hooks/useListQueryState';
+import { FilterBar, PageHeader } from '@/shared/layout/page';
 import {
   Badge,
   Card,
-  CardBody,
   DataTable,
   EmptyState,
   Input,
@@ -41,6 +40,14 @@ const DEMO_STATE_OPTIONS = [
 
 const FILTER_KEYS = ['category', 'demoState'] as const;
 
+const CATEGORY_TONE = {
+  attendance: 'info',
+  fees: 'warning',
+  academic: 'accent',
+  admission: 'success',
+  system: 'neutral',
+} as const;
+
 function formatDate(value: string): string {
   return new Date(value).toLocaleDateString(undefined, {
     day: '2-digit',
@@ -55,7 +62,7 @@ const columns: readonly Column<Notification>[] = [
     header: 'Notification',
     cell: (row) => (
       <div className="min-w-0">
-        <p className="truncate font-medium">{row.title}</p>
+        <p className={row.read ? 'truncate' : 'truncate font-medium'}>{row.title}</p>
         <p className="truncate text-body-sm text-[var(--text-muted)]">{row.body}</p>
       </div>
     ),
@@ -63,11 +70,18 @@ const columns: readonly Column<Notification>[] = [
   {
     id: 'category',
     header: 'Category',
-    cell: (row) => <Badge tone="accent">{row.category}</Badge>,
+    width: '9rem',
+    hideBelowMd: true,
+    cell: (row) => (
+      <Badge tone={CATEGORY_TONE[row.category as keyof typeof CATEGORY_TONE] ?? 'neutral'}>
+        {row.category}
+      </Badge>
+    ),
   },
   {
     id: 'read',
     header: 'Status',
+    width: '7rem',
     cell: (row) => (
       <Badge tone={row.read ? 'neutral' : 'warning'}>{row.read ? 'Read' : 'Unread'}</Badge>
     ),
@@ -77,7 +91,12 @@ const columns: readonly Column<Notification>[] = [
     header: 'Received',
     sortable: true,
     align: 'right',
-    cell: (row) => <time dateTime={row.createdAt}>{formatDate(row.createdAt)}</time>,
+    width: '10rem',
+    cell: (row) => (
+      <time dateTime={row.createdAt} className="text-[var(--text-muted)]">
+        {formatDate(row.createdAt)}
+      </time>
+    ),
   },
 ];
 
@@ -85,9 +104,9 @@ const columns: readonly Column<Notification>[] = [
  * Reference list page.
  *
  * This is the pattern every future module (Students, Payments, Attendance…)
- * follows: URL-held query state → hook → service → API client, with server-side
- * pagination and the shared data states. It exists to prove the foundation, not
- * to deliver the Notifications module.
+ * follows: URL-held query state → hook → service → API client, with
+ * server-side pagination and the shared data states. It exists to prove the
+ * foundation, not to deliver the Notifications module.
  */
 export function NotificationsPage() {
   const list = useListQueryState({
@@ -108,98 +127,104 @@ export function NotificationsPage() {
   }, [debouncedSearch, committedSearch, list]);
 
   const query = useNotifications(list.query);
-
   const rows = query.data?.data ?? [];
+
+  const activeFilters =
+    (list.query.search ? 1 : 0) + Object.values(list.query.filters ?? {}).filter(Boolean).length;
+
+  function clearAll() {
+    setSearchDraft('');
+    list.clear();
+  }
 
   return (
     <>
       <PageHeader
         title="Notifications"
         description="Reference implementation of the list architecture: server-side search, filtering, sorting and pagination."
+        meta={<Badge tone="accent">Foundation</Badge>}
       />
 
-      <Card>
-        <CardBody className="flex flex-col gap-4">
-          <form
-            className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
-            role="search"
-            onSubmit={(event) => event.preventDefault()}
-          >
-            <Input
-              label="Search"
-              type="search"
-              placeholder="Search notifications"
-              value={searchDraft}
-              onChange={(event) => setSearchDraft(event.target.value)}
-            />
-            <Select
-              label="Category"
-              placeholder="All categories"
-              options={CATEGORY_OPTIONS}
-              value={list.query.filters?.category?.toString() ?? ''}
-              onChange={(event) => list.setFilter('category', event.target.value)}
-            />
-            <Select
-              label="Demo state (mock only)"
-              placeholder="Normal"
-              description="Forces the API to return a specific state."
-              options={DEMO_STATE_OPTIONS}
-              value={list.query.filters?.demoState?.toString() ?? ''}
-              onChange={(event) => list.setFilter('demoState', event.target.value)}
-            />
-          </form>
+      <Card className="overflow-hidden">
+        <FilterBar activeCount={activeFilters} onClear={clearAll}>
+          <Input
+            label="Search"
+            type="search"
+            placeholder="Search notifications"
+            containerClassName="sm:w-64"
+            value={searchDraft}
+            onChange={(event) => setSearchDraft(event.target.value)}
+          />
+          <Select
+            label="Category"
+            placeholder="All categories"
+            containerClassName="sm:w-44"
+            options={CATEGORY_OPTIONS}
+            value={list.query.filters?.category?.toString() ?? ''}
+            onChange={(event) => list.setFilter('category', event.target.value)}
+          />
+          <Select
+            label="Demo state"
+            placeholder="Normal"
+            description="Mock only — forces an API state."
+            containerClassName="sm:w-44"
+            options={DEMO_STATE_OPTIONS}
+            value={list.query.filters?.demoState?.toString() ?? ''}
+            onChange={(event) => list.setFilter('demoState', event.target.value)}
+          />
+        </FilterBar>
 
-          <QueryBoundary
-            isPending={query.isPending}
-            isError={query.isError}
-            error={query.error}
-            onRetry={() => void query.refetch()}
-            loadingFallback={<TableSkeleton rows={6} columns={4} />}
-          >
-            {rows.length === 0 ? (
-              list.isFiltered ? (
-                <NoResultsState
-                  onClear={() => {
-                    setSearchDraft('');
-                    list.clear();
-                  }}
-                />
-              ) : (
-                <EmptyState
-                  title="No notifications"
-                  description="Notifications sent to you will appear here."
-                />
-              )
+        <QueryBoundary
+          isPending={query.isPending}
+          isError={query.isError}
+          error={query.error}
+          onRetry={() => void query.refetch()}
+          loadingFallback={
+            <div className="p-3">
+              <TableSkeleton rows={6} columns={4} />
+            </div>
+          }
+        >
+          {rows.length === 0 ? (
+            activeFilters > 0 ? (
+              <NoResultsState onClear={clearAll} />
             ) : (
-              <>
-                <DataTable
-                  caption="Notifications"
-                  columns={columns}
-                  rows={rows}
-                  rowKey={(row) => row.id}
-                  sort={
-                    list.query.sortBy
-                      ? { sortBy: list.query.sortBy, sortDir: list.query.sortDir ?? 'desc' }
-                      : undefined
-                  }
-                  onSortChange={list.setSort}
-                  renderMobileCard={(row) => (
-                    <div className="surface-card p-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="font-medium">{row.title}</p>
-                        <Badge tone={row.read ? 'neutral' : 'warning'}>
-                          {row.read ? 'Read' : 'Unread'}
-                        </Badge>
-                      </div>
-                      <p className="mt-1 text-body text-[var(--text-muted)]">{row.body}</p>
-                      <p className="mt-2 text-body-sm text-[var(--text-muted)]">
-                        {row.category} · {formatDate(row.createdAt)}
-                      </p>
+              <EmptyState
+                title="No notifications"
+                description="Notifications sent to you will appear here."
+              />
+            )
+          ) : (
+            <>
+              <DataTable
+                caption="Notifications"
+                columns={columns}
+                rows={rows}
+                rowKey={(row) => row.id}
+                sort={
+                  list.query.sortBy
+                    ? { sortBy: list.query.sortBy, sortDir: list.query.sortDir ?? 'desc' }
+                    : undefined
+                }
+                onSortChange={list.setSort}
+                renderMobileCard={(row) => (
+                  <div className="border-b border-[var(--border)] px-3 py-3 last:border-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className={row.read ? '' : 'font-medium'}>{row.title}</p>
+                      <Badge tone={row.read ? 'neutral' : 'warning'}>
+                        {row.read ? 'Read' : 'Unread'}
+                      </Badge>
                     </div>
-                  )}
-                />
+                    <p className="mt-1 text-body-sm text-[var(--text-muted)]">{row.body}</p>
+                    <p className="mt-2 text-caption text-[var(--text-subtle)]">
+                      {row.category} · {formatDate(row.createdAt)}
+                    </p>
+                  </div>
+                )}
+              />
 
-                {query.data && (
+              {query.data && (
+                <div className="border-t border-[var(--border)] p-3">
                   <Pagination
                     page={query.data.page}
                     totalPages={query.data.totalPages}
@@ -207,11 +232,11 @@ export function NotificationsPage() {
                     limit={query.data.limit}
                     onPageChange={list.setPage}
                   />
-                )}
-              </>
-            )}
-          </QueryBoundary>
-        </CardBody>
+                </div>
+              )}
+            </>
+          )}
+        </QueryBoundary>
       </Card>
     </>
   );

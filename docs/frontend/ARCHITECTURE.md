@@ -67,6 +67,8 @@ component, hook or service changes (§42).
 
 ## 2b. Design system
 
+Full reference: **[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)**.
+
 `src/styles/index.css` is the single source of visual truth. Components compose
 utilities generated from tokens; they never invent a radius, shadow or font
 size.

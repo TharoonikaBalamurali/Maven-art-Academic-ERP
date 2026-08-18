@@ -12,6 +12,13 @@ export interface SidebarNavProps {
    * duplicated landmark names make landmark navigation ambiguous.
    */
   label?: string;
+  /**
+   * `compact` (40px rows) suits the pointer-driven desktop sidebar, where the
+   * management portal has ~25 destinations and vertical space is scarce.
+   * `comfortable` (44px) is used in the mobile drawer, where every row is a
+   * touch target.
+   */
+  density?: 'compact' | 'comfortable';
 }
 
 /**
@@ -28,7 +35,10 @@ export function SidebarNav({
   collapsed = false,
   onNavigate,
   label = 'Main',
+  density = 'compact',
 }: SidebarNavProps) {
+  const rowHeight = density === 'comfortable' ? 'min-h-11' : 'min-h-10';
+
   return (
     <nav aria-label={label} className="flex flex-col gap-5 px-2 py-3">
       {sections.map((section) => (
@@ -61,7 +71,8 @@ export function SidebarNav({
                     title={collapsed ? item.label : undefined}
                     className={({ isActive }) =>
                       cn(
-                        'group relative flex min-h-10 items-center gap-3 rounded-control px-3',
+                        'group relative flex items-center gap-3 rounded-control px-3',
+                        rowHeight,
                         'text-body transition-colors duration-150',
                         collapsed && 'justify-center px-0',
                         isActive

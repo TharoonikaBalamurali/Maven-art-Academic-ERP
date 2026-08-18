@@ -1,5 +1,5 @@
 import { Construction } from 'lucide-react';
-import { PageHeader } from '@/shared/layout/PageHeader';
+import { PageHeader } from '@/shared/layout/page';
 import { Badge, Card, CardBody } from '@/shared/ui';
 import type { PermissionKey } from '@/shared/types';
 import {

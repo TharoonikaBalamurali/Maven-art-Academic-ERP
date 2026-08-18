@@ -9,7 +9,7 @@ import {
   SummaryCard,
   WidgetCard,
 } from '@/shared/dashboard';
-import { PageHeader } from '@/shared/layout/PageHeader';
+import { PageHeader } from '@/shared/layout/page';
 
 /**
  * Student / Parent dashboard — FOUNDATION, not a delivered module.

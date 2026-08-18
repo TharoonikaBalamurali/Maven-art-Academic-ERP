@@ -111,15 +111,28 @@
     --surface-raised: light-dark(oklch(1 0 0), oklch(0.225 0.013 264));
     --surface-sunken: light-dark(oklch(0.955 0.004 264), oklch(0.155 0.011 264));
     --surface-hover: light-dark(oklch(0.965 0.004 264), oklch(0.26 0.014 264));
+    /* Persistent selection (selected table rows), distinct from transient hover. */
+    --surface-selected: light-dark(oklch(0.955 0.018 264), oklch(0.28 0.035 264));
 
     /* Lines */
     --border: light-dark(oklch(0.9 0.006 264), oklch(0.31 0.013 264));
     --border-strong: light-dark(oklch(0.82 0.008 264), oklch(0.4 0.015 264));
 
-    /* Text — both pass WCAG AA on their intended surface. */
+    /* Text. Three levels, all verified against their intended surface:
+     * `--text` for content, `--text-muted` for supporting copy, and
+     * `--text-subtle` for the quietest labels. `--text-subtle` was measured at
+     * 3.76:1 on the sunken surface and 4.28:1 on cards during the design audit
+     * — both below AA — and has been darkened/lightened until every pairing
+     * clears 4.5:1. `--text-disabled` is the only text token allowed to fail
+     * contrast, because disabled controls must read as unavailable. */
     --text: light-dark(oklch(0.24 0.015 264), oklch(0.96 0.005 264));
-    --text-muted: light-dark(oklch(0.48 0.015 264), oklch(0.74 0.012 264));
-    --text-subtle: light-dark(oklch(0.58 0.013 264), oklch(0.62 0.012 264));
+    --text-muted: light-dark(oklch(0.46 0.015 264), oklch(0.76 0.012 264));
+    --text-subtle: light-dark(oklch(0.44 0.014 264), oklch(0.68 0.012 264));
+    --text-disabled: light-dark(oklch(0.66 0.01 264), oklch(0.48 0.012 264));
+
+    /* Focus. Kept as its own token so focus can be retuned per theme without
+     * dragging the accent (and every primary button) along with it. */
+    --focus: light-dark(var(--color-brand-600), var(--color-brand-300));
 
     /* Accent */
     --accent: light-dark(var(--color-brand-600), var(--color-brand-400));
@@ -156,7 +169,7 @@
 
   /* A single, always-visible focus treatment (accessibility foundation). */
   :focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--focus);
     outline-offset: 2px;
     border-radius: var(--radius-control);
   }
@@ -164,6 +177,22 @@
   ::selection {
     background-color: var(--accent-surface);
     color: var(--text);
+  }
+
+  /* Theme switching must not animate.
+   *
+   * Components use `transition-colors` for hover feedback. When the theme
+   * flips, those same transitions try to interpolate every colour at once:
+   * the result looks like a cheap crossfade, and Chrome can leave a
+   * background pinned at the interpolated value when the underlying custom
+   * property (not the declaration) is what changed — which showed up as white
+   * cards persisting in dark mode. Suppressing transitions for the duration of
+   * the switch makes the change instant and correct. */
+  :root.theme-switching,
+  :root.theme-switching *,
+  :root.theme-switching *::before,
+  :root.theme-switching *::after {
+    transition: none !important;
   }
 
   @media (prefers-reduced-motion: reduce) {

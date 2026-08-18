@@ -10,8 +10,14 @@ export { Input, type InputProps } from './Input';
 export { Modal } from './Modal';
 export { Pagination } from './Pagination';
 export { Select, type SelectOption } from './Select';
-export { DataTable, type Column, type TableSort } from './Table';
+export {
+  DataTable,
+  type Column,
+  type RowSelection,
+  type TableSort,
+} from './Table';
 export { Tabs, type TabDefinition } from './Tabs';
+export { Tooltip, type TooltipProps } from './Tooltip';
 export {
   EmptyState,
   ErrorState,

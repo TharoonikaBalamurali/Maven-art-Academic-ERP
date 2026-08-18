@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils/cn';
 import type { NavItem, NavSection } from '@/shared/types';
 import { Drawer } from '@/shared/ui';
 import { AppHeader } from './AppHeader';
+import { BrandMark } from './BrandMark';
 import { Breadcrumbs } from './Breadcrumbs';
 import { SidebarNav } from './SidebarNav';
 import { useBreadcrumbs } from './useBreadcrumbs';
@@ -78,54 +79,67 @@ export function AppShell({
       {/* Keyboard users can jump past the navigation. */}
       <a
         href="#main-content"
-        className="sr-only rounded-control bg-[var(--accent)] px-3 py-2 text-body font-medium text-[var(--accent-contrast)] focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50"
+        className="sr-only rounded-control bg-[var(--accent)] text-body font-medium text-[var(--accent-contrast)] focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:inline-flex focus:min-h-11 focus:items-center focus:px-4 focus:shadow-overlay"
       >
         Skip to main content
       </a>
 
-      <AppHeader
-        portalLabel={portalLabel}
-        navSections={sections}
-        notificationsPath={notificationsPath}
-        profilePath={profilePath}
-        showSidebarToggle={collapsibleSidebar}
-        onOpenMobileNav={() => setMobileNavOpen(true)}
-      />
-
       <div className="flex">
         <aside
           className={cn(
-            'sticky top-14 hidden h-[calc(100dvh-3.5rem)] shrink-0 overflow-y-auto',
-            'border-r border-[var(--border)] bg-[var(--surface-raised)] lg:block',
+            'sticky top-0 hidden h-dvh shrink-0 flex-col',
+            'border-r border-[var(--border)] bg-[var(--surface-raised)] lg:flex',
             'transition-[width] duration-200',
             collapsed ? 'w-16' : 'w-60',
           )}
         >
-          <SidebarNav sections={sections} collapsed={collapsed} />
+          <div
+            className={cn(
+              'flex h-14 shrink-0 items-center border-b border-[var(--border)]',
+              collapsed ? 'justify-center px-2' : 'px-4',
+            )}
+          >
+            <BrandMark portalLabel={portalLabel} compact={collapsed} />
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <SidebarNav sections={sections} collapsed={collapsed} />
+          </div>
         </aside>
 
         <Drawer open={mobileNavOpen} onClose={() => setMobileNavOpen(false)} title={portalLabel}>
           <SidebarNav
             sections={sections}
             label="Mobile"
+            density="comfortable"
             onNavigate={() => setMobileNavOpen(false)}
           />
         </Drawer>
 
-        <main
-          id="main-content"
+        <div className="flex min-w-0 flex-1 flex-col">
+          <AppHeader
+            portalLabel={portalLabel}
+            navSections={sections}
+            notificationsPath={notificationsPath}
+            profilePath={profilePath}
+            showSidebarToggle={collapsibleSidebar}
+            onOpenMobileNav={() => setMobileNavOpen(true)}
+          />
+
+          <main
+            id="main-content"
           tabIndex={-1}
-          className={cn(
-            'page-gutter min-w-0 flex-1 py-5',
-            // Leave room for the bottom tab bar on mobile.
-            bottomItems.length > 0 && 'pb-24 sm:pb-6',
-          )}
-        >
-          <div className="mx-auto w-full max-w-(--container-content)">
-            <Breadcrumbs crumbs={crumbs} />
-            {children ?? <Outlet />}
-          </div>
-        </main>
+            className={cn(
+              'page-gutter min-w-0 flex-1 py-5',
+              // Leave room for the bottom tab bar on mobile.
+              bottomItems.length > 0 && 'pb-24 sm:pb-6',
+            )}
+          >
+            <div className="mx-auto w-full max-w-(--container-content)">
+              <Breadcrumbs crumbs={crumbs} />
+              {children ?? <Outlet />}
+            </div>
+          </main>
+        </div>
       </div>
 
       {bottomItems.length > 0 && (

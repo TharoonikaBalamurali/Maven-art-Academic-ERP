@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { Bell, LogOut, Menu, Monitor, Moon, PanelLeft, Sun, User } from 'lucide-react';
-import { env } from '@/config/env';
 import { useUiStore } from '@/app/state/ui.store';
 import { useAuthActions, useCurrentIdentity } from '@/features/auth/hooks';
 import { PermissionGuard } from '@/features/auth/PermissionGuard';
 import type { NavSection, Role } from '@/shared/types';
 import { Button, Dropdown, DropdownItem } from '@/shared/ui';
+import { BrandMark } from './BrandMark';
 import { NavSearch } from './NavSearch';
 
 export interface AppHeaderProps {
@@ -87,21 +87,9 @@ export function AppHeader({
           </Button>
         )}
 
-        {/* Product identity + contextual portal identity */}
-        <div className="flex min-w-0 items-center gap-2">
-          <span
-            aria-hidden="true"
-            className="hidden size-7 shrink-0 items-center justify-center rounded-control bg-[var(--accent)] text-caption font-bold text-[var(--accent-contrast)] sm:flex"
-          >
-            MA
-          </span>
-          <span className="truncate text-body font-semibold text-[var(--text)]">
-            {env.appName}
-          </span>
-          <span className="hidden rounded-control bg-[var(--surface-sunken)] px-1.5 py-0.5 text-caption font-medium text-[var(--text-muted)] md:inline">
-            {portalLabel}
-          </span>
-        </div>
+        {/* Identity lives in the sidebar on desktop, so the header does not
+            repeat it and can give its width to search instead. */}
+        <BrandMark portalLabel={portalLabel} className="lg:hidden" />
 
         <div className="ml-auto flex items-center gap-1 sm:gap-2">
           <NavSearch navSections={navSections} />
