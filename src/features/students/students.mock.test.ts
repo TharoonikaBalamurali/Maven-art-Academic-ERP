@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ApiRequest } from '@/lib/api/types';
 import { handleMockRequest } from '@/mocks/mock-router';
 import type { Paginated } from '@/shared/types';
-import type { StudentFilterOptions, StudentListItem } from './types';
+import type { StudentDetail, StudentFilterOptions, StudentListItem } from './types';
 
 function request(partial: Partial<ApiRequest> & Pick<ApiRequest, 'method' | 'path'>): ApiRequest {
   return { auth: true, timeoutMs: 1000, ...partial };
@@ -93,5 +93,51 @@ describe('students mock API', () => {
     ) as StudentFilterOptions;
     expect(options.courses.length).toBeGreaterThan(0);
     expect(options.statuses.map((s) => s.value)).toContain('active');
+  });
+
+  describe('detail', () => {
+    function firstId(): string {
+      return listStudents({ limit: 1 }).data[0]!.id;
+    }
+
+    it('returns a full record for a known id, with the cross-module rollups', () => {
+      const detail = handleMockRequest(
+        request({ method: 'GET', path: `/students/${firstId()}` }),
+        admin(),
+      ) as StudentDetail;
+
+      expect(detail.personal.email).toContain('@');
+      expect(detail.parents.length).toBeGreaterThan(0);
+      expect(detail.enrollment.course).toBeTruthy();
+      // Rollups present but internally consistent (paid + pending = total).
+      expect(detail.summary.fees.paid + detail.summary.fees.pending).toBe(detail.summary.fees.total);
+      expect(detail.summary.attendance.percent).toBeGreaterThanOrEqual(0);
+      expect(detail.summary.attendance.percent).toBeLessThanOrEqual(100);
+    });
+
+    it('does not resolve the detail route to the filter-options endpoint', () => {
+      // Route ordering: /students/filter-options must win over /students/:id.
+      const options = handleMockRequest(
+        request({ method: 'GET', path: '/students/filter-options' }),
+        admin(),
+      ) as StudentFilterOptions;
+      expect(options.courses).toBeDefined();
+      expect((options as unknown as StudentDetail).personal).toBeUndefined();
+    });
+
+    it('returns 404 for an unknown id', () => {
+      expect(() =>
+        handleMockRequest(request({ method: 'GET', path: '/students/stu-999' }), admin()),
+      ).toThrowError(expect.objectContaining({ kind: 'not_found' }));
+    });
+
+    it('requires students.view', () => {
+      expect(() =>
+        handleMockRequest(
+          request({ method: 'GET', path: `/students/${firstId()}` }),
+          loginAs('student@mavenart.test'),
+        ),
+      ).toThrowError(expect.objectContaining({ kind: 'forbidden' }));
+    });
   });
 });

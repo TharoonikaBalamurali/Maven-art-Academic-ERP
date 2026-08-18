@@ -107,12 +107,10 @@ export const managementRoutes: RouteObject[] = [
     path: 'students/:studentId',
     element: (
       <RequirePermission anyOf={['students.view']}>
-        <ModulePlaceholder
-          title="Student Details"
-          description="Personal, academic, parent, enrolment, attendance, fees, progress and certificates (§14.1)."
-          permission="students.view"
-          phase="Phase 2"
-        />
+        {lazyRoute(
+          () => import('@/features/students/components/StudentDetailPage'),
+          (m) => m.StudentDetailPage,
+        )}
       </RequirePermission>
     ),
   },

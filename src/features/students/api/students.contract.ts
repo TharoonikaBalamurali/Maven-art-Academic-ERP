@@ -1,6 +1,6 @@
 import { endpoint } from '@/lib/api';
 import type { ListQuery, Paginated } from '@/shared/types';
-import type { StudentFilterOptions, StudentListItem } from '../types';
+import type { StudentDetail, StudentFilterOptions, StudentListItem } from '../types';
 
 /**
  * Students contract (§14.1).
@@ -20,6 +20,13 @@ export const studentsContract = {
   filterOptions: endpoint<void, StudentFilterOptions>({
     method: 'GET',
     path: '/students/filter-options',
+    auth: true,
+    permission: 'students.view',
+  }),
+  /** Full record for the details page (§14.1). */
+  get: endpoint<void, StudentDetail>({
+    method: 'GET',
+    path: '/students/:studentId',
     auth: true,
     permission: 'students.view',
   }),

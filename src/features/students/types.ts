@@ -33,3 +33,68 @@ export const STUDENT_STATUS_LABEL: Record<string, string> = {
   on_leave: 'On leave',
   graduated: 'Graduated',
 };
+
+/**
+ * Full student record for the details page (§14.1).
+ *
+ * The students domain owns the student's own fields (personal, academic,
+ * parent, enrollment). The cross-module tabs (attendance, fees, progress,
+ * certificates) are backend-provided rollup *summaries* — a real student-detail
+ * endpoint returns these so the record reads as a whole. The frontend never
+ * computes them (fee balances especially, §22/§39); it displays what the
+ * backend sends, and each summary links to its full module.
+ *
+ * TBD — BACKEND CONTRACT: field names and which rollups the detail endpoint
+ * carries are provisional.
+ */
+export interface StudentParentLink {
+  id: Id;
+  name: string;
+  relation: string;
+  phone: string;
+  email: string;
+}
+
+export interface StudentDetail {
+  id: Id;
+  registerNo: string;
+  name: string;
+  status: StudentStatus;
+  course: string;
+  courseCode: string;
+  batch: string;
+  section: string;
+
+  personal: {
+    dateOfBirth: string;
+    email: string;
+    phone: string;
+    address: string;
+    bloodGroup: string;
+    admissionDate: string;
+  };
+  academic: {
+    course: string;
+    courseCode: string;
+    batch: string;
+    section: string;
+    year: string;
+    enrollmentStatus: string;
+  };
+  parents: StudentParentLink[];
+  enrollment: {
+    course: string;
+    batch: string;
+    status: string;
+    startDate: string;
+    endDate: string | null;
+  };
+
+  /** Backend rollups, shown as summaries with a link to the full module. */
+  summary: {
+    attendance: { percent: number; present: number; total: number };
+    fees: { total: number; paid: number; pending: number; status: 'paid' | 'partial' | 'overdue' };
+    progress: { lastSubject: string; grade: string } | null;
+    certificates: { count: number };
+  };
+}

@@ -1,11 +1,12 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import type { ListQuery } from '@/shared/types';
+import type { Id, ListQuery } from '@/shared/types';
 import { studentsService } from '../api/students.service';
 
 export const studentKeys = {
   all: ['students'] as const,
   list: (query: ListQuery) => [...studentKeys.all, 'list', query] as const,
   filterOptions: () => [...studentKeys.all, 'filter-options'] as const,
+  detail: (id: Id) => [...studentKeys.all, 'detail', id] as const,
 };
 
 export function useStudents(query: ListQuery) {
@@ -24,5 +25,12 @@ export function useStudentFilterOptions() {
     queryFn: ({ signal }) => studentsService.filterOptions({ signal }),
     // Reference data changes rarely; cache it for the session.
     staleTime: 5 * 60_000,
+  });
+}
+
+export function useStudent(id: Id) {
+  return useQuery({
+    queryKey: studentKeys.detail(id),
+    queryFn: ({ signal }) => studentsService.get(id, { signal }),
   });
 }

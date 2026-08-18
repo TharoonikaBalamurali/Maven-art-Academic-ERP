@@ -1,6 +1,6 @@
 import { apiClient, toListParams } from '@/lib/api';
-import type { ListQuery, Paginated, RequestOptions } from '@/shared/types';
-import type { StudentFilterOptions, StudentListItem } from '../types';
+import type { Id, ListQuery, Paginated, RequestOptions } from '@/shared/types';
+import type { StudentDetail, StudentFilterOptions, StudentListItem } from '../types';
 import { studentsContract } from './students.contract';
 
 export const studentsService = {
@@ -13,5 +13,9 @@ export const studentsService = {
 
   filterOptions(options?: RequestOptions): Promise<StudentFilterOptions> {
     return apiClient.call(studentsContract.filterOptions, { options });
+  },
+
+  get(studentId: Id, options?: RequestOptions): Promise<StudentDetail> {
+    return apiClient.call(studentsContract.get, { params: { studentId }, options });
   },
 };

@@ -8,7 +8,7 @@ import {
   type MockNotification,
 } from './fixtures';
 import { buildDashboardSummary } from './dashboard-data';
-import { listStudents, studentFilterOptions } from './students-data';
+import { getStudentDetail, listStudents, studentFilterOptions } from './students-data';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -220,6 +220,19 @@ const routes: Route[] = [
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'students.view');
       return studentFilterOptions();
+    },
+  },
+  {
+    // Registered AFTER /students/filter-options: both patterns could match that
+    // path, and `routes.find` returns the first, so the specific route wins.
+    method: 'GET',
+    pattern: /^\/students\/(?<studentId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'students.view');
+      const detail = getStudentDetail(params.studentId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
     },
   },
 ];

@@ -1,4 +1,8 @@
-import type { StudentFilterOptions, StudentListItem } from '@/features/students/types';
+import type {
+  StudentDetail,
+  StudentFilterOptions,
+  StudentListItem,
+} from '@/features/students/types';
 import type { ListQuery, Paginated } from '@/shared/types';
 import {
   courseCode,
@@ -89,3 +93,106 @@ export function studentFilterOptions(): StudentFilterOptions {
 
 /** Referenced only to keep batch data close to the students mock. */
 export const STUDENT_BATCHES = SEED_BATCHES;
+
+// --- Student detail (§14.1) -------------------------------------------------
+// Believable, deterministic per-student data so the record reads like a real
+// ERP. Demonstration data; a real backend owns all of this.
+
+const CITIES = ['Chennai', 'Coimbatore', 'Madurai', 'Bengaluru', 'Kochi', 'Hyderabad'];
+const BLOOD_GROUPS = ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-'];
+const GRADES = ['A+', 'A', 'B+', 'B', 'A'];
+const SUBJECTS = ['Life Drawing', 'Colour Theory', 'Typography', 'Storyboarding', 'Clay Modelling'];
+
+function seedIndex(id: string): number {
+  const match = /(\d+)$/.exec(id);
+  return match ? Number(match[1]) : 1;
+}
+
+function slug(name: string): string {
+  return name.toLowerCase().replace(/[^a-z]+/g, '.').replace(/^\.|\.$/g, '');
+}
+
+function feeStatus(index: number): 'paid' | 'partial' | 'overdue' {
+  const mod = index % 3;
+  return mod === 0 ? 'paid' : mod === 1 ? 'partial' : 'overdue';
+}
+
+export function getStudentDetail(id: string): StudentDetail | null {
+  const student = SEED_STUDENTS.find((s) => s.id === id);
+  if (!student) return null;
+
+  const index = seedIndex(id);
+  const surname = student.name.split(' ').slice(-1)[0] ?? 'Kumar';
+  const year = ['1st Year', '2nd Year', '3rd Year'][index % 3] ?? '1st Year';
+
+  const feeTotal = 90000 + (index % 4) * 15000;
+  const status = feeStatus(index);
+  const paid = status === 'paid' ? feeTotal : status === 'partial' ? Math.round(feeTotal * 0.6) : Math.round(feeTotal * 0.3);
+
+  const attendancePercent = 74 + (index * 7) % 24;
+  const attendanceTotal = 60;
+
+  return {
+    id: student.id,
+    registerNo: student.registerNo,
+    name: student.name,
+    status: student.status,
+    course: courseName(student.courseId),
+    courseCode: courseCode(student.courseId),
+    batch: batchName(student.batchId),
+    section: student.section,
+
+    personal: {
+      dateOfBirth: `${2004 + (index % 3)}-0${(index % 9) + 1}-${String((index % 27) + 1).padStart(2, '0')}`,
+      email: `${slug(student.name)}@student.mavenart.test`,
+      phone: `+91 9${String(80000000 + index * 12345).slice(0, 9)}`,
+      address: `${(index % 40) + 1}, Gallery Road, ${CITIES[index % CITIES.length]}`,
+      bloodGroup: BLOOD_GROUPS[index % BLOOD_GROUPS.length] ?? 'O+',
+      admissionDate: `${2024 + (index % 2)}-07-15`,
+    },
+    academic: {
+      course: courseName(student.courseId),
+      courseCode: courseCode(student.courseId),
+      batch: batchName(student.batchId),
+      section: student.section,
+      year,
+      enrollmentStatus: student.status === 'graduated' ? 'Completed' : 'Enrolled',
+    },
+    parents: [
+      {
+        id: `par-${student.id}-f`,
+        name: `Mr. ${['Ramesh', 'Suresh', 'Anil', 'Vijay', 'Prakash'][index % 5]} ${surname}`,
+        relation: 'Father',
+        phone: `+91 9${String(70000000 + index * 54321).slice(0, 9)}`,
+        email: `parent.${slug(surname)}@mavenart.test`,
+      },
+      {
+        id: `par-${student.id}-m`,
+        name: `Mrs. ${['Latha', 'Uma', 'Radha', 'Geetha', 'Shanti'][index % 5]} ${surname}`,
+        relation: 'Mother',
+        phone: `+91 9${String(60000000 + index * 13579).slice(0, 9)}`,
+        email: `parent.${slug(surname)}.m@mavenart.test`,
+      },
+    ],
+    enrollment: {
+      course: courseName(student.courseId),
+      batch: batchName(student.batchId),
+      status: student.status === 'graduated' ? 'Completed' : 'Active',
+      startDate: `${2024 + (index % 2)}-08-01`,
+      endDate: student.status === 'graduated' ? `${2027 + (index % 2)}-05-31` : null,
+    },
+    summary: {
+      attendance: {
+        percent: attendancePercent,
+        present: Math.round((attendancePercent / 100) * attendanceTotal),
+        total: attendanceTotal,
+      },
+      fees: { total: feeTotal, paid, pending: feeTotal - paid, status },
+      progress:
+        index % 5 === 4
+          ? null
+          : { lastSubject: SUBJECTS[index % SUBJECTS.length] ?? 'Life Drawing', grade: GRADES[index % GRADES.length] ?? 'A' },
+      certificates: { count: index % 4 },
+    },
+  };
+}
