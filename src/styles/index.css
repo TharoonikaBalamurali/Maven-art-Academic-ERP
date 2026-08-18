@@ -1,0 +1,128 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens (Day 1 steps 16, 19, 20).
+ *
+ * Every colour used by a component is a token, so theming and contrast can be
+ * adjusted centrally. Light and dark are both defined; dark follows the OS
+ * unless the user picks a preference (see ui.store + ThemeEffect).
+ */
+@theme {
+  --color-brand-50: oklch(0.97 0.02 264);
+  --color-brand-100: oklch(0.93 0.04 264);
+  --color-brand-200: oklch(0.87 0.07 264);
+  --color-brand-300: oklch(0.78 0.11 264);
+  --color-brand-400: oklch(0.68 0.15 264);
+  --color-brand-500: oklch(0.58 0.18 264);
+  --color-brand-600: oklch(0.5 0.18 264);
+  --color-brand-700: oklch(0.43 0.15 264);
+  --color-brand-800: oklch(0.36 0.12 264);
+  --color-brand-900: oklch(0.29 0.09 264);
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+@layer base {
+  :root {
+    --surface: oklch(0.99 0.002 264);
+    --surface-raised: oklch(1 0 0);
+    --surface-sunken: oklch(0.96 0.004 264);
+    --border: oklch(0.9 0.006 264);
+    --text: oklch(0.24 0.015 264);
+    --text-muted: oklch(0.5 0.015 264);
+    --accent: var(--color-brand-600);
+    --accent-contrast: oklch(1 0 0);
+    --danger: oklch(0.55 0.19 25);
+    --danger-surface: oklch(0.96 0.03 25);
+    --success: oklch(0.55 0.14 155);
+    --success-surface: oklch(0.95 0.04 155);
+    --warning: oklch(0.62 0.14 75);
+    --warning-surface: oklch(0.96 0.05 75);
+
+    color-scheme: light;
+  }
+
+  :root[data-theme='dark'],
+  :root:not([data-theme='light']) {
+    @media (prefers-color-scheme: dark) {
+      --surface: oklch(0.19 0.012 264);
+      --surface-raised: oklch(0.23 0.014 264);
+      --surface-sunken: oklch(0.16 0.012 264);
+      --border: oklch(0.32 0.014 264);
+      --text: oklch(0.95 0.006 264);
+      --text-muted: oklch(0.72 0.012 264);
+      --accent: var(--color-brand-400);
+      --accent-contrast: oklch(0.16 0.012 264);
+      --danger: oklch(0.68 0.17 25);
+      --danger-surface: oklch(0.28 0.07 25);
+      --success: oklch(0.7 0.13 155);
+      --success-surface: oklch(0.26 0.06 155);
+      --warning: oklch(0.75 0.13 75);
+      --warning-surface: oklch(0.28 0.07 75);
+
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme='dark'] {
+    --surface: oklch(0.19 0.012 264);
+    --surface-raised: oklch(0.23 0.014 264);
+    --surface-sunken: oklch(0.16 0.012 264);
+    --border: oklch(0.32 0.014 264);
+    --text: oklch(0.95 0.006 264);
+    --text-muted: oklch(0.72 0.012 264);
+    --accent: var(--color-brand-400);
+    --accent-contrast: oklch(0.16 0.012 264);
+    --danger: oklch(0.68 0.17 25);
+    --danger-surface: oklch(0.28 0.07 25);
+    --success: oklch(0.7 0.13 155);
+    --success-surface: oklch(0.26 0.06 155);
+    --warning: oklch(0.75 0.13 75);
+    --warning-surface: oklch(0.28 0.07 75);
+
+    color-scheme: dark;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--surface);
+    color: var(--text);
+    font-family: var(--font-sans);
+    /* 16px base keeps mobile Safari from zooming on input focus. */
+    font-size: 1rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Accessibility: a visible focus ring on every interactive element (step 20). */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+
+  ::selection {
+    background-color: var(--color-brand-200);
+    color: var(--color-brand-900);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@utility surface-card {
+  background-color: var(--surface-raised);
+  border: 1px solid var(--border);
+}
