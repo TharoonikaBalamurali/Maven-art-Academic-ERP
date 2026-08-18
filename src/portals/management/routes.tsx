@@ -124,8 +124,22 @@ export const managementRoutes: RouteObject[] = [
     ),
   },
 
-  // The `students` module is handled explicitly above; the rest stay placeholders.
-  ...MODULES.filter((module) => module.path !== 'students').flatMap<RouteObject>((module) => {
+  {
+    // Attendance marking workflow (§21) — faculty mark their assigned classes.
+    path: 'attendance',
+    element: (
+      <RequirePermission anyOf={['attendance.view']}>
+        {lazyRoute(
+          () => import('@/features/attendance/components/AttendancePage'),
+          (m) => m.AttendancePage,
+        )}
+      </RequirePermission>
+    ),
+  },
+
+  // Modules handled explicitly above; the rest stay placeholders.
+  ...MODULES.filter((module) => module.path !== 'students' && module.path !== 'attendance').flatMap<RouteObject>(
+    (module) => {
     const routes: RouteObject[] = [
       {
         path: module.path,

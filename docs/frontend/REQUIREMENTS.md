@@ -62,7 +62,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | Courses | `/management/courses` | `courses.view` | PLACEHOLDER |
 | Batches | `/management/batches` | `batches.view` | PLACEHOLDER |
 | Timetable | `/management/timetable` | `timetable.view` | PLACEHOLDER |
-| Attendance | `/management/attendance` | `attendance.view` / `attendance.mark` | PLACEHOLDER — must use assigned-batch flow (§21) |
+| Attendance | `/management/attendance` | `attendance.view` / `attendance.mark` | **DONE** — faculty marking workflow (§21): only the caller's assigned classes (no batch picker), roster present/absent + submit; backend authorises per class (§6); read-only for view-only users; empty state for the unassigned |
 | Enquiries | `/management/enquiries` | `enquiries.view` | PLACEHOLDER |
 | Applications | `/management/applications` | `applications.view` | PLACEHOLDER — buttons = state + permission |
 | Admissions | `/management/admissions` | `admissions.view` / `admissions.approve` | PLACEHOLDER |
@@ -108,7 +108,8 @@ non-foundation modules are `PLACEHOLDER` by design.
 | notifications | `notifications.contract.ts` | list | DONE |
 | dashboard | `dashboard.contract.ts` | summary (role-scoped) | DONE |
 | students | `students.contract.ts` | list, filter-options, get, create, update | DONE — full CRUD (mock uses an in-memory store so create/edit reflect in list + detail) |
-| parents, faculty, courses, batches, attendance, enquiries, applications, admissions, enrollments, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 2+) |
+| attendance | `attendance.contract.ts` | todaysClasses, roster, submit | DONE — scoped to the caller's assigned classes; backend authorises marking (§6) |
+| parents, faculty, courses, batches, enquiries, applications, admissions, enrollments, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 2+) |
 
 ---
 

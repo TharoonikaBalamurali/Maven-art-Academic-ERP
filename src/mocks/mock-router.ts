@@ -16,6 +16,8 @@ import {
   updateStudent,
 } from './students-data';
 import type { StudentInput } from '@/features/students/types';
+import { rosterFor, submitAttendance, todaysClassesFor } from './attendance-data';
+import type { AttendanceSubmission } from '@/features/attendance/types';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -263,6 +265,45 @@ const routes: Route[] = [
       if (!result) fail('not_found');
       if (!result.ok) fail('validation', { fieldErrors: result.fieldErrors });
       return result.detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/attendance\/classes$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'attendance.view');
+      // The backend scopes to the caller; the UI cannot request another's classes.
+      return todaysClassesFor(identity.user.id);
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/attendance\/classes\/(?<classId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'attendance.view');
+      const result = rosterFor(params.classId ?? '', identity.user.id);
+      if (result.kind === 'not_found') fail('not_found');
+      if (result.kind === 'forbidden') fail('forbidden');
+      return result.roster;
+    },
+  },
+  {
+    method: 'POST',
+    pattern: /^\/attendance\/classes\/(?<classId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      // §6: marking requires the mark permission AND assignment to the class.
+      requirePermission(identity, 'attendance.mark');
+      const result = submitAttendance(
+        params.classId ?? '',
+        identity.user.id,
+        (ctx.request.body ?? {}) as AttendanceSubmission,
+      );
+      if (result.kind === 'not_found') fail('not_found');
+      if (result.kind === 'forbidden') fail('forbidden');
+      return result.roster;
     },
   },
 ];
