@@ -311,9 +311,12 @@ export function StudentDetailPage() {
               }
               actions={
                 <PermissionGuard permission="students.update">
-                  <button type="button" className={buttonClasses({ variant: 'secondary' })}>
+                  <Link
+                    to={`/management/students/${query.data.id}/edit`}
+                    className={buttonClasses({ variant: 'secondary' })}
+                  >
                     Edit
-                  </button>
+                  </Link>
                 </PermissionGuard>
               }
             />

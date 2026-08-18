@@ -94,12 +94,21 @@ export const managementRoutes: RouteObject[] = [
     path: 'students/new',
     element: (
       <RequirePermission anyOf={['students.create']}>
-        <ModulePlaceholder
-          title="New Student"
-          description="Creating a student requires a stronger permission than viewing the list."
-          permission="students.create"
-          phase="Phase 2"
-        />
+        {lazyRoute(
+          () => import('@/features/students/components/StudentFormPage'),
+          (m) => m.StudentCreatePage,
+        )}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'students/:studentId/edit',
+    element: (
+      <RequirePermission anyOf={['students.update']}>
+        {lazyRoute(
+          () => import('@/features/students/components/StudentFormPage'),
+          (m) => m.StudentEditPage,
+        )}
       </RequirePermission>
     ),
   },

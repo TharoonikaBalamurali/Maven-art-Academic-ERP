@@ -53,6 +53,8 @@ function page(overrides: Partial<Paginated<StudentListItem>> = {}) {
 
 const filterOptions: StudentFilterOptions = {
   courses: [{ id: 'crs-bfa', name: 'Bachelor of Fine Arts' }],
+  batches: [{ id: 'bat-bfa-1a', name: 'BFA Year 1 · A', courseId: 'crs-bfa' }],
+  sections: ['A', 'B', 'C'],
   statuses: [{ value: 'active', label: 'Active' }],
 };
 

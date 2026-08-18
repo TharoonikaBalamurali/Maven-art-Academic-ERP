@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import type { ApiError } from '@/lib/api';
 import type { ApiRequest } from '@/lib/api/types';
 import { handleMockRequest } from '@/mocks/mock-router';
 import type { Paginated } from '@/shared/types';
-import type { StudentDetail, StudentFilterOptions, StudentListItem } from './types';
+import type {
+  StudentDetail,
+  StudentFilterOptions,
+  StudentInput,
+  StudentListItem,
+} from './types';
 
 function request(partial: Partial<ApiRequest> & Pick<ApiRequest, 'method' | 'path'>): ApiRequest {
   return { auth: true, timeoutMs: 1000, ...partial };
@@ -20,6 +26,10 @@ const admin = () => loginAs('admin@mavenart.test');
 
 function listStudents(query: Record<string, string | number>, token = admin()): Paginated<StudentListItem> {
   return handleMockRequest(request({ method: 'GET', path: '/students', query }), token) as Paginated<StudentListItem>;
+}
+
+function firstId(): string {
+  return listStudents({ limit: 1 }).data[0]!.id;
 }
 
 describe('students mock API', () => {
@@ -96,10 +106,6 @@ describe('students mock API', () => {
   });
 
   describe('detail', () => {
-    function firstId(): string {
-      return listStudents({ limit: 1 }).data[0]!.id;
-    }
-
     it('returns a full record for a known id, with the cross-module rollups', () => {
       const detail = handleMockRequest(
         request({ method: 'GET', path: `/students/${firstId()}` }),
@@ -136,6 +142,109 @@ describe('students mock API', () => {
         handleMockRequest(
           request({ method: 'GET', path: `/students/${firstId()}` }),
           loginAs('student@mavenart.test'),
+        ),
+      ).toThrowError(expect.objectContaining({ kind: 'forbidden' }));
+    });
+  });
+
+  describe('create / update', () => {
+    const validInput: StudentInput = {
+      name: 'Test Candidate',
+      dateOfBirth: '2005-06-15',
+      email: `unique.${Date.now()}@student.mavenart.test`,
+      phone: '+91 90000 00000',
+      bloodGroup: 'O+',
+      address: '1, Studio Lane, Chennai',
+      courseId: 'crs-bfa',
+      batchId: 'bat-bfa-1a',
+      section: 'A',
+      status: 'active',
+    };
+
+    function create(body: unknown, token = admin()) {
+      return handleMockRequest(request({ method: 'POST', path: '/students', body }), token);
+    }
+
+    it('requires students.create', () => {
+      expect(() => create(validInput, admin())).not.toThrow();
+      expect(() => create(validInput, loginAs('faculty@mavenart.test'))).toThrowError(
+        expect.objectContaining({ kind: 'forbidden' }),
+      );
+    });
+
+    it('creates a student and makes it visible in the list and detail', () => {
+      const email = `new.${Math.random().toString(36).slice(2)}@student.mavenart.test`;
+      const created = create({ ...validInput, name: 'Freshly Enrolled', email }) as StudentDetail;
+
+      expect(created.registerNo).toMatch(/^MAA/);
+      expect(created.name).toBe('Freshly Enrolled');
+
+      // Now retrievable by id and present in a search.
+      const fetched = handleMockRequest(
+        request({ method: 'GET', path: `/students/${created.id}` }),
+        admin(),
+      ) as StudentDetail;
+      expect(fetched.personal.email).toBe(email);
+
+      const found = listStudents({ search: 'Freshly Enrolled', limit: 50 });
+      expect(found.data.some((r) => r.id === created.id)).toBe(true);
+    });
+
+    it('rejects an incomplete body with 422 field errors', () => {
+      try {
+        create({ ...validInput, name: '', email: '' });
+        throw new Error('expected a rejection');
+      } catch (error) {
+        expect((error as ApiError).kind).toBe('validation');
+        expect((error as ApiError).fieldErrors.name).toBeDefined();
+        expect((error as ApiError).fieldErrors.email).toBeDefined();
+      }
+    });
+
+    it('rejects a duplicate email with a field error (uniqueness is backend-only)', () => {
+      const existing = handleMockRequest(
+        request({ method: 'GET', path: `/students/${firstId()}` }),
+        admin(),
+      ) as StudentDetail;
+
+      try {
+        create({ ...validInput, email: existing.personal.email });
+        throw new Error('expected a rejection');
+      } catch (error) {
+        expect((error as ApiError).kind).toBe('validation');
+        expect((error as ApiError).fieldErrors.email?.[0]).toMatch(/already exists/i);
+      }
+    });
+
+    it('updates an existing student', () => {
+      const id = firstId();
+      const updated = handleMockRequest(
+        request({ method: 'PUT', path: `/students/${id}`, body: { ...validInput, name: 'Renamed Student', email: `renamed.${Date.now()}@student.mavenart.test` } }),
+        admin(),
+      ) as StudentDetail;
+      expect(updated.name).toBe('Renamed Student');
+
+      const refetched = handleMockRequest(
+        request({ method: 'GET', path: `/students/${id}` }),
+        admin(),
+      ) as StudentDetail;
+      expect(refetched.name).toBe('Renamed Student');
+    });
+
+    it('returns 404 when updating an unknown student', () => {
+      expect(() =>
+        handleMockRequest(
+          request({ method: 'PUT', path: '/students/stu-does-not-exist', body: validInput }),
+          admin(),
+        ),
+      ).toThrowError(expect.objectContaining({ kind: 'not_found' }));
+    });
+
+    it('requires students.update to update', () => {
+      expect(() =>
+        handleMockRequest(
+          request({ method: 'PUT', path: `/students/${firstId()}`, body: validInput }),
+          loginAs('faculty@mavenart.test'),
         ),
       ).toThrowError(expect.objectContaining({ kind: 'forbidden' }));
     });

@@ -55,7 +55,8 @@ non-foundation modules are `PLACEHOLDER` by design.
 | --- | --- | --- | --- |
 | Students — **list** | `/management/students` | `students.view` | **DONE** — §14.1 columns, server search/filter(course,status)/sort/pagination, permission-gated New + row actions, all data states |
 | Students — details | `/management/students/:id` | `students.view` | **DONE** — 8 deep-linkable tabs (§14.1): Personal/Academic/Parent/Enrollment full; Attendance/Fees/Progress/Certificates backend rollup summaries linking to their module; not-found state |
-| Students — create | `/management/students/new` | `students.create` | PLACEHOLDER |
+| Students — create | `/management/students/new` | `students.create` | **DONE** — grouped form, client + server validation, 422 field mapping, success toast → detail |
+| Students — edit | `/management/students/:id/edit` | `students.update` | **DONE** — same form prefilled from the record; server 422 mapping |
 | Parents | `/management/parents` | `parents.view` | PLACEHOLDER |
 | Faculty | `/management/faculty` | `faculty.view` | PLACEHOLDER |
 | Courses | `/management/courses` | `courses.view` | PLACEHOLDER |
@@ -106,7 +107,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | auth | `auth.contract.ts` | login, logout, me | DONE |
 | notifications | `notifications.contract.ts` | list | DONE |
 | dashboard | `dashboard.contract.ts` | summary (role-scoped) | DONE |
-| students | `students.contract.ts` | list, filter-options, get | DONE (list + detail; create/update endpoints pending with the form unit) |
+| students | `students.contract.ts` | list, filter-options, get, create, update | DONE — full CRUD (mock uses an in-memory store so create/edit reflect in list + detail) |
 | parents, faculty, courses, batches, attendance, enquiries, applications, admissions, enrollments, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 2+) |
 
 ---

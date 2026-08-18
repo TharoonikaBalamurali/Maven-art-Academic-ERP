@@ -8,7 +8,14 @@ import {
   type MockNotification,
 } from './fixtures';
 import { buildDashboardSummary } from './dashboard-data';
-import { getStudentDetail, listStudents, studentFilterOptions } from './students-data';
+import {
+  createStudent,
+  getStudentDetail,
+  listStudents,
+  studentFilterOptions,
+  updateStudent,
+} from './students-data';
+import type { StudentInput } from '@/features/students/types';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -233,6 +240,29 @@ const routes: Route[] = [
       const detail = getStudentDetail(params.studentId ?? '');
       if (!detail) fail('not_found');
       return detail;
+    },
+  },
+  {
+    method: 'POST',
+    pattern: /^\/students$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'students.create');
+      const result = createStudent((ctx.request.body ?? {}) as StudentInput);
+      if (!result.ok) fail('validation', { fieldErrors: result.fieldErrors });
+      return result.detail;
+    },
+  },
+  {
+    method: 'PUT',
+    pattern: /^\/students\/(?<studentId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'students.update');
+      const result = updateStudent(params.studentId ?? '', (ctx.request.body ?? {}) as StudentInput);
+      if (!result) fail('not_found');
+      if (!result.ok) fail('validation', { fieldErrors: result.fieldErrors });
+      return result.detail;
     },
   },
 ];

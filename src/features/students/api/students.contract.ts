@@ -1,6 +1,11 @@
 import { endpoint } from '@/lib/api';
 import type { ListQuery, Paginated } from '@/shared/types';
-import type { StudentDetail, StudentFilterOptions, StudentListItem } from '../types';
+import type {
+  StudentDetail,
+  StudentFilterOptions,
+  StudentInput,
+  StudentListItem,
+} from '../types';
 
 /**
  * Students contract (§14.1).
@@ -29,5 +34,17 @@ export const studentsContract = {
     path: '/students/:studentId',
     auth: true,
     permission: 'students.view',
+  }),
+  create: endpoint<StudentInput, StudentDetail>({
+    method: 'POST',
+    path: '/students',
+    auth: true,
+    permission: 'students.create',
+  }),
+  update: endpoint<StudentInput, StudentDetail>({
+    method: 'PUT',
+    path: '/students/:studentId',
+    auth: true,
+    permission: 'students.update',
   }),
 } as const;

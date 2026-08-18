@@ -22,10 +22,34 @@ export interface StudentListItem {
   status: StudentStatus;
 }
 
-/** Options for the list's server-driven filters. */
+/** Options for the list's server-driven filters and the create/edit form. */
 export interface StudentFilterOptions {
   courses: { id: Id; name: string }[];
+  batches: { id: Id; name: string; courseId: Id }[];
+  sections: string[];
   statuses: { value: string; label: string }[];
+}
+
+/**
+ * Fields a client may submit when creating or updating a student (§14.1).
+ *
+ * The register number and computed rollups are backend-owned and are not part
+ * of the input. Frontend validation of this shape is UX only; the backend
+ * enforces it (§30).
+ *
+ * TBD — BACKEND CONTRACT: field set is provisional.
+ */
+export interface StudentInput {
+  name: string;
+  dateOfBirth: string;
+  email: string;
+  phone: string;
+  bloodGroup: string;
+  address: string;
+  courseId: Id;
+  batchId: Id;
+  section: string;
+  status: StudentStatus;
 }
 
 export const STUDENT_STATUS_LABEL: Record<string, string> = {
@@ -60,8 +84,10 @@ export interface StudentDetail {
   registerNo: string;
   name: string;
   status: StudentStatus;
+  courseId: Id;
   course: string;
   courseCode: string;
+  batchId: Id;
   batch: string;
   section: string;
 

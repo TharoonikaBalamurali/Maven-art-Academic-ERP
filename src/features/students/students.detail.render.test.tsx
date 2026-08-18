@@ -18,8 +18,10 @@ const DETAIL: StudentDetail = {
   registerNo: 'MAA20260001',
   name: 'Nithya Balan',
   status: 'active',
+  courseId: 'crs-bfa',
   course: 'Bachelor of Fine Arts',
   courseCode: 'BFA',
+  batchId: 'bat-bfa-1a',
   batch: 'BFA Year 1 · A',
   section: 'A',
   personal: {
@@ -106,12 +108,15 @@ describe('StudentDetailPage', () => {
   it('gates the Edit action on students.update', () => {
     signIn('faculty', ['students.view']);
     const { unmount } = renderAt('/management/students/stu-001');
-    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument();
     unmount();
 
     signIn('admin', ['students.view', 'students.update']);
     renderAt('/management/students/stu-001');
-    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute(
+      'href',
+      '/management/students/stu-001/edit',
+    );
   });
 
   it('shows a not-found state for an unknown student', () => {
