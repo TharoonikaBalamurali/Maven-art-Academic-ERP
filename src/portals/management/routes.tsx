@@ -316,6 +316,29 @@ export const managementRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
+  {
+    // Fee Assignments (§20) — fees applied to students; balances from the backend.
+    path: 'fee-assignments',
+    element: (
+      <RequirePermission anyOf={['fee_assignments.view']}>
+        {lazyRoute(
+          () => import('@/features/fee-assignments/components/FeeAssignmentsPage'),
+          (m) => m.FeeAssignmentsPage,
+        )}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'fee-assignments/:feeAssignmentId',
+    element: (
+      <RequirePermission anyOf={['fee_assignments.view']}>
+        {lazyRoute(
+          () => import('@/features/fee-assignments/components/FeeAssignmentDetailPage'),
+          (m) => m.FeeAssignmentDetailPage,
+        )}
+      </RequirePermission>
+    ),
+  },
 
   // Modules handled explicitly above; the rest stay placeholders.
   ...MODULES.filter(
@@ -332,6 +355,7 @@ export const managementRoutes: RouteObject[] = [
         'admissions',
         'enrollments',
         'fee-structures',
+        'fee-assignments',
       ].includes(module.path),
   ).flatMap<RouteObject>(
     (module) => {

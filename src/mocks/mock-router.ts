@@ -46,6 +46,7 @@ import {
 import type { AdmissionAction } from '@/features/admissions/types';
 import { getEnrollment, listEnrollments } from './enrollments-data';
 import { getFeeStructure, listFeeStructures } from './fee-structures-data';
+import { getFeeAssignment, listFeeAssignments } from './fee-assignments-data';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -600,6 +601,29 @@ const routes: Route[] = [
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'fee_structures.view');
       const detail = getFeeStructure(params.feeStructureId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/fee-assignments$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'fee_assignments.view');
+      return listFeeAssignments({
+        ...listQueryFrom(ctx.request.query),
+        filters: { status: typeof ctx.request.query?.status === 'string' ? ctx.request.query.status : undefined },
+      });
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/fee-assignments\/(?<feeAssignmentId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'fee_assignments.view');
+      const detail = getFeeAssignment(params.feeAssignmentId ?? '');
       if (!detail) fail('not_found');
       return detail;
     },
