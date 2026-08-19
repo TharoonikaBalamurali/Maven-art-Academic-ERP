@@ -58,8 +58,8 @@ non-foundation modules are `PLACEHOLDER` by design.
 | Students — create | `/management/students/new` | `students.create` | **DONE** — grouped form, client + server validation, 422 field mapping, success toast → detail |
 | Students — edit | `/management/students/:id/edit` | `students.update` | **DONE** — same form prefilled from the record; server 422 mapping |
 | Parents | `/management/parents` | `parents.view` | PLACEHOLDER |
-| Faculty | `/management/faculty` | `faculty.view` | PLACEHOLDER |
-| Courses | `/management/courses` | `courses.view` | PLACEHOLDER |
+| Faculty — list + detail | `/management/faculty`, `/faculty/:id` | `faculty.view` | **DONE** — list (search/sort/pagination); detail shows assigned batches + subjects, batches link to their record (§6) |
+| Courses — list + detail | `/management/courses`, `/courses/:id` | `courses.view` | **DONE** — list (search/sort/pagination); detail shows the course's batches linking to their record (§19) |
 | Batches — list | `/management/batches` | `batches.view` | **DONE** — server search/filter(course,status)/sort/pagination; Batch/Course/Faculty/Section/Students/Status columns |
 | Batches — details | `/management/batches/:id` | `batches.view` | **DONE** — relational (§19): Course/Faculty/Section/enrolment as distinct facts; Students + Schedule tabs; roster links to student records |
 | Timetable | `/management/timetable` | `timetable.view` | **DONE** — published weekly grid (Mon–Fri day columns); Batch / Faculty / Room views via server-side filters (§20); frontend lays out, never computes the schedule |
@@ -112,7 +112,9 @@ non-foundation modules are `PLACEHOLDER` by design.
 | attendance | `attendance.contract.ts` | todaysClasses, roster, submit | DONE — scoped to the caller's assigned classes; backend authorises marking (§6) |
 | batches | `batches.contract.ts` | list, get | DONE — list + relational detail (course/faculty/schedule/students kept separate, §19) |
 | timetable | `timetable.contract.ts` | list (batch/faculty/room filters), options | DONE — published weekly schedule, laid out not computed (§20) |
-| parents, faculty, courses, enquiries, applications, admissions, enrollments, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 2+) |
+| faculty | `faculty.contract.ts` | list, get | DONE — list + detail (assigned batches, subjects) |
+| courses | `courses.contract.ts` | list, get | DONE — list + detail (batches under the course) |
+| parents, enquiries, applications, admissions, enrollments, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 3+) |
 
 ---
 

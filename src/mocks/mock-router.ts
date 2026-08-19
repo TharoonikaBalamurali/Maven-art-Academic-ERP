@@ -20,6 +20,8 @@ import { rosterFor, submitAttendance, todaysClassesFor } from './attendance-data
 import type { AttendanceSubmission } from '@/features/attendance/types';
 import { getBatchDetail, listBatches } from './batches-data';
 import { listTimetable, timetableOptions } from './timetable-data';
+import { getFacultyDetail, listFaculty } from './faculty-data';
+import { getCourseDetail, listCourses } from './courses-data';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -83,6 +85,23 @@ function identityFromToken(token: string | null): AuthenticatedIdentity {
 
 function requirePermission(identity: AuthenticatedIdentity, permission: PermissionKey): void {
   if (!identity.permissions.includes(permission)) fail('forbidden');
+}
+
+/** Builds a `ListQuery` from a raw request query for simple search/sort lists. */
+function listQueryFrom(query: ApiRequest['query']): {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
+} {
+  return {
+    page: Number(query?.page) || undefined,
+    limit: Number(query?.limit) || undefined,
+    search: typeof query?.search === 'string' ? query.search : undefined,
+    sortBy: typeof query?.sortBy === 'string' ? query.sortBy : undefined,
+    sortDir: query?.sortDir === 'desc' ? 'desc' : 'asc',
+  };
 }
 
 // --- Notification list: server-side search/filter/sort/pagination (§31, §32) --
@@ -359,6 +378,46 @@ const routes: Route[] = [
         facultyId: typeof ctx.request.query?.facultyId === 'string' ? ctx.request.query.facultyId : undefined,
         room: typeof ctx.request.query?.room === 'string' ? ctx.request.query.room : undefined,
       });
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/faculty$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'faculty.view');
+      return listFaculty(listQueryFrom(ctx.request.query));
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/faculty\/(?<facultyId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'faculty.view');
+      const detail = getFacultyDetail(params.facultyId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/courses$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'courses.view');
+      return listCourses(listQueryFrom(ctx.request.query));
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/courses\/(?<courseId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'courses.view');
+      const detail = getCourseDetail(params.courseId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
     },
   },
 ];

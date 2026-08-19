@@ -167,10 +167,49 @@ export const managementRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
+  {
+    path: 'faculty',
+    element: (
+      <RequirePermission anyOf={['faculty.view']}>
+        {lazyRoute(() => import('@/features/faculty/components/FacultyPage'), (m) => m.FacultyPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'faculty/:facultyId',
+    element: (
+      <RequirePermission anyOf={['faculty.view']}>
+        {lazyRoute(
+          () => import('@/features/faculty/components/FacultyDetailPage'),
+          (m) => m.FacultyDetailPage,
+        )}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'courses',
+    element: (
+      <RequirePermission anyOf={['courses.view']}>
+        {lazyRoute(() => import('@/features/courses/components/CoursesPage'), (m) => m.CoursesPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'courses/:courseId',
+    element: (
+      <RequirePermission anyOf={['courses.view']}>
+        {lazyRoute(
+          () => import('@/features/courses/components/CourseDetailPage'),
+          (m) => m.CourseDetailPage,
+        )}
+      </RequirePermission>
+    ),
+  },
 
   // Modules handled explicitly above; the rest stay placeholders.
   ...MODULES.filter(
-    (module) => !['students', 'attendance', 'batches', 'timetable'].includes(module.path),
+    (module) =>
+      !['students', 'attendance', 'batches', 'timetable', 'faculty', 'courses'].includes(module.path),
   ).flatMap<RouteObject>(
     (module) => {
     const routes: RouteObject[] = [
