@@ -64,7 +64,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | Batches — details | `/management/batches/:id` | `batches.view` | **DONE** — relational (§19): Course/Faculty/Section/enrolment as distinct facts; Students + Schedule tabs; roster links to student records |
 | Timetable | `/management/timetable` | `timetable.view` | **DONE** — published weekly grid (Mon–Fri day columns); Batch / Faculty / Room views via server-side filters (§20); frontend lays out, never computes the schedule |
 | Attendance | `/management/attendance` | `attendance.view` / `attendance.mark` | **DONE** — faculty marking workflow (§21): only the caller's assigned classes (no batch picker), roster present/absent + submit; backend authorises per class (§6); read-only for view-only users; empty state for the unassigned |
-| Enquiries | `/management/enquiries` | `enquiries.view` | PLACEHOLDER |
+| Enquiries — list + detail | `/management/enquiries`, `/enquiries/:id` | `enquiries.view` / `enquiries.update` | **DONE** — state-machine workflow (§15–§18): list with stage filter; detail with follow-up timeline and **actions rendered only from backend `availableActions` ∩ permission**; convert/close/reopen/log-followup; backend rejects illegal transitions (409) |
 | Applications | `/management/applications` | `applications.view` | PLACEHOLDER — buttons = state + permission |
 | Admissions | `/management/admissions` | `admissions.view` / `admissions.approve` | PLACEHOLDER |
 | Enrollments | `/management/enrollments` | `enrollments.view` | PLACEHOLDER |
@@ -114,7 +114,8 @@ non-foundation modules are `PLACEHOLDER` by design.
 | timetable | `timetable.contract.ts` | list (batch/faculty/room filters), options | DONE — published weekly schedule, laid out not computed (§20) |
 | faculty | `faculty.contract.ts` | list, get | DONE — list + detail (assigned batches, subjects) |
 | courses | `courses.contract.ts` | list, get | DONE — list + detail (batches under the course) |
-| parents, enquiries, applications, admissions, enrollments, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 3+) |
+| enquiries | `enquiries.contract.ts` | list, get, addFollowup, convert, close, reopen | DONE — backend-owned state machine; availableActions drive the UI (§15–§18) |
+| parents, applications, admissions, enrollments, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 3+) |
 
 ---
 

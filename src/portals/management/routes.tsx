@@ -205,11 +205,33 @@ export const managementRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
+  {
+    // Admissions pipeline entry (§15) — the state-machine workflow.
+    path: 'enquiries',
+    element: (
+      <RequirePermission anyOf={['enquiries.view']}>
+        {lazyRoute(() => import('@/features/enquiries/components/EnquiriesPage'), (m) => m.EnquiriesPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'enquiries/:enquiryId',
+    element: (
+      <RequirePermission anyOf={['enquiries.view']}>
+        {lazyRoute(
+          () => import('@/features/enquiries/components/EnquiryDetailPage'),
+          (m) => m.EnquiryDetailPage,
+        )}
+      </RequirePermission>
+    ),
+  },
 
   // Modules handled explicitly above; the rest stay placeholders.
   ...MODULES.filter(
     (module) =>
-      !['students', 'attendance', 'batches', 'timetable', 'faculty', 'courses'].includes(module.path),
+      !['students', 'attendance', 'batches', 'timetable', 'faculty', 'courses', 'enquiries'].includes(
+        module.path,
+      ),
   ).flatMap<RouteObject>(
     (module) => {
     const routes: RouteObject[] = [

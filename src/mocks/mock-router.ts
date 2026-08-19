@@ -22,6 +22,14 @@ import { getBatchDetail, listBatches } from './batches-data';
 import { listTimetable, timetableOptions } from './timetable-data';
 import { getFacultyDetail, listFaculty } from './faculty-data';
 import { getCourseDetail, listCourses } from './courses-data';
+import {
+  addFollowup,
+  getEnquiry,
+  listEnquiries,
+  transitionEnquiry,
+  type EnquiryResult,
+} from './enquiries-data';
+import type { EnquiryAction } from '@/features/enquiries/types';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -47,12 +55,12 @@ interface Route {
   handler: Handler;
 }
 
-function fail(kind: 'unauthorized' | 'forbidden' | 'not_found' | 'validation' | 'server', extra?: {
+function fail(kind: 'unauthorized' | 'forbidden' | 'not_found' | 'conflict' | 'validation' | 'server', extra?: {
   status?: number;
   fieldErrors?: Record<string, string[]>;
   code?: string;
 }): never {
-  const statusByKind = { unauthorized: 401, forbidden: 403, not_found: 404, validation: 422, server: 500 };
+  const statusByKind = { unauthorized: 401, forbidden: 403, not_found: 404, conflict: 409, validation: 422, server: 500 };
   throw new ApiError({
     kind,
     message: messageForKind(kind),
@@ -420,7 +428,59 @@ const routes: Route[] = [
       return detail;
     },
   },
+  {
+    method: 'GET',
+    pattern: /^\/enquiries$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'enquiries.view');
+      return listEnquiries({
+        ...listQueryFrom(ctx.request.query),
+        filters: { stage: typeof ctx.request.query?.stage === 'string' ? ctx.request.query.stage : undefined },
+      });
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/enquiries\/(?<enquiryId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'enquiries.view');
+      const detail = getEnquiry(params.enquiryId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'POST',
+    pattern: /^\/enquiries\/(?<enquiryId>[^/]+)\/followups$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'enquiries.update');
+      const note = String((ctx.request.body as { note?: string })?.note ?? '').trim();
+      if (!note) fail('validation', { fieldErrors: { note: ['A note is required.'] } });
+      return unwrap(addFollowup(params.enquiryId ?? '', note, identity.profile.fullName));
+    },
+  },
+  {
+    // One route for the three transitions; the mock enforces legality per stage.
+    method: 'POST',
+    pattern: /^\/enquiries\/(?<enquiryId>[^/]+)\/(?<action>convert|close|reopen)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'enquiries.update');
+      return unwrap(transitionEnquiry(params.enquiryId ?? '', (params.action ?? '') as EnquiryAction));
+    },
+  },
 ];
+
+/** Translates an enquiry state-machine result into an HTTP-shaped response. */
+function unwrap(result: EnquiryResult): unknown {
+  if (result.kind === 'not_found') fail('not_found');
+  // An illegal transition from the current stage is a conflict (§15).
+  if (result.kind === 'conflict') fail('conflict', { status: 409 });
+  return result.detail;
+}
 
 export function handleMockRequest(request: ApiRequest, token: string | null): unknown {
   const route = routes.find(
