@@ -64,6 +64,7 @@ import { getSettings } from './settings-data';
 import {
   portalAttendance,
   portalCertificates,
+  portalChildren,
   portalCourse,
   portalFees,
   portalOverview,
@@ -954,12 +955,23 @@ const routes: Route[] = [
   },
   {
     method: 'GET',
+    pattern: /^\/portal\/children$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      // Only a parent holds this; the backend returns their linked children (§8).
+      requirePermission(identity, 'portal.children.view');
+      return portalChildren();
+    },
+  },
+  {
+    method: 'GET',
     pattern: /^\/portal\/overview$/,
     handler: (ctx) => {
       const identity = identityFromToken(ctx.token);
       // The backend scopes this to the caller (§7) / selected child (§8).
       requirePermission(identity, 'portal.dashboard.view');
-      return portalOverview();
+      const child = typeof ctx.request.query?.student === 'string' ? ctx.request.query.student : undefined;
+      return portalOverview(child);
     },
   },
   {
@@ -968,7 +980,8 @@ const routes: Route[] = [
     handler: (ctx) => {
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'portal.profile.view');
-      return portalProfile();
+      const child = typeof ctx.request.query?.student === 'string' ? ctx.request.query.student : undefined;
+      return portalProfile(child);
     },
   },
   {
@@ -977,7 +990,8 @@ const routes: Route[] = [
     handler: (ctx) => {
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'portal.academic.view');
-      return portalCourse();
+      const child = typeof ctx.request.query?.student === 'string' ? ctx.request.query.student : undefined;
+      return portalCourse(child);
     },
   },
   {
@@ -986,7 +1000,8 @@ const routes: Route[] = [
     handler: (ctx) => {
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'portal.timetable.view');
-      return portalTimetable();
+      const child = typeof ctx.request.query?.student === 'string' ? ctx.request.query.student : undefined;
+      return portalTimetable(child);
     },
   },
   {
@@ -995,7 +1010,8 @@ const routes: Route[] = [
     handler: (ctx) => {
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'portal.attendance.view');
-      return portalAttendance();
+      const child = typeof ctx.request.query?.student === 'string' ? ctx.request.query.student : undefined;
+      return portalAttendance(child);
     },
   },
   {
@@ -1004,7 +1020,8 @@ const routes: Route[] = [
     handler: (ctx) => {
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'portal.progress.view');
-      return portalProgress();
+      const child = typeof ctx.request.query?.student === 'string' ? ctx.request.query.student : undefined;
+      return portalProgress(child);
     },
   },
   {
@@ -1013,7 +1030,8 @@ const routes: Route[] = [
     handler: (ctx) => {
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'portal.fees.view');
-      return portalFees();
+      const child = typeof ctx.request.query?.student === 'string' ? ctx.request.query.student : undefined;
+      return portalFees(child);
     },
   },
   {
@@ -1022,7 +1040,8 @@ const routes: Route[] = [
     handler: (ctx) => {
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'portal.payments.view');
-      return portalPayments();
+      const child = typeof ctx.request.query?.student === 'string' ? ctx.request.query.student : undefined;
+      return portalPayments(child);
     },
   },
   {
@@ -1031,7 +1050,8 @@ const routes: Route[] = [
     handler: (ctx) => {
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'portal.certificates.view');
-      return portalCertificates();
+      const child = typeof ctx.request.query?.student === 'string' ? ctx.request.query.student : undefined;
+      return portalCertificates(child);
     },
   },
 ];

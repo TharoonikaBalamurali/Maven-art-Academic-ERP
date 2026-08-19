@@ -88,4 +88,32 @@ describe('portal mock API (§7, §8)', () => {
       expect.objectContaining({ kind: 'forbidden' }),
     );
   });
+
+  it('lists the parent\'s linked children (portal.children.view) and refuses a student', () => {
+    const children = get('/portal/children', parent()) as { children: { id: string; name: string }[] };
+    expect(children.children.map((c) => c.name)).toEqual(['Nithya Balan', 'Arjun Balan']);
+
+    expect(() => get('/portal/children', student())).toThrowError(expect.objectContaining({ kind: 'forbidden' }));
+  });
+
+  it('re-scopes portal data to the selected child (§8)', () => {
+    // No scope → the first child (Nithya); with the second child selected → Arjun.
+    const nithya = handleMockRequest(request({ method: 'GET', path: '/portal/overview' }), parent()) as PortalOverview;
+    expect(nithya.student.name).toBe('Nithya Balan');
+    expect(nithya.fees?.outstanding).toBe(98000);
+
+    const arjun = handleMockRequest(
+      request({ method: 'GET', path: '/portal/overview', query: { student: 'stu-050' } }),
+      parent(),
+    ) as PortalOverview;
+    expect(arjun.student.name).toBe('Arjun Balan');
+    expect(arjun.fees?.outstanding).toBe(0);
+
+    const arjunFees = handleMockRequest(
+      request({ method: 'GET', path: '/portal/fees', query: { student: 'stu-050' } }),
+      parent(),
+    ) as { assigned: number; status: string };
+    expect(arjunFees.assigned).toBe(130000);
+    expect(arjunFees.status).toBe('paid');
+  });
 });

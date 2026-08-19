@@ -1,6 +1,7 @@
 import type {
   PortalAttendance,
   PortalCertificates,
+  PortalChildren,
   PortalCourse,
   PortalFees,
   PortalOverview,
@@ -13,92 +14,73 @@ import type {
 /**
  * Portal mock (§7, §8).
  *
- * The backend scopes portal data to the caller. In this mock a single canonical
- * student snapshot (Nithya Balan) stands in for "me" — for a student that is
- * their own record, for a parent it is the selected linked child (§8). Amounts,
- * attendance and grades are the backend's figures. In-memory for the session.
+ * The backend scopes portal data to the caller — for a student, their own
+ * record; for a parent, the SELECTED linked child. Each child is a full bundle;
+ * the scoped endpoints resolve the requested child (falling back to the first)
+ * and return its figures. Amounts, attendance and grades are the backend's
+ * values. In-memory for the session.
+ *
+ * TBD — BACKEND CONTRACT: the selected-child is carried here as a `student`
+ * query param; the real contract may use a header, and the backend enforces
+ * that the parent may actually read that child (§8).
  */
-const STUDENT = {
-  name: 'Nithya Balan',
-  registerNo: 'MAA20260001',
-  course: 'Bachelor of Fine Arts',
-  batch: 'BFA Year 1 · A',
-};
+interface ChildBundle {
+  id: string;
+  overview: PortalOverview;
+  profile: PortalProfile;
+  course: PortalCourse;
+  timetable: PortalTimetable;
+  attendance: PortalAttendance;
+  progress: PortalProgress;
+  fees: PortalFees;
+  payments: PortalPayments;
+  certificates: PortalCertificates;
+}
 
-export function portalOverview(): PortalOverview {
-  return {
-    student: { ...STUDENT },
+const NITHYA: ChildBundle = {
+  id: 'stu-001',
+  overview: {
+    student: { name: 'Nithya Balan', registerNo: 'MAA20260001', course: 'Bachelor of Fine Arts', batch: 'BFA Year 1 · A' },
     attendance: { percentage: 92, present: 118, total: 128 },
     fees: { outstanding: 98000, status: 'partial' },
     nextClass: { subject: 'Foundation Drawing', day: 'Monday', time: '09:00 – 10:30', room: 'Studio 2' },
     latestGrade: { assessment: 'Foundation Drawing — Midterm', grade: 'A+' },
-  };
-}
-
-export function portalProfile(): PortalProfile {
-  return {
-    name: STUDENT.name,
-    registerNo: STUDENT.registerNo,
-    email: 'nithya.balan@example.com',
-    phone: '+91 90000 20001',
-    dateOfBirth: '2007-03-14',
-    address: '48 Besant Nagar, Chennai 600090',
-    course: STUDENT.course,
-    batch: STUDENT.batch,
-    admittedOn: '2026-06-15',
-    guardianName: 'Balan Muthu',
-    guardianPhone: '+91 90000 10001',
-  };
-}
-
-
-export function portalCourse(): PortalCourse {
-  return {
-    course: STUDENT.course,
-    code: 'BFA',
-    batch: STUDENT.batch,
-    facultyName: 'Suresh Iyer',
-    startedOn: '2026-06-15',
+  },
+  profile: {
+    name: 'Nithya Balan', registerNo: 'MAA20260001', email: 'nithya.balan@example.com', phone: '+91 90000 20001',
+    dateOfBirth: '2007-03-14', address: '48 Besant Nagar, Chennai 600090', course: 'Bachelor of Fine Arts',
+    batch: 'BFA Year 1 · A', admittedOn: '2026-06-15', guardianName: 'Balan Muthu', guardianPhone: '+91 90000 10001',
+  },
+  course: {
+    course: 'Bachelor of Fine Arts', code: 'BFA', batch: 'BFA Year 1 · A', facultyName: 'Suresh Iyer', startedOn: '2026-06-15',
     subjects: [
       { name: 'Foundation Drawing', faculty: 'Suresh Iyer' },
       { name: 'Colour & Composition', faculty: 'Meera Nair' },
       { name: 'Art History', faculty: 'Priya Venkatesh' },
       { name: 'Sculpture Basics', faculty: 'Rahul Deshpande' },
     ],
-  };
-}
-
-export function portalTimetable(): PortalTimetable {
-  return {
+  },
+  timetable: {
     week: [
       { day: 'Monday', sessions: [
         { subject: 'Foundation Drawing', time: '09:00 – 10:30', room: 'Studio 2', faculty: 'Suresh Iyer' },
         { subject: 'Art History', time: '11:00 – 12:00', room: 'Room 4', faculty: 'Priya Venkatesh' },
       ] },
-      { day: 'Tuesday', sessions: [
-        { subject: 'Colour & Composition', time: '09:00 – 11:00', room: 'Studio 1', faculty: 'Meera Nair' },
-      ] },
+      { day: 'Tuesday', sessions: [{ subject: 'Colour & Composition', time: '09:00 – 11:00', room: 'Studio 1', faculty: 'Meera Nair' }] },
       { day: 'Wednesday', sessions: [
         { subject: 'Foundation Drawing', time: '09:00 – 10:30', room: 'Studio 2', faculty: 'Suresh Iyer' },
         { subject: 'Sculpture Basics', time: '13:00 – 15:00', room: 'Workshop', faculty: 'Rahul Deshpande' },
       ] },
-      { day: 'Thursday', sessions: [
-        { subject: 'Colour & Composition', time: '09:00 – 11:00', room: 'Studio 1', faculty: 'Meera Nair' },
-      ] },
+      { day: 'Thursday', sessions: [{ subject: 'Colour & Composition', time: '09:00 – 11:00', room: 'Studio 1', faculty: 'Meera Nair' }] },
       { day: 'Friday', sessions: [
         { subject: 'Art History', time: '10:00 – 11:00', room: 'Room 4', faculty: 'Priya Venkatesh' },
         { subject: 'Sculpture Basics', time: '13:00 – 15:00', room: 'Workshop', faculty: 'Rahul Deshpande' },
       ] },
       { day: 'Saturday', sessions: [] },
     ],
-  };
-}
-
-export function portalAttendance(): PortalAttendance {
-  return {
-    percentage: 92,
-    present: 118,
-    total: 128,
+  },
+  attendance: {
+    percentage: 92, present: 118, total: 128,
     recent: [
       { date: '2026-08-19', subject: 'Foundation Drawing', status: 'present' },
       { date: '2026-08-18', subject: 'Colour & Composition', status: 'present' },
@@ -106,47 +88,118 @@ export function portalAttendance(): PortalAttendance {
       { date: '2026-08-15', subject: 'Art History', status: 'absent' },
       { date: '2026-08-14', subject: 'Foundation Drawing', status: 'present' },
     ],
-  };
-}
-
-export function portalProgress(): PortalProgress {
-  return {
+  },
+  progress: {
     records: [
       { id: 'prg-803', assessment: 'Foundation Drawing — Midterm', type: 'Studio', score: 91, maxScore: 100, grade: 'A+', result: 'Pass', status: 'graded', date: '2026-08-12' },
       { id: 'prg-810', assessment: 'Colour & Composition — Assignment 1', type: 'Portfolio', score: 78, maxScore: 100, grade: 'B+', result: 'Pass', status: 'graded', date: '2026-07-28' },
       { id: 'prg-811', assessment: 'Art History — Quiz 1', type: 'Written', score: 64, maxScore: 100, grade: 'B', result: 'Pass', status: 'graded', date: '2026-07-20' },
       { id: 'prg-812', assessment: 'Sculpture Basics — Project', type: 'Project', score: null, maxScore: 100, grade: null, result: null, status: 'pending', date: null },
     ],
-  };
-}
-
-export function portalFees(): PortalFees {
-  return {
-    assigned: 158000,
-    paid: 60000,
-    outstanding: 98000,
-    status: 'partial',
+  },
+  fees: {
+    assigned: 158000, paid: 60000, outstanding: 98000, status: 'partial',
     installments: [
       { label: 'Installment 1 of 3', amount: 60000, dueDate: '2026-07-15', status: 'paid' },
       { label: 'Installment 2 of 3', amount: 50000, dueDate: '2026-09-15', status: 'due' },
       { label: 'Installment 3 of 3', amount: 48000, dueDate: '2026-11-15', status: 'upcoming' },
     ],
-  };
-}
-
-export function portalPayments(): PortalPayments {
-  return {
-    records: [
-      { id: 'pay-960', amount: 60000, method: 'upi', date: '2026-07-12', receiptNo: 'MA/2026/0960', status: 'recorded' },
-    ],
-  };
-}
-
-export function portalCertificates(): PortalCertificates {
-  return {
+  },
+  payments: { records: [{ id: 'pay-960', amount: 60000, method: 'upi', date: '2026-07-12', receiptNo: 'MA/2026/0960', status: 'recorded' }] },
+  certificates: {
     records: [
       { id: 'cert-403', certificateNo: 'MA/CERT/2026/0403', type: 'merit', issuedAt: '2026-08-13', status: 'issued' },
       { id: 'cert-420', certificateNo: 'MA/CERT/2026/0420', type: 'bonafide', issuedAt: '2026-08-02', status: 'issued' },
     ],
+  },
+};
+
+const ARJUN: ChildBundle = {
+  id: 'stu-050',
+  overview: {
+    student: { name: 'Arjun Balan', registerNo: 'MAA20260050', course: 'Photography', batch: 'PH Year 1 · A' },
+    attendance: { percentage: 84, present: 96, total: 114 },
+    fees: { outstanding: 0, status: 'paid' },
+    nextClass: { subject: 'Studio Lighting', day: 'Tuesday', time: '10:00 – 12:00', room: 'Photo Lab' },
+    latestGrade: { assessment: 'Composition — Midterm', grade: 'B+' },
+  },
+  profile: {
+    name: 'Arjun Balan', registerNo: 'MAA20260050', email: 'arjun.balan@example.com', phone: '+91 90000 20050',
+    dateOfBirth: '2005-11-02', address: '48 Besant Nagar, Chennai 600090', course: 'Photography',
+    batch: 'PH Year 1 · A', admittedOn: '2026-06-15', guardianName: 'Balan Muthu', guardianPhone: '+91 90000 10001',
+  },
+  course: {
+    course: 'Photography', code: 'PHOT', batch: 'PH Year 1 · A', facultyName: 'Meera Nair', startedOn: '2026-06-15',
+    subjects: [
+      { name: 'Studio Lighting', faculty: 'Meera Nair' },
+      { name: 'Composition', faculty: 'Meera Nair' },
+      { name: 'Digital Post-production', faculty: 'Rahul Deshpande' },
+    ],
+  },
+  timetable: {
+    week: [
+      { day: 'Monday', sessions: [{ subject: 'Composition', time: '09:00 – 11:00', room: 'Photo Lab', faculty: 'Meera Nair' }] },
+      { day: 'Tuesday', sessions: [{ subject: 'Studio Lighting', time: '10:00 – 12:00', room: 'Photo Lab', faculty: 'Meera Nair' }] },
+      { day: 'Wednesday', sessions: [{ subject: 'Digital Post-production', time: '13:00 – 15:00', room: 'Computer Lab', faculty: 'Rahul Deshpande' }] },
+      { day: 'Thursday', sessions: [] },
+      { day: 'Friday', sessions: [{ subject: 'Composition', time: '09:00 – 11:00', room: 'Photo Lab', faculty: 'Meera Nair' }] },
+      { day: 'Saturday', sessions: [] },
+    ],
+  },
+  attendance: {
+    percentage: 84, present: 96, total: 114,
+    recent: [
+      { date: '2026-08-19', subject: 'Composition', status: 'present' },
+      { date: '2026-08-18', subject: 'Studio Lighting', status: 'absent' },
+      { date: '2026-08-17', subject: 'Digital Post-production', status: 'present' },
+      { date: '2026-08-14', subject: 'Composition', status: 'present' },
+    ],
+  },
+  progress: {
+    records: [
+      { id: 'prg-901', assessment: 'Composition — Midterm', type: 'Practical', score: 76, maxScore: 100, grade: 'B+', result: 'Pass', status: 'graded', date: '2026-08-10' },
+      { id: 'prg-902', assessment: 'Studio Lighting — Assignment 1', type: 'Portfolio', score: 82, maxScore: 100, grade: 'A', result: 'Pass', status: 'graded', date: '2026-07-25' },
+    ],
+  },
+  fees: {
+    assigned: 130000, paid: 130000, outstanding: 0, status: 'paid',
+    installments: [
+      { label: 'Installment 1 of 2', amount: 65000, dueDate: '2026-07-15', status: 'paid' },
+      { label: 'Installment 2 of 2', amount: 65000, dueDate: '2026-09-15', status: 'paid' },
+    ],
+  },
+  payments: {
+    records: [
+      { id: 'pay-970', amount: 65000, method: 'bank_transfer', date: '2026-09-10', receiptNo: 'MA/2026/0971', status: 'recorded' },
+      { id: 'pay-965', amount: 65000, method: 'bank_transfer', date: '2026-07-10', receiptNo: 'MA/2026/0965', status: 'recorded' },
+    ],
+  },
+  certificates: { records: [{ id: 'cert-431', certificateNo: 'MA/CERT/2026/0431', type: 'bonafide', issuedAt: '2026-08-05', status: 'issued' }] },
+};
+
+const CHILDREN: ChildBundle[] = [NITHYA, ARJUN];
+
+function resolve(childId?: string): ChildBundle {
+  return CHILDREN.find((c) => c.id === childId) ?? CHILDREN[0]!;
+}
+
+export function portalChildren(): PortalChildren {
+  return {
+    children: CHILDREN.map((c) => ({
+      id: c.id,
+      name: c.overview.student.name,
+      course: c.overview.student.course,
+      batch: c.overview.student.batch,
+    })),
   };
 }
+
+export function portalOverview(childId?: string): PortalOverview { return resolve(childId).overview; }
+export function portalProfile(childId?: string): PortalProfile { return resolve(childId).profile; }
+export function portalCourse(childId?: string): PortalCourse { return resolve(childId).course; }
+export function portalTimetable(childId?: string): PortalTimetable { return resolve(childId).timetable; }
+export function portalAttendance(childId?: string): PortalAttendance { return resolve(childId).attendance; }
+export function portalProgress(childId?: string): PortalProgress { return resolve(childId).progress; }
+export function portalFees(childId?: string): PortalFees { return resolve(childId).fees; }
+export function portalPayments(childId?: string): PortalPayments { return resolve(childId).payments; }
+export function portalCertificates(childId?: string): PortalCertificates { return resolve(childId).certificates; }

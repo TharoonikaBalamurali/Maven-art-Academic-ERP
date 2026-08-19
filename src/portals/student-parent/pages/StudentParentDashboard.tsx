@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Award, BookOpen, CalendarDays, ClipboardCheck, FileBarChart, UsersRound, Wallet } from 'lucide-react';
 import { useCurrentIdentity } from '@/features/auth/hooks';
 import { PermissionGuard } from '@/features/auth/PermissionGuard';
@@ -34,12 +35,25 @@ export function StudentParentDashboard() {
         description={overview ? `${overview.student.course} · ${overview.student.batch}` : 'Your academic and fee overview.'}
       />
 
-      {/* Parent-only. Selecting a child re-scopes the whole portal (§8); the
-          child switcher is a later unit. */}
+      {/* Parent-only. The whole portal is scoped to the selected child (§8). */}
       <PermissionGuard permission="portal.children.view">
         <div className="mb-4">
-          <WidgetCard title="My Children" description="Students linked to your account, as determined by the backend.">
-            <EmptyWidget label="Select a child from “My Children” to view their records." />
+          <WidgetCard
+            title="My Children"
+            description="The portal shows the records of the child selected here."
+            actions={
+              <Link to="/portal/children" className="text-body-sm font-medium text-[var(--accent)] hover:underline">
+                Switch child
+              </Link>
+            }
+          >
+            {overview ? (
+              <p className="text-body text-[var(--text)]">
+                Currently viewing <span className="font-medium">{overview.student.name}</span> · {overview.student.course}
+              </p>
+            ) : (
+              <EmptyWidget label="Select a child to view their records." />
+            )}
           </WidgetCard>
         </div>
       </PermissionGuard>

@@ -12,10 +12,8 @@ interface PortalRoute {
   phase: string;
 }
 
-/** Student / Parent Portal routes (§7, §37). */
-const MODULES: readonly PortalRoute[] = [
-  { path: 'children', title: 'My Children', description: 'Students linked to your account. Selecting a student changes the data shown across the portal.', permission: 'portal.children.view', phase: 'Phase 6' },
-];
+/** Student / Parent Portal routes (§7, §37). Every module is now implemented. */
+const MODULES: readonly PortalRoute[] = [];
 
 export const studentParentRoutes: RouteObject[] = [
   {
@@ -38,6 +36,16 @@ export const studentParentRoutes: RouteObject[] = [
           () => import('@/features/notifications/components/NotificationsPage'),
           (m) => m.NotificationsPage,
         )}
+      </RequirePermission>
+    ),
+  },
+  {
+    // My Children (§8) — the parent's linked children; selecting one re-scopes
+    // the whole portal to that child.
+    path: 'children',
+    element: (
+      <RequirePermission anyOf={['portal.children.view']}>
+        {lazyRoute(() => import('@/features/portal/components/PortalChildrenPage'), (m) => m.PortalChildrenPage)}
       </RequirePermission>
     ),
   },

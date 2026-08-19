@@ -155,3 +155,23 @@ export interface PortalCertificateRecord {
 export interface PortalCertificates {
   records: PortalCertificateRecord[];
 }
+
+/* ------------------------------------------------------------------ */
+/* Parent child switcher (§8).                                        */
+/* ------------------------------------------------------------------ */
+
+export interface PortalChild {
+  id: string;
+  name: string;
+  course: string;
+  batch: string;
+}
+
+export interface PortalChildren {
+  children: PortalChild[];
+}
+
+/** Optional child scope sent with every portal request (parent switcher, §8). */
+export interface PortalScopeQuery {
+  student?: string;
+}
