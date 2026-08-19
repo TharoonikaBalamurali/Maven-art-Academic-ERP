@@ -1,7 +1,10 @@
 import type {
   PortalAttendance,
+  PortalCertificates,
   PortalCourse,
+  PortalFees,
   PortalOverview,
+  PortalPayments,
   PortalProfile,
   PortalProgress,
   PortalTimetable,
@@ -113,6 +116,37 @@ export function portalProgress(): PortalProgress {
       { id: 'prg-810', assessment: 'Colour & Composition — Assignment 1', type: 'Portfolio', score: 78, maxScore: 100, grade: 'B+', result: 'Pass', status: 'graded', date: '2026-07-28' },
       { id: 'prg-811', assessment: 'Art History — Quiz 1', type: 'Written', score: 64, maxScore: 100, grade: 'B', result: 'Pass', status: 'graded', date: '2026-07-20' },
       { id: 'prg-812', assessment: 'Sculpture Basics — Project', type: 'Project', score: null, maxScore: 100, grade: null, result: null, status: 'pending', date: null },
+    ],
+  };
+}
+
+export function portalFees(): PortalFees {
+  return {
+    assigned: 158000,
+    paid: 60000,
+    outstanding: 98000,
+    status: 'partial',
+    installments: [
+      { label: 'Installment 1 of 3', amount: 60000, dueDate: '2026-07-15', status: 'paid' },
+      { label: 'Installment 2 of 3', amount: 50000, dueDate: '2026-09-15', status: 'due' },
+      { label: 'Installment 3 of 3', amount: 48000, dueDate: '2026-11-15', status: 'upcoming' },
+    ],
+  };
+}
+
+export function portalPayments(): PortalPayments {
+  return {
+    records: [
+      { id: 'pay-960', amount: 60000, method: 'upi', date: '2026-07-12', receiptNo: 'MA/2026/0960', status: 'recorded' },
+    ],
+  };
+}
+
+export function portalCertificates(): PortalCertificates {
+  return {
+    records: [
+      { id: 'cert-403', certificateNo: 'MA/CERT/2026/0403', type: 'merit', issuedAt: '2026-08-13', status: 'issued' },
+      { id: 'cert-420', certificateNo: 'MA/CERT/2026/0420', type: 'bonafide', issuedAt: '2026-08-02', status: 'issued' },
     ],
   };
 }

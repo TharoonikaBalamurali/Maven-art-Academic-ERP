@@ -15,9 +15,6 @@ interface PortalRoute {
 /** Student / Parent Portal routes (§7, §37). */
 const MODULES: readonly PortalRoute[] = [
   { path: 'children', title: 'My Children', description: 'Students linked to your account. Selecting a student changes the data shown across the portal.', permission: 'portal.children.view', phase: 'Phase 6' },
-  { path: 'fees', title: 'Fees', description: 'Total, paid and pending fees with due dates.', permission: 'portal.fees.view', phase: 'Phase 6' },
-  { path: 'payments', title: 'Payments', description: 'Your payment history.', permission: 'portal.payments.view', phase: 'Phase 6' },
-  { path: 'certificates', title: 'Certificates', description: 'Certificates issued to you.', permission: 'portal.certificates.view', phase: 'Phase 6' },
 ];
 
 export const studentParentRoutes: RouteObject[] = [
@@ -87,6 +84,31 @@ export const studentParentRoutes: RouteObject[] = [
     element: (
       <RequirePermission anyOf={['portal.progress.view']}>
         {lazyRoute(() => import('@/features/portal/components/PortalProgressPage'), (m) => m.PortalProgressPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    // Finance group (§7) — the caller's fees, payments and certificates.
+    path: 'fees',
+    element: (
+      <RequirePermission anyOf={['portal.fees.view']}>
+        {lazyRoute(() => import('@/features/portal/components/PortalFeesPage'), (m) => m.PortalFeesPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'payments',
+    element: (
+      <RequirePermission anyOf={['portal.payments.view']}>
+        {lazyRoute(() => import('@/features/portal/components/PortalPaymentsPage'), (m) => m.PortalPaymentsPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'certificates',
+    element: (
+      <RequirePermission anyOf={['portal.certificates.view']}>
+        {lazyRoute(() => import('@/features/portal/components/PortalCertificatesPage'), (m) => m.PortalCertificatesPage)}
       </RequirePermission>
     ),
   },

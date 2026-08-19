@@ -103,3 +103,55 @@ export interface PortalProgressRecord {
 export interface PortalProgress {
   records: PortalProgressRecord[];
 }
+
+/* ------------------------------------------------------------------ */
+/* Finance group (§7) — Fees, Payments, Certificates.                 */
+/* Amounts and receipts are backend-authoritative (finance invariant).*/
+/* ------------------------------------------------------------------ */
+
+export type PortalInstallmentStatus = KnownOr<'paid' | 'due' | 'upcoming' | 'overdue'>;
+
+export interface PortalInstallment {
+  label: string;
+  amount: number;
+  dueDate: IsoDateString | null;
+  status: PortalInstallmentStatus;
+}
+
+export interface PortalFees {
+  /** All figures are backend-authoritative — never computed on the client. */
+  assigned: number;
+  paid: number;
+  outstanding: number;
+  status: string;
+  installments: PortalInstallment[];
+}
+
+export type PortalPaymentStatus = KnownOr<'recorded' | 'pending' | 'failed' | 'refunded'>;
+
+export interface PortalPaymentRecord {
+  id: string;
+  amount: number;
+  method: string;
+  date: IsoDateString | null;
+  receiptNo: string | null;
+  status: PortalPaymentStatus;
+}
+
+export interface PortalPayments {
+  records: PortalPaymentRecord[];
+}
+
+export type PortalCertificateStatus = KnownOr<'issued' | 'requested' | 'revoked'>;
+
+export interface PortalCertificateRecord {
+  id: string;
+  certificateNo: string;
+  type: string;
+  issuedAt: IsoDateString | null;
+  status: PortalCertificateStatus;
+}
+
+export interface PortalCertificates {
+  records: PortalCertificateRecord[];
+}

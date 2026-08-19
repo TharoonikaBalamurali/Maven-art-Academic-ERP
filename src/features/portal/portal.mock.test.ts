@@ -69,4 +69,23 @@ describe('portal mock API (§7, §8)', () => {
       expect.objectContaining({ kind: 'forbidden' }),
     );
   });
+
+  it('returns the caller-scoped finance group with backend figures', () => {
+    const fees = get('/portal/fees', student()) as { assigned: number; outstanding: number; installments: unknown[] };
+    expect(fees.assigned).toBe(158000);
+    expect(fees.outstanding).toBe(98000);
+    expect(fees.installments.length).toBe(3);
+
+    const payments = get('/portal/payments', student()) as { records: { receiptNo: string | null }[] };
+    expect(payments.records[0]?.receiptNo).toBe('MA/2026/0960');
+
+    const certs = get('/portal/certificates', student()) as { records: { certificateNo: string }[] };
+    expect(certs.records.some((c) => c.certificateNo === 'MA/CERT/2026/0403')).toBe(true);
+  });
+
+  it('refuses the finance endpoints for a management role', () => {
+    expect(() => get('/portal/fees', loginAs('accounts@mavenart.test'))).toThrowError(
+      expect.objectContaining({ kind: 'forbidden' }),
+    );
+  });
 });
