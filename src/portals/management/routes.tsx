@@ -225,13 +225,42 @@ export const managementRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
+  {
+    path: 'applications',
+    element: (
+      <RequirePermission anyOf={['applications.view']}>
+        {lazyRoute(
+          () => import('@/features/applications/components/ApplicationsPage'),
+          (m) => m.ApplicationsPage,
+        )}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'applications/:applicationId',
+    element: (
+      <RequirePermission anyOf={['applications.view']}>
+        {lazyRoute(
+          () => import('@/features/applications/components/ApplicationDetailPage'),
+          (m) => m.ApplicationDetailPage,
+        )}
+      </RequirePermission>
+    ),
+  },
 
   // Modules handled explicitly above; the rest stay placeholders.
   ...MODULES.filter(
     (module) =>
-      !['students', 'attendance', 'batches', 'timetable', 'faculty', 'courses', 'enquiries'].includes(
-        module.path,
-      ),
+      ![
+        'students',
+        'attendance',
+        'batches',
+        'timetable',
+        'faculty',
+        'courses',
+        'enquiries',
+        'applications',
+      ].includes(module.path),
   ).flatMap<RouteObject>(
     (module) => {
     const routes: RouteObject[] = [

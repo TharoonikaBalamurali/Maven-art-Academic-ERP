@@ -65,7 +65,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | Timetable | `/management/timetable` | `timetable.view` | **DONE** — published weekly grid (Mon–Fri day columns); Batch / Faculty / Room views via server-side filters (§20); frontend lays out, never computes the schedule |
 | Attendance | `/management/attendance` | `attendance.view` / `attendance.mark` | **DONE** — faculty marking workflow (§21): only the caller's assigned classes (no batch picker), roster present/absent + submit; backend authorises per class (§6); read-only for view-only users; empty state for the unassigned |
 | Enquiries — list + detail | `/management/enquiries`, `/enquiries/:id` | `enquiries.view` / `enquiries.update` | **DONE** — state-machine workflow (§15–§18): list with stage filter; detail with follow-up timeline and **actions rendered only from backend `availableActions` ∩ permission**; convert/close/reopen/log-followup; backend rejects illegal transitions (409) |
-| Applications | `/management/applications` | `applications.view` | PLACEHOLDER — buttons = state + permission |
+| Applications — list + detail | `/management/applications`, `/applications/:id` | `applications.view` / `applications.review` | **DONE** — review + admission-decision state machine (§16): list with stage filter; detail renders submit/start-review/approve/reject **only from backend `availableActions` ∩ permission**; approve/reject capture an optional note via dialog; approval yields an `adm-…` admission link; backend rejects illegal transitions (409) |
 | Admissions | `/management/admissions` | `admissions.view` / `admissions.approve` | PLACEHOLDER |
 | Enrollments | `/management/enrollments` | `enrollments.view` | PLACEHOLDER |
 | Fee Structures | `/management/fee-structures` | `fee_structures.view` | PLACEHOLDER |
@@ -115,7 +115,8 @@ non-foundation modules are `PLACEHOLDER` by design.
 | faculty | `faculty.contract.ts` | list, get | DONE — list + detail (assigned batches, subjects) |
 | courses | `courses.contract.ts` | list, get | DONE — list + detail (batches under the course) |
 | enquiries | `enquiries.contract.ts` | list, get, addFollowup, convert, close, reopen | DONE — backend-owned state machine; availableActions drive the UI (§15–§18) |
-| parents, applications, admissions, enrollments, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 3+) |
+| applications | `applications.contract.ts` | list, get, submit, startReview, approve, reject | DONE — backend-owned review state machine; availableActions drive the UI; approval creates an admission (§16) |
+| parents, admissions, enrollments, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 3+) |
 
 ---
 
@@ -127,7 +128,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | No institutional business rules in frontend | No balance/schedule/result computation anywhere. |
 | Faculty attendance limited to assigned batches (§6) | To enforce in the Attendance module: no global batch picker. |
 | Parent sees only linked children (§8) | To enforce in Phase 6: child list from backend, never an arbitrary id. |
-| Buttons = state + permission (§16) | To enforce in Admissions/Applications. |
+| Buttons = state + permission (§16) | Enforced in Enquiries and Applications; to extend to Admissions/Enrollments. |
 | Server-side search/filter/pagination (§31, §32) | `useListQueryState` + backend metadata; proven in Notifications. |
 
 ---

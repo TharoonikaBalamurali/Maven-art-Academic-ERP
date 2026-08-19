@@ -30,6 +30,13 @@ import {
   type EnquiryResult,
 } from './enquiries-data';
 import type { EnquiryAction } from '@/features/enquiries/types';
+import {
+  getApplication,
+  listApplications,
+  transitionApplication,
+  type ApplicationResult,
+} from './applications-data';
+import type { ApplicationAction } from '@/features/applications/types';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -472,7 +479,48 @@ const routes: Route[] = [
       return unwrap(transitionEnquiry(params.enquiryId ?? '', (params.action ?? '') as EnquiryAction));
     },
   },
+  {
+    method: 'GET',
+    pattern: /^\/applications$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'applications.view');
+      return listApplications({
+        ...listQueryFrom(ctx.request.query),
+        filters: { stage: typeof ctx.request.query?.stage === 'string' ? ctx.request.query.stage : undefined },
+      });
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/applications\/(?<applicationId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'applications.view');
+      const detail = getApplication(params.applicationId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'POST',
+    pattern: /^\/applications\/(?<applicationId>[^/]+)\/(?<action>submit|start-review|approve|reject)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      // The review/decision actions require the review permission (§16).
+      requirePermission(identity, 'applications.review');
+      const action = (params.action === 'start-review' ? 'start_review' : params.action) as ApplicationAction;
+      const note = (ctx.request.body as { note?: string })?.note;
+      return unwrapApplication(transitionApplication(params.applicationId ?? '', action, note));
+    },
+  },
 ];
+
+function unwrapApplication(result: ApplicationResult): unknown {
+  if (result.kind === 'not_found') fail('not_found');
+  if (result.kind === 'conflict') fail('conflict', { status: 409 });
+  return result.detail;
+}
 
 /** Translates an enquiry state-machine result into an HTTP-shaped response. */
 function unwrap(result: EnquiryResult): unknown {
