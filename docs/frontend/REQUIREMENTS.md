@@ -89,10 +89,10 @@ non-foundation modules are `PLACEHOLDER` by design.
 | Dashboard (Student) | `/portal` | `portal.dashboard.view` | **DONE** — live, backend-scoped to the caller (§7): attendance %, outstanding fees, course and latest grade cards + next class, all rendered verbatim from `/portal/overview`. |
 | Dashboard (Parent) | `/portal` | `portal.dashboard.view` + `portal.children.view` | **PARTIAL** — same live overview; parent-only "My Children" section present; the child switcher that re-scopes the portal (§8) is a later unit. |
 | My Children | `/portal/children` | `portal.children.view` | PLACEHOLDER — child selector → context switch (§8) |
-| Course | `/portal/course` | `portal.academic.view` | PLACEHOLDER |
-| Timetable | `/portal/timetable` | `portal.timetable.view` | PLACEHOLDER |
-| Attendance | `/portal/attendance` | `portal.attendance.view` | PLACEHOLDER |
-| Progress | `/portal/progress` | `portal.progress.view` | PLACEHOLDER |
+| Course | `/portal/course` | `portal.academic.view` | **DONE** — the caller's course, batch, class teacher and subjects, from `/portal/course` (§7). |
+| Timetable | `/portal/timetable` | `portal.timetable.view` | **DONE** — the caller's weekly schedule grouped by day, from `/portal/timetable` (§7). |
+| Attendance | `/portal/attendance` | `portal.attendance.view` | **DONE** — the caller's record with **backend-computed percentage** and recent sessions, from `/portal/attendance` (§7). |
+| Progress | `/portal/progress` | `portal.progress.view` | **DONE** — the caller's assessments with **backend-computed grades**, from `/portal/progress` (§7); the frontend never derives a grade. |
 | Fees | `/portal/fees` | `portal.fees.view` | PLACEHOLDER |
 | Payments | `/portal/payments` | `portal.payments.view` | PLACEHOLDER |
 | Certificates | `/portal/certificates` | `portal.certificates.view` | PLACEHOLDER |
@@ -132,7 +132,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | roles | `roles.contract.ts` | list, get | DONE (read) — backend-enforced role → permission mapping (§12) |
 | audit | `audit.contract.ts` | list, get | DONE (read) — backend-recorded audit trail; no client mutation |
 | settings | `settings.contract.ts` | get | DONE (read) — institution configuration owned by the backend |
-| portal | `portal.contract.ts` | overview, profile | DONE (read) — backend-scoped to the authenticated student / selected child (§7, §8) |
+| portal | `portal.contract.ts` | overview, profile, course, timetable, attendance, progress | DONE (read) — backend-scoped to the authenticated student / selected child (§7, §8); grades and attendance % are backend-computed |
 | parents, fees, progress, certificates | — | — | NOT STARTED (Phase 4+) |
 
 ---

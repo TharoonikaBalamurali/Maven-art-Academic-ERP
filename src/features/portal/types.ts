@@ -1,4 +1,4 @@
-import type { IsoDateString } from '@/shared/types';
+import type { IsoDateString, KnownOr } from '@/shared/types';
 
 /**
  * Student/Parent portal types (§7, §8, §37).
@@ -37,4 +37,69 @@ export interface PortalProfile {
   admittedOn: IsoDateString | null;
   guardianName: string;
   guardianPhone: string;
+}
+
+/* ------------------------------------------------------------------ */
+/* Academic group (§7) — Course, Timetable, Attendance, Progress.     */
+/* All scoped by the backend to the caller / selected child.          */
+/* ------------------------------------------------------------------ */
+
+export interface PortalCourse {
+  course: string;
+  code: string;
+  batch: string;
+  facultyName: string;
+  startedOn: IsoDateString | null;
+  subjects: { name: string; faculty: string }[];
+}
+
+export interface PortalTimetableSession {
+  subject: string;
+  time: string;
+  room: string;
+  faculty: string;
+}
+
+export interface PortalTimetableDay {
+  day: string;
+  sessions: PortalTimetableSession[];
+}
+
+export interface PortalTimetable {
+  week: PortalTimetableDay[];
+}
+
+export type PortalAttendanceStatus = KnownOr<'present' | 'absent' | 'late'>;
+
+export interface PortalAttendanceRecord {
+  date: IsoDateString;
+  subject: string;
+  status: PortalAttendanceStatus;
+}
+
+export interface PortalAttendance {
+  /** Backend-computed — never derived on the client. */
+  percentage: number;
+  present: number;
+  total: number;
+  recent: PortalAttendanceRecord[];
+}
+
+export type PortalProgressStatus = KnownOr<'graded' | 'pending' | 'absent'>;
+
+export interface PortalProgressRecord {
+  id: string;
+  assessment: string;
+  type: string;
+  score: number | null;
+  maxScore: number;
+  /** Backend-computed grade and result — displayed verbatim. */
+  grade: string | null;
+  result: string | null;
+  status: PortalProgressStatus;
+  date: IsoDateString | null;
+}
+
+export interface PortalProgress {
+  records: PortalProgressRecord[];
 }

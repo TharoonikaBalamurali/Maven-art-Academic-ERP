@@ -61,7 +61,7 @@ import { getUser, listUsers } from './users-data';
 import { getRole, listRoles } from './roles-data';
 import { getAudit, listAudit } from './audit-data';
 import { getSettings } from './settings-data';
-import { portalOverview, portalProfile } from './portal-data';
+import { portalAttendance, portalCourse, portalOverview, portalProfile, portalProgress, portalTimetable } from './portal-data';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -959,6 +959,42 @@ const routes: Route[] = [
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'portal.profile.view');
       return portalProfile();
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/portal\/course$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'portal.academic.view');
+      return portalCourse();
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/portal\/timetable$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'portal.timetable.view');
+      return portalTimetable();
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/portal\/attendance$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'portal.attendance.view');
+      return portalAttendance();
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/portal\/progress$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'portal.progress.view');
+      return portalProgress();
     },
   },
 ];

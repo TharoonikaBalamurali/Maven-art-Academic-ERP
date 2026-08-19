@@ -15,10 +15,6 @@ interface PortalRoute {
 /** Student / Parent Portal routes (§7, §37). */
 const MODULES: readonly PortalRoute[] = [
   { path: 'children', title: 'My Children', description: 'Students linked to your account. Selecting a student changes the data shown across the portal.', permission: 'portal.children.view', phase: 'Phase 6' },
-  { path: 'course', title: 'Course', description: 'Your course and batch information.', permission: 'portal.academic.view', phase: 'Phase 6' },
-  { path: 'timetable', title: 'Timetable', description: 'Your scheduled classes.', permission: 'portal.timetable.view', phase: 'Phase 6' },
-  { path: 'attendance', title: 'Attendance', description: 'Your attendance record.', permission: 'portal.attendance.view', phase: 'Phase 6' },
-  { path: 'progress', title: 'Progress', description: 'Assessments, scores and grades.', permission: 'portal.progress.view', phase: 'Phase 6' },
   { path: 'fees', title: 'Fees', description: 'Total, paid and pending fees with due dates.', permission: 'portal.fees.view', phase: 'Phase 6' },
   { path: 'payments', title: 'Payments', description: 'Your payment history.', permission: 'portal.payments.view', phase: 'Phase 6' },
   { path: 'certificates', title: 'Certificates', description: 'Certificates issued to you.', permission: 'portal.certificates.view', phase: 'Phase 6' },
@@ -57,6 +53,40 @@ export const studentParentRoutes: RouteObject[] = [
           () => import('@/features/portal/components/PortalProfilePage'),
           (m) => m.PortalProfilePage,
         )}
+      </RequirePermission>
+    ),
+  },
+  {
+    // Academic group (§7) — course, timetable, attendance and progress, each
+    // scoped by the backend to the caller / selected child.
+    path: 'course',
+    element: (
+      <RequirePermission anyOf={['portal.academic.view']}>
+        {lazyRoute(() => import('@/features/portal/components/PortalCoursePage'), (m) => m.PortalCoursePage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'timetable',
+    element: (
+      <RequirePermission anyOf={['portal.timetable.view']}>
+        {lazyRoute(() => import('@/features/portal/components/PortalTimetablePage'), (m) => m.PortalTimetablePage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'attendance',
+    element: (
+      <RequirePermission anyOf={['portal.attendance.view']}>
+        {lazyRoute(() => import('@/features/portal/components/PortalAttendancePage'), (m) => m.PortalAttendancePage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'progress',
+    element: (
+      <RequirePermission anyOf={['portal.progress.view']}>
+        {lazyRoute(() => import('@/features/portal/components/PortalProgressPage'), (m) => m.PortalProgressPage)}
       </RequirePermission>
     ),
   },

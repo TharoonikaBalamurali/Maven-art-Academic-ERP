@@ -48,4 +48,25 @@ describe('portal mock API (§7, §8)', () => {
     expect(profile.name).toBe('Nithya Balan');
     expect(profile.guardianName).toBe('Balan Muthu');
   });
+
+  it('scopes the academic group to the caller and enforces each permission', () => {
+    const course = get('/portal/course', student()) as { subjects: unknown[] };
+    expect(course.subjects.length).toBeGreaterThan(0);
+
+    const timetable = get('/portal/timetable', student()) as { week: { day: string }[] };
+    expect(timetable.week.map((d) => d.day)).toContain('Monday');
+
+    const attendance = get('/portal/attendance', student()) as { percentage: number; recent: unknown[] };
+    expect(attendance.percentage).toBe(92);
+    expect(attendance.recent.length).toBeGreaterThan(0);
+
+    const progress = get('/portal/progress', student()) as { records: { grade: string | null }[] };
+    expect(progress.records.some((r) => r.grade === 'A+')).toBe(true);
+  });
+
+  it('refuses the academic endpoints for a management role', () => {
+    expect(() => get('/portal/progress', loginAs('faculty@mavenart.test'))).toThrowError(
+      expect.objectContaining({ kind: 'forbidden' }),
+    );
+  });
 });
