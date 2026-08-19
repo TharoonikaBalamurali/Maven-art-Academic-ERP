@@ -121,7 +121,7 @@ function AdmissionDetailView({ admission }: { admission: AdmissionDetail }) {
       {admission.enrollmentId && (
         <div className="mb-4 rounded-control border border-[var(--success)] bg-[var(--success-surface)] px-3 py-2 text-body-sm text-[var(--success)]">
           Enrolled — enrollment{' '}
-          <Link to="/management/enrollments" className="font-medium underline">
+          <Link to={`/management/enrollments/${admission.enrollmentId}`} className="font-medium underline">
             {admission.enrollmentId}
           </Link>
           .

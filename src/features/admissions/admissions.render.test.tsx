@@ -91,7 +91,7 @@ describe('AdmissionDetailPage — decision actions (§17)', () => {
     renderPage();
 
     expect(screen.queryByRole('button', { name: 'Enrol' })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'enr-330' })).toHaveAttribute('href', '/management/enrollments');
+    expect(screen.getByRole('link', { name: 'enr-330' })).toHaveAttribute('href', '/management/enrollments/enr-330');
   });
 
   it('links back to the source application', () => {

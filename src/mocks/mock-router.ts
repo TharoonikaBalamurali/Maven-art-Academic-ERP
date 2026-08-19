@@ -44,6 +44,7 @@ import {
   type AdmissionResult,
 } from './admissions-data';
 import type { AdmissionAction } from '@/features/admissions/types';
+import { getEnrollment, listEnrollments } from './enrollments-data';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -554,6 +555,29 @@ const routes: Route[] = [
       const action = (params.action ?? '') as AdmissionAction;
       const note = (ctx.request.body as { note?: string })?.note;
       return unwrapAdmission(transitionAdmission(params.admissionId ?? '', action, note));
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/enrollments$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'enrollments.view');
+      return listEnrollments({
+        ...listQueryFrom(ctx.request.query),
+        filters: { status: typeof ctx.request.query?.status === 'string' ? ctx.request.query.status : undefined },
+      });
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/enrollments\/(?<enrollmentId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'enrollments.view');
+      const detail = getEnrollment(params.enrollmentId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
     },
   },
 ];

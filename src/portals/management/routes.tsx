@@ -270,6 +270,29 @@ export const managementRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
+  {
+    // Enrollments (§18) — records created on admission enrolment.
+    path: 'enrollments',
+    element: (
+      <RequirePermission anyOf={['enrollments.view']}>
+        {lazyRoute(
+          () => import('@/features/enrollments/components/EnrollmentsPage'),
+          (m) => m.EnrollmentsPage,
+        )}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'enrollments/:enrollmentId',
+    element: (
+      <RequirePermission anyOf={['enrollments.view']}>
+        {lazyRoute(
+          () => import('@/features/enrollments/components/EnrollmentDetailPage'),
+          (m) => m.EnrollmentDetailPage,
+        )}
+      </RequirePermission>
+    ),
+  },
 
   // Modules handled explicitly above; the rest stay placeholders.
   ...MODULES.filter(
@@ -284,6 +307,7 @@ export const managementRoutes: RouteObject[] = [
         'enquiries',
         'applications',
         'admissions',
+        'enrollments',
       ].includes(module.path),
   ).flatMap<RouteObject>(
     (module) => {

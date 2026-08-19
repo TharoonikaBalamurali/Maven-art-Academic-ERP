@@ -5,6 +5,7 @@ import type {
   AdmissionStage,
 } from '@/features/admissions/types';
 import type { ListQuery, Paginated } from '@/shared/types';
+import { createEnrollmentFromAdmission } from './enrollments-data';
 
 /**
  * Admissions mock with the offer state machine (§17).
@@ -66,12 +67,10 @@ function buildStore(): AdmissionRecord[] {
 
 let store = buildStore();
 let admissionSeq = 601;
-let enrollmentSeq = 331;
 
 export function resetAdmissions(): void {
   store = buildStore();
   admissionSeq = 601;
-  enrollmentSeq = 331;
 }
 
 /** The state machine — the sole source of which actions a stage permits. */
@@ -166,8 +165,12 @@ export function transitionAdmission(id: string, action: AdmissionAction, note?: 
     case 'enroll':
       record.stage = 'enrolled';
       record.note = note?.trim() || record.note;
-      record.enrollmentId = `enr-${enrollmentSeq}`;
-      enrollmentSeq += 1;
+      // §17 → §18 handoff: enrolling creates the enrollment record and links it.
+      record.enrollmentId = createEnrollmentFromAdmission({
+        student: record.applicant,
+        course: record.programme,
+        admissionId: record.id,
+      });
       break;
     case 'cancel':
       record.stage = 'cancelled';

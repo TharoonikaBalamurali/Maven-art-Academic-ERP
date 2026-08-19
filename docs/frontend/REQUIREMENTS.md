@@ -67,7 +67,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | Enquiries — list + detail | `/management/enquiries`, `/enquiries/:id` | `enquiries.view` / `enquiries.update` | **DONE** — state-machine workflow (§15–§18): list with stage filter; detail with follow-up timeline and **actions rendered only from backend `availableActions` ∩ permission**; convert/close/reopen/log-followup; backend rejects illegal transitions (409) |
 | Applications — list + detail | `/management/applications`, `/applications/:id` | `applications.view` / `applications.review` | **DONE** — review + admission-decision state machine (§16): list with stage filter; detail renders submit/start-review/approve/reject **only from backend `availableActions` ∩ permission**; approve/reject capture an optional note via dialog; approval yields an `adm-…` admission link; backend rejects illegal transitions (409) |
 | Admissions — list + detail | `/management/admissions`, `/admissions/:id` | `admissions.view` / `admissions.approve` | **DONE** — offer state machine (§17): created on application approval (§16 → §17 handoff); list with stage filter; detail renders confirm/enroll/cancel **only from backend `availableActions` ∩ permission**; enrol/cancel capture an optional note via dialog; enrolment yields an `enr-…` enrollment link; backend rejects illegal transitions (409) |
-| Enrollments | `/management/enrollments` | `enrollments.view` | PLACEHOLDER |
+| Enrollments — list + detail | `/management/enrollments`, `/enrollments/:id` | `enrollments.view` | **DONE** — read views (§18): created on admission enrolment (§17 → §18 handoff); list with status filter and search across student/course/batch; detail shows the record with provenance back to its admission. Manual create and any status transitions are `TBD — BACKEND CONTRACT` (no transition permission in the spec). |
 | Fee Structures | `/management/fee-structures` | `fee_structures.view` | PLACEHOLDER |
 | Fee Assignments | `/management/fee-assignments` | `fee_assignments.view` | PLACEHOLDER |
 | Installments | `/management/installments` | `installments.view` | PLACEHOLDER |
@@ -117,7 +117,8 @@ non-foundation modules are `PLACEHOLDER` by design.
 | enquiries | `enquiries.contract.ts` | list, get, addFollowup, convert, close, reopen | DONE — backend-owned state machine; availableActions drive the UI (§15–§18) |
 | applications | `applications.contract.ts` | list, get, submit, startReview, approve, reject | DONE — backend-owned review state machine; availableActions drive the UI; approval creates an admission (§16) |
 | admissions | `admissions.contract.ts` | list, get, confirm, enroll, cancel | DONE — backend-owned offer state machine; availableActions drive the UI; enrolment creates an enrollment (§17) |
-| parents, enrollments, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 3+) |
+| enrollments | `enrollments.contract.ts` | list, get | DONE (read) — created by the §17 → §18 handoff; create/transitions pending backend contract |
+| parents, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 4+) |
 
 ---
 
@@ -129,7 +130,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | No institutional business rules in frontend | No balance/schedule/result computation anywhere. |
 | Faculty attendance limited to assigned batches (§6) | To enforce in the Attendance module: no global batch picker. |
 | Parent sees only linked children (§8) | To enforce in Phase 6: child list from backend, never an arbitrary id. |
-| Buttons = state + permission (§16) | Enforced in Enquiries, Applications and Admissions; to extend to Enrollments. |
+| Buttons = state + permission (§16) | Enforced in Enquiries, Applications and Admissions. Enrollments is read-only (no transition permission in the spec); create/transitions await the backend contract. |
 | Server-side search/filter/pagination (§31, §32) | `useListQueryState` + backend metadata; proven in Notifications. |
 
 ---
