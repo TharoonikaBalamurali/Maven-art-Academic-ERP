@@ -72,7 +72,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | Fee Assignments — list + detail | `/management/fee-assignments`, `/fee-assignments/:id` | `fee_assignments.view` | **DONE** — read views (§20, Phase 4): list with status filter, search by student/structure, sortable by balance; detail shows assigned / paid / balance and links the fee structure. Assigned, paid and balance are each **backend-authoritative and displayed verbatim** — the client never derives balance from assigned − paid (finance invariant). Create is `TBD — BACKEND CONTRACT`. |
 | Installments — list + detail | `/management/installments`, `/installments/:id` | `installments.view` | **DONE** — read views (§21, Phase 4): list with status filter, search by student, sortable by due date; detail shows the installment amount, due/paid dates and status with a link back to its fee assignment. Amount and status are **backend-authoritative and displayed verbatim** — the client never computes a schedule or status (finance invariant). Read-only (no create/update permission in the spec). |
 | Payments | `/management/payments` | `payments.view` / `payments.create` | PLACEHOLDER |
-| Outstanding Fees | `/management/outstanding` | `outstanding.view` | PLACEHOLDER |
+| Outstanding Fees — list + detail | `/management/outstanding`, `/outstanding/:id` | `outstanding.view` | **DONE** — the backend's outstanding-balance report (§23, Phase 4): list with severity filter and search, sortable by outstanding amount; detail shows assigned/paid/outstanding/overdue with a fee-assignment link. **Every figure is backend-computed and displayed verbatim** — the frontend never aggregates balances or derives a severity (finance invariant). Read-only. |
 | Receipts | `/management/receipts` | `receipts.view` | PLACEHOLDER |
 | Academic Progress | `/management/progress` | `progress.view` | PLACEHOLDER |
 | Certificates | `/management/certificates` | `certificates.view` | PLACEHOLDER |
@@ -122,6 +122,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | fee_assignments | `fee-assignments.contract.ts` | list, get | DONE (read) — assigned/paid/balance are separate backend figures; balance never derived on the client (§20) |
 | installments | `installments.contract.ts` | list, get | DONE (read) — per-installment amount and status are backend-owned; the schedule is never computed on the client (§21) |
 | payments | `payments.contract.ts` | list, get, record | DONE — record needs payments.create; the backend stores the transaction and issues the receipt (§22) |
+| outstanding | `outstanding.contract.ts` | list, get | DONE (read) — every outstanding/overdue figure and severity is backend-computed; the client never aggregates (§23) |
 | parents, fees, progress, certificates | — | — | NOT STARTED (Phase 4+) |
 
 ---

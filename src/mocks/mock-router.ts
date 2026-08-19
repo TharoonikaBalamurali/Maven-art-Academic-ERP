@@ -50,6 +50,7 @@ import { getFeeAssignment, listFeeAssignments } from './fee-assignments-data';
 import { getInstallment, listInstallments } from './installments-data';
 import { getPayment, listPayments, recordPayment } from './payments-data';
 import type { RecordPaymentInput } from '@/features/payments/types';
+import { getOutstanding, listOutstanding } from './outstanding-data';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -690,6 +691,29 @@ const routes: Route[] = [
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'payments.view');
       const detail = getPayment(params.paymentId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/outstanding$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'outstanding.view');
+      return listOutstanding({
+        ...listQueryFrom(ctx.request.query),
+        filters: { severity: typeof ctx.request.query?.severity === 'string' ? ctx.request.query.severity : undefined },
+      });
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/outstanding\/(?<outstandingId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'outstanding.view');
+      const detail = getOutstanding(params.outstandingId ?? '');
       if (!detail) fail('not_found');
       return detail;
     },

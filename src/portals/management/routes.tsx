@@ -382,6 +382,26 @@ export const managementRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
+  {
+    // Outstanding Fees (§23) — the backend's outstanding-balance report.
+    path: 'outstanding',
+    element: (
+      <RequirePermission anyOf={['outstanding.view']}>
+        {lazyRoute(() => import('@/features/outstanding/components/OutstandingPage'), (m) => m.OutstandingPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'outstanding/:outstandingId',
+    element: (
+      <RequirePermission anyOf={['outstanding.view']}>
+        {lazyRoute(
+          () => import('@/features/outstanding/components/OutstandingDetailPage'),
+          (m) => m.OutstandingDetailPage,
+        )}
+      </RequirePermission>
+    ),
+  },
 
   // Modules handled explicitly above; the rest stay placeholders.
   ...MODULES.filter(
@@ -401,6 +421,7 @@ export const managementRoutes: RouteObject[] = [
         'fee-assignments',
         'installments',
         'payments',
+        'outstanding',
       ].includes(module.path),
   ).flatMap<RouteObject>(
     (module) => {
