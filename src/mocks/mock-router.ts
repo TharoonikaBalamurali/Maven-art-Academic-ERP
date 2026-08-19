@@ -61,6 +61,7 @@ import { getUser, listUsers } from './users-data';
 import { getRole, listRoles } from './roles-data';
 import { getAudit, listAudit } from './audit-data';
 import { getSettings } from './settings-data';
+import { portalOverview, portalProfile } from './portal-data';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -939,6 +940,25 @@ const routes: Route[] = [
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'settings.view');
       return getSettings();
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/portal\/overview$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      // The backend scopes this to the caller (§7) / selected child (§8).
+      requirePermission(identity, 'portal.dashboard.view');
+      return portalOverview();
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/portal\/profile$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'portal.profile.view');
+      return portalProfile();
     },
   },
 ];

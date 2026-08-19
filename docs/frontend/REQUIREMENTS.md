@@ -86,8 +86,8 @@ non-foundation modules are `PLACEHOLDER` by design.
 
 | Item | Route | Permission | Status |
 | --- | --- | --- | --- |
-| Dashboard (Student) | `/portal` | `portal.dashboard.view` | PARTIAL — foundation, must be student-specific |
-| Dashboard (Parent) | `/portal` | `portal.dashboard.view` + `portal.children.view` | PARTIAL — must be child-centric |
+| Dashboard (Student) | `/portal` | `portal.dashboard.view` | **DONE** — live, backend-scoped to the caller (§7): attendance %, outstanding fees, course and latest grade cards + next class, all rendered verbatim from `/portal/overview`. |
+| Dashboard (Parent) | `/portal` | `portal.dashboard.view` + `portal.children.view` | **PARTIAL** — same live overview; parent-only "My Children" section present; the child switcher that re-scopes the portal (§8) is a later unit. |
 | My Children | `/portal/children` | `portal.children.view` | PLACEHOLDER — child selector → context switch (§8) |
 | Course | `/portal/course` | `portal.academic.view` | PLACEHOLDER |
 | Timetable | `/portal/timetable` | `portal.timetable.view` | PLACEHOLDER |
@@ -97,7 +97,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | Payments | `/portal/payments` | `portal.payments.view` | PLACEHOLDER |
 | Certificates | `/portal/certificates` | `portal.certificates.view` | PLACEHOLDER |
 | Notifications | `/portal/notifications` | `notifications.view` | DONE (reference feature) |
-| Profile | `/portal/profile` | `portal.profile.view` | PLACEHOLDER |
+| Profile | `/portal/profile` | `portal.profile.view` | **DONE** — the caller's own record (§7): personal, academic and guardian details from `/portal/profile`, read-only. |
 
 ---
 
@@ -132,6 +132,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | roles | `roles.contract.ts` | list, get | DONE (read) — backend-enforced role → permission mapping (§12) |
 | audit | `audit.contract.ts` | list, get | DONE (read) — backend-recorded audit trail; no client mutation |
 | settings | `settings.contract.ts` | get | DONE (read) — institution configuration owned by the backend |
+| portal | `portal.contract.ts` | overview, profile | DONE (read) — backend-scoped to the authenticated student / selected child (§7, §8) |
 | parents, fees, progress, certificates | — | — | NOT STARTED (Phase 4+) |
 
 ---

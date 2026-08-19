@@ -22,7 +22,6 @@ const MODULES: readonly PortalRoute[] = [
   { path: 'fees', title: 'Fees', description: 'Total, paid and pending fees with due dates.', permission: 'portal.fees.view', phase: 'Phase 6' },
   { path: 'payments', title: 'Payments', description: 'Your payment history.', permission: 'portal.payments.view', phase: 'Phase 6' },
   { path: 'certificates', title: 'Certificates', description: 'Certificates issued to you.', permission: 'portal.certificates.view', phase: 'Phase 6' },
-  { path: 'profile', title: 'Profile', description: 'Your personal information.', permission: 'portal.profile.view', phase: 'Phase 6' },
 ];
 
 export const studentParentRoutes: RouteObject[] = [
@@ -45,6 +44,18 @@ export const studentParentRoutes: RouteObject[] = [
         {lazyRoute(
           () => import('@/features/notifications/components/NotificationsPage'),
           (m) => m.NotificationsPage,
+        )}
+      </RequirePermission>
+    ),
+  },
+  {
+    // Profile (§7) — the authenticated student's own record.
+    path: 'profile',
+    element: (
+      <RequirePermission anyOf={['portal.profile.view']}>
+        {lazyRoute(
+          () => import('@/features/portal/components/PortalProfilePage'),
+          (m) => m.PortalProfilePage,
         )}
       </RequirePermission>
     ),
