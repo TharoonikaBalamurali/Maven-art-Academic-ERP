@@ -68,7 +68,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | Applications — list + detail | `/management/applications`, `/applications/:id` | `applications.view` / `applications.review` | **DONE** — review + admission-decision state machine (§16): list with stage filter; detail renders submit/start-review/approve/reject **only from backend `availableActions` ∩ permission**; approve/reject capture an optional note via dialog; approval yields an `adm-…` admission link; backend rejects illegal transitions (409) |
 | Admissions — list + detail | `/management/admissions`, `/admissions/:id` | `admissions.view` / `admissions.approve` | **DONE** — offer state machine (§17): created on application approval (§16 → §17 handoff); list with stage filter; detail renders confirm/enroll/cancel **only from backend `availableActions` ∩ permission**; enrol/cancel capture an optional note via dialog; enrolment yields an `enr-…` enrollment link; backend rejects illegal transitions (409) |
 | Enrollments — list + detail | `/management/enrollments`, `/enrollments/:id` | `enrollments.view` | **DONE** — read views (§18): created on admission enrolment (§17 → §18 handoff); list with status filter and search across student/course/batch; detail shows the record with provenance back to its admission. Manual create and any status transitions are `TBD — BACKEND CONTRACT` (no transition permission in the spec). |
-| Fee Structures | `/management/fee-structures` | `fee_structures.view` | PLACEHOLDER |
+| Fee Structures — list + detail | `/management/fee-structures`, `/fee-structures/:id` | `fee_structures.view` | **DONE** — read views (§19, Phase 4): list with status filter and search by course; detail shows the fee components and the **backend-authoritative total**. Every amount, including the total, is displayed verbatim from the backend and **never summed or recomputed on the client** (finance invariant). Create/update are `TBD — BACKEND CONTRACT`. |
 | Fee Assignments | `/management/fee-assignments` | `fee_assignments.view` | PLACEHOLDER |
 | Installments | `/management/installments` | `installments.view` | PLACEHOLDER |
 | Payments | `/management/payments` | `payments.view` / `payments.create` | PLACEHOLDER |
@@ -118,6 +118,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | applications | `applications.contract.ts` | list, get, submit, startReview, approve, reject | DONE — backend-owned review state machine; availableActions drive the UI; approval creates an admission (§16) |
 | admissions | `admissions.contract.ts` | list, get, confirm, enroll, cancel | DONE — backend-owned offer state machine; availableActions drive the UI; enrolment creates an enrollment (§17) |
 | enrollments | `enrollments.contract.ts` | list, get | DONE (read) — created by the §17 → §18 handoff; create/transitions pending backend contract |
+| fee_structures | `fee-structures.contract.ts` | list, get | DONE (read) — backend-authoritative amounts and totals; never computed on the client (§19) |
 | parents, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 4+) |
 
 ---

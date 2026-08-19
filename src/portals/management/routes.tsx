@@ -293,6 +293,29 @@ export const managementRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
+  {
+    // Fee Structures (§19) — backend-authoritative fee definitions per course.
+    path: 'fee-structures',
+    element: (
+      <RequirePermission anyOf={['fee_structures.view']}>
+        {lazyRoute(
+          () => import('@/features/fee-structures/components/FeeStructuresPage'),
+          (m) => m.FeeStructuresPage,
+        )}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'fee-structures/:feeStructureId',
+    element: (
+      <RequirePermission anyOf={['fee_structures.view']}>
+        {lazyRoute(
+          () => import('@/features/fee-structures/components/FeeStructureDetailPage'),
+          (m) => m.FeeStructureDetailPage,
+        )}
+      </RequirePermission>
+    ),
+  },
 
   // Modules handled explicitly above; the rest stay placeholders.
   ...MODULES.filter(
@@ -308,6 +331,7 @@ export const managementRoutes: RouteObject[] = [
         'applications',
         'admissions',
         'enrollments',
+        'fee-structures',
       ].includes(module.path),
   ).flatMap<RouteObject>(
     (module) => {
