@@ -462,6 +462,23 @@ export const managementRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
+  {
+    // Reports (§ reporting) — backend-computed reports; export needs reports.export.
+    path: 'reports',
+    element: (
+      <RequirePermission anyOf={['reports.view']}>
+        {lazyRoute(() => import('@/features/reports/components/ReportsPage'), (m) => m.ReportsPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'reports/:reportId',
+    element: (
+      <RequirePermission anyOf={['reports.view']}>
+        {lazyRoute(() => import('@/features/reports/components/ReportDetailPage'), (m) => m.ReportDetailPage)}
+      </RequirePermission>
+    ),
+  },
 
   // Modules handled explicitly above; the rest stay placeholders.
   ...MODULES.filter(
@@ -485,6 +502,7 @@ export const managementRoutes: RouteObject[] = [
         'receipts',
         'progress',
         'certificates',
+        'reports',
       ].includes(module.path),
   ).flatMap<RouteObject>(
     (module) => {

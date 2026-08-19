@@ -76,7 +76,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | Receipts — list + detail | `/management/receipts`, `/receipts/:id` | `receipts.view` | **DONE** — read views (§24, Phase 4): list with search by student/receipt no., sortable by issue date; detail shows the receipt number, amount, method and links to the payment and fee assignment. Receipts are **issued by the backend** when a payment is recorded (§22); the frontend never generates one and any document download would come from a backend endpoint (`TBD — BACKEND CONTRACT`). Read-only. |
 | Academic Progress — list + detail | `/management/progress`, `/progress/:id` | `progress.view` | **DONE** — read views (§26, Phase 5): list with status filter and search; detail shows the captured score, the **backend-computed grade and result**, plus assessment context. The frontend never derives a grade from score/maxScore or decides pass/fail — grade and result are displayed verbatim (academic invariant). Score entry (`progress.update`, faculty) is a follow-up unit, `TBD — BACKEND CONTRACT`. |
 | Certificates — list + detail + issue | `/management/certificates`, `/certificates/:id` | `certificates.view` / `certificates.issue` | **DONE** — read views plus an issue action (§27, Phase 5): list with status filter and search; detail shows the certificate number, type, issue date and issuer. **Issue certificate** is gated on `certificates.issue` (Admin); the backend produces the certificate document and number — the frontend never generates a certificate (document invariant, as with receipts §24). Invalid payloads rejected (422). |
-| Reports | `/management/reports` | `reports.view` | PLACEHOLDER |
+| Reports — catalog + detail + export | `/management/reports`, `/reports/:id` | `reports.view` / `reports.export` | **DONE** — read views plus an export action (§ reporting, Phase 5): catalog with category filter and search; detail renders backend-computed metric cards and a breakdown table. **Every metric and table cell arrives display-ready from the backend and is rendered verbatim** — the frontend never aggregates or derives a figure. **Export** is gated on `reports.export` (Admin/Accounts; Faculty views only); the backend prepares the file — the client never generates it. |
 | Users | `/management/users` | `users.view` | PLACEHOLDER |
 | Roles & Permissions | `/management/roles` | `roles.view` | PLACEHOLDER |
 | Audit Logs | `/management/audit` | `audit.view` | PLACEHOLDER |
@@ -126,6 +126,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | receipts | `receipts.contract.ts` | list, get | DONE (read) — backend-issued receipts; the client never generates a receipt (§24) |
 | progress | `progress.contract.ts` | list, get | DONE (read) — grade and result are backend-computed; the client never derives a grade or decides pass/fail (§26) |
 | certificates | `certificates.contract.ts` | list, get, issue | DONE — issue needs certificates.issue; the backend produces the certificate document and number (§27) |
+| reports | `reports.contract.ts` | list, get, export | DONE — reports computed by the backend; every cell rendered verbatim; export needs reports.export |
 | parents, fees, progress, certificates | — | — | NOT STARTED (Phase 4+) |
 
 ---

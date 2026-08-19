@@ -55,6 +55,7 @@ import { getReceipt, listReceipts } from './receipts-data';
 import { getProgress, listProgress } from './progress-data';
 import { getCertificate, issueCertificate, listCertificates } from './certificates-data';
 import type { IssueCertificateInput } from '@/features/certificates/types';
+import { getReport, listReports, reportExists } from './reports-data';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -801,6 +802,41 @@ const routes: Route[] = [
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'certificates.view');
       const detail = getCertificate(params.certificateId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/reports$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'reports.view');
+      return listReports({
+        ...listQueryFrom(ctx.request.query),
+        filters: { category: typeof ctx.request.query?.category === 'string' ? ctx.request.query.category : undefined },
+      });
+    },
+  },
+  {
+    method: 'POST',
+    pattern: /^\/reports\/(?<reportId>[^/]+)\/export$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      // Exporting a report needs the export permission (§ reporting).
+      requirePermission(identity, 'reports.export');
+      if (!reportExists(params.reportId ?? '')) fail('not_found');
+      // The backend prepares the file; this is a placeholder until that exists.
+      return { status: 'preparing', message: 'The backend is preparing the export. It will be available shortly.' };
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/reports\/(?<reportId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'reports.view');
+      const detail = getReport(params.reportId ?? '');
       if (!detail) fail('not_found');
       return detail;
     },
