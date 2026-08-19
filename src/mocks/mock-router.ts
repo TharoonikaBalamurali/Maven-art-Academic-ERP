@@ -18,6 +18,7 @@ import {
 import type { StudentInput } from '@/features/students/types';
 import { rosterFor, submitAttendance, todaysClassesFor } from './attendance-data';
 import type { AttendanceSubmission } from '@/features/attendance/types';
+import { getBatchDetail, listBatches } from './batches-data';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -304,6 +305,36 @@ const routes: Route[] = [
       if (result.kind === 'not_found') fail('not_found');
       if (result.kind === 'forbidden') fail('forbidden');
       return result.roster;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/batches$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'batches.view');
+      return listBatches({
+        page: Number(ctx.request.query?.page) || undefined,
+        limit: Number(ctx.request.query?.limit) || undefined,
+        search: typeof ctx.request.query?.search === 'string' ? ctx.request.query.search : undefined,
+        sortBy: typeof ctx.request.query?.sortBy === 'string' ? ctx.request.query.sortBy : undefined,
+        sortDir: ctx.request.query?.sortDir === 'desc' ? 'desc' : 'asc',
+        filters: {
+          course: typeof ctx.request.query?.course === 'string' ? ctx.request.query.course : undefined,
+          status: typeof ctx.request.query?.status === 'string' ? ctx.request.query.status : undefined,
+        },
+      });
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/batches\/(?<batchId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'batches.view');
+      const detail = getBatchDetail(params.batchId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
     },
   },
 ];

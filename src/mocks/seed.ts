@@ -131,6 +131,10 @@ export function courseCode(id: string): string {
   return SEED_COURSES.find((c) => c.id === id)?.code ?? id;
 }
 
+export function facultyName(id: string): string {
+  return SEED_FACULTY.find((f) => f.id === id)?.name ?? id;
+}
+
 // --- Admissions pipeline (Enquiry → Application → Admission) ----------------
 
 export const SEED_ENQUIRIES = [

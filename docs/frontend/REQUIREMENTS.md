@@ -60,7 +60,8 @@ non-foundation modules are `PLACEHOLDER` by design.
 | Parents | `/management/parents` | `parents.view` | PLACEHOLDER |
 | Faculty | `/management/faculty` | `faculty.view` | PLACEHOLDER |
 | Courses | `/management/courses` | `courses.view` | PLACEHOLDER |
-| Batches | `/management/batches` | `batches.view` | PLACEHOLDER |
+| Batches — list | `/management/batches` | `batches.view` | **DONE** — server search/filter(course,status)/sort/pagination; Batch/Course/Faculty/Section/Students/Status columns |
+| Batches — details | `/management/batches/:id` | `batches.view` | **DONE** — relational (§19): Course/Faculty/Section/enrolment as distinct facts; Students + Schedule tabs; roster links to student records |
 | Timetable | `/management/timetable` | `timetable.view` | PLACEHOLDER |
 | Attendance | `/management/attendance` | `attendance.view` / `attendance.mark` | **DONE** — faculty marking workflow (§21): only the caller's assigned classes (no batch picker), roster present/absent + submit; backend authorises per class (§6); read-only for view-only users; empty state for the unassigned |
 | Enquiries | `/management/enquiries` | `enquiries.view` | PLACEHOLDER |
@@ -109,7 +110,8 @@ non-foundation modules are `PLACEHOLDER` by design.
 | dashboard | `dashboard.contract.ts` | summary (role-scoped) | DONE |
 | students | `students.contract.ts` | list, filter-options, get, create, update | DONE — full CRUD (mock uses an in-memory store so create/edit reflect in list + detail) |
 | attendance | `attendance.contract.ts` | todaysClasses, roster, submit | DONE — scoped to the caller's assigned classes; backend authorises marking (§6) |
-| parents, faculty, courses, batches, enquiries, applications, admissions, enrollments, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 2+) |
+| batches | `batches.contract.ts` | list, get | DONE — list + relational detail (course/faculty/schedule/students kept separate, §19) |
+| parents, faculty, courses, enquiries, applications, admissions, enrollments, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 2+) |
 
 ---
 
