@@ -442,6 +442,26 @@ export const managementRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
+  {
+    // Certificates (§27) — backend-issued documents; issuing needs certificates.issue.
+    path: 'certificates',
+    element: (
+      <RequirePermission anyOf={['certificates.view']}>
+        {lazyRoute(() => import('@/features/certificates/components/CertificatesPage'), (m) => m.CertificatesPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'certificates/:certificateId',
+    element: (
+      <RequirePermission anyOf={['certificates.view']}>
+        {lazyRoute(
+          () => import('@/features/certificates/components/CertificateDetailPage'),
+          (m) => m.CertificateDetailPage,
+        )}
+      </RequirePermission>
+    ),
+  },
 
   // Modules handled explicitly above; the rest stay placeholders.
   ...MODULES.filter(
@@ -464,6 +484,7 @@ export const managementRoutes: RouteObject[] = [
         'outstanding',
         'receipts',
         'progress',
+        'certificates',
       ].includes(module.path),
   ).flatMap<RouteObject>(
     (module) => {

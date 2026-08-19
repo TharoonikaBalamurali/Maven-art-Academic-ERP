@@ -75,7 +75,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | Outstanding Fees — list + detail | `/management/outstanding`, `/outstanding/:id` | `outstanding.view` | **DONE** — the backend's outstanding-balance report (§23, Phase 4): list with severity filter and search, sortable by outstanding amount; detail shows assigned/paid/outstanding/overdue with a fee-assignment link. **Every figure is backend-computed and displayed verbatim** — the frontend never aggregates balances or derives a severity (finance invariant). Read-only. |
 | Receipts — list + detail | `/management/receipts`, `/receipts/:id` | `receipts.view` | **DONE** — read views (§24, Phase 4): list with search by student/receipt no., sortable by issue date; detail shows the receipt number, amount, method and links to the payment and fee assignment. Receipts are **issued by the backend** when a payment is recorded (§22); the frontend never generates one and any document download would come from a backend endpoint (`TBD — BACKEND CONTRACT`). Read-only. |
 | Academic Progress — list + detail | `/management/progress`, `/progress/:id` | `progress.view` | **DONE** — read views (§26, Phase 5): list with status filter and search; detail shows the captured score, the **backend-computed grade and result**, plus assessment context. The frontend never derives a grade from score/maxScore or decides pass/fail — grade and result are displayed verbatim (academic invariant). Score entry (`progress.update`, faculty) is a follow-up unit, `TBD — BACKEND CONTRACT`. |
-| Certificates | `/management/certificates` | `certificates.view` | PLACEHOLDER |
+| Certificates — list + detail + issue | `/management/certificates`, `/certificates/:id` | `certificates.view` / `certificates.issue` | **DONE** — read views plus an issue action (§27, Phase 5): list with status filter and search; detail shows the certificate number, type, issue date and issuer. **Issue certificate** is gated on `certificates.issue` (Admin); the backend produces the certificate document and number — the frontend never generates a certificate (document invariant, as with receipts §24). Invalid payloads rejected (422). |
 | Reports | `/management/reports` | `reports.view` | PLACEHOLDER |
 | Users | `/management/users` | `users.view` | PLACEHOLDER |
 | Roles & Permissions | `/management/roles` | `roles.view` | PLACEHOLDER |
@@ -125,6 +125,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | outstanding | `outstanding.contract.ts` | list, get | DONE (read) — every outstanding/overdue figure and severity is backend-computed; the client never aggregates (§23) |
 | receipts | `receipts.contract.ts` | list, get | DONE (read) — backend-issued receipts; the client never generates a receipt (§24) |
 | progress | `progress.contract.ts` | list, get | DONE (read) — grade and result are backend-computed; the client never derives a grade or decides pass/fail (§26) |
+| certificates | `certificates.contract.ts` | list, get, issue | DONE — issue needs certificates.issue; the backend produces the certificate document and number (§27) |
 | parents, fees, progress, certificates | — | — | NOT STARTED (Phase 4+) |
 
 ---

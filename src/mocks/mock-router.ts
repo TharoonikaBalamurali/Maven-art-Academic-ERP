@@ -53,6 +53,8 @@ import type { RecordPaymentInput } from '@/features/payments/types';
 import { getOutstanding, listOutstanding } from './outstanding-data';
 import { getReceipt, listReceipts } from './receipts-data';
 import { getProgress, listProgress } from './progress-data';
+import { getCertificate, issueCertificate, listCertificates } from './certificates-data';
+import type { IssueCertificateInput } from '@/features/certificates/types';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -759,6 +761,46 @@ const routes: Route[] = [
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'progress.view');
       const detail = getProgress(params.progressId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/certificates$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'certificates.view');
+      return listCertificates({
+        ...listQueryFrom(ctx.request.query),
+        filters: {
+          status: typeof ctx.request.query?.status === 'string' ? ctx.request.query.status : undefined,
+          type: typeof ctx.request.query?.type === 'string' ? ctx.request.query.type : undefined,
+        },
+      });
+    },
+  },
+  {
+    method: 'POST',
+    pattern: /^\/certificates$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      // Issuing a certificate needs the issue permission — admin only (§27).
+      requirePermission(identity, 'certificates.issue');
+      const body = (ctx.request.body ?? {}) as Partial<IssueCertificateInput>;
+      if (!body.student || !body.type) {
+        fail('validation', { status: 422 });
+      }
+      return issueCertificate(body as IssueCertificateInput, identity.profile.fullName);
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/certificates\/(?<certificateId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'certificates.view');
+      const detail = getCertificate(params.certificateId ?? '');
       if (!detail) fail('not_found');
       return detail;
     },
