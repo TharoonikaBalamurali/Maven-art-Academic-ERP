@@ -37,6 +37,13 @@ import {
   type ApplicationResult,
 } from './applications-data';
 import type { ApplicationAction } from '@/features/applications/types';
+import {
+  getAdmission,
+  listAdmissions,
+  transitionAdmission,
+  type AdmissionResult,
+} from './admissions-data';
+import type { AdmissionAction } from '@/features/admissions/types';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -514,9 +521,50 @@ const routes: Route[] = [
       return unwrapApplication(transitionApplication(params.applicationId ?? '', action, note));
     },
   },
+  {
+    method: 'GET',
+    pattern: /^\/admissions$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'admissions.view');
+      return listAdmissions({
+        ...listQueryFrom(ctx.request.query),
+        filters: { stage: typeof ctx.request.query?.stage === 'string' ? ctx.request.query.stage : undefined },
+      });
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/admissions\/(?<admissionId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'admissions.view');
+      const detail = getAdmission(params.admissionId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'POST',
+    pattern: /^\/admissions\/(?<admissionId>[^/]+)\/(?<action>confirm|enroll|cancel)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      // The confirm/enroll/cancel decisions require the approve permission (§17).
+      requirePermission(identity, 'admissions.approve');
+      const action = (params.action ?? '') as AdmissionAction;
+      const note = (ctx.request.body as { note?: string })?.note;
+      return unwrapAdmission(transitionAdmission(params.admissionId ?? '', action, note));
+    },
+  },
 ];
 
 function unwrapApplication(result: ApplicationResult): unknown {
+  if (result.kind === 'not_found') fail('not_found');
+  if (result.kind === 'conflict') fail('conflict', { status: 409 });
+  return result.detail;
+}
+
+function unwrapAdmission(result: AdmissionResult): unknown {
   if (result.kind === 'not_found') fail('not_found');
   if (result.kind === 'conflict') fail('conflict', { status: 409 });
   return result.detail;

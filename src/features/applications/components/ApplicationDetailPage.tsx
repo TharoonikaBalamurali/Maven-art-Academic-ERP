@@ -126,7 +126,7 @@ function ApplicationDetailView({ application }: { application: ApplicationDetail
       {application.admissionId && (
         <div className="mb-4 rounded-control border border-[var(--success)] bg-[var(--success-surface)] px-3 py-2 text-body-sm text-[var(--success)]">
           Approved — admission{' '}
-          <Link to="/management/admissions" className="font-medium underline">
+          <Link to={`/management/admissions/${application.admissionId}`} className="font-medium underline">
             {application.admissionId}
           </Link>
           .

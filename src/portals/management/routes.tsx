@@ -247,6 +247,29 @@ export const managementRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
+  {
+    // Admissions (§17) — the offer state machine created on application approval.
+    path: 'admissions',
+    element: (
+      <RequirePermission anyOf={['admissions.view']}>
+        {lazyRoute(
+          () => import('@/features/admissions/components/AdmissionsPage'),
+          (m) => m.AdmissionsPage,
+        )}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'admissions/:admissionId',
+    element: (
+      <RequirePermission anyOf={['admissions.view']}>
+        {lazyRoute(
+          () => import('@/features/admissions/components/AdmissionDetailPage'),
+          (m) => m.AdmissionDetailPage,
+        )}
+      </RequirePermission>
+    ),
+  },
 
   // Modules handled explicitly above; the rest stay placeholders.
   ...MODULES.filter(
@@ -260,6 +283,7 @@ export const managementRoutes: RouteObject[] = [
         'courses',
         'enquiries',
         'applications',
+        'admissions',
       ].includes(module.path),
   ).flatMap<RouteObject>(
     (module) => {

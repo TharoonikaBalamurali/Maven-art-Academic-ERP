@@ -93,7 +93,7 @@ describe('ApplicationDetailPage — decision actions (§16)', () => {
     renderPage();
 
     expect(screen.queryByRole('button', { name: 'Approve' })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'adm-501' })).toHaveAttribute('href', '/management/admissions');
+    expect(screen.getByRole('link', { name: 'adm-501' })).toHaveAttribute('href', '/management/admissions/adm-501');
   });
 
   it('approves through the decision dialog with a note', async () => {

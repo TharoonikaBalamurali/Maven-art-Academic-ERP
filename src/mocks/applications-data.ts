@@ -5,6 +5,7 @@ import type {
   ApplicationStage,
 } from '@/features/applications/types';
 import type { ListQuery, Paginated } from '@/shared/types';
+import { createAdmissionFromApplication } from './admissions-data';
 
 /**
  * Applications mock with the review state machine (§16).
@@ -67,11 +68,9 @@ function buildStore(): ApplicationRecord[] {
 }
 
 let store = buildStore();
-let admissionSeq = 501;
 
 export function resetApplications(): void {
   store = buildStore();
-  admissionSeq = 501;
 }
 
 /** The state machine — the sole source of which actions a stage permits. */
@@ -173,8 +172,14 @@ export function transitionApplication(id: string, action: ApplicationAction, not
     case 'approve':
       record.stage = 'approved';
       record.decisionNote = note?.trim() || null;
-      record.admissionId = `adm-${admissionSeq}`;
-      admissionSeq += 1;
+      // §16 → §17 handoff: approval creates the admission record and links it.
+      record.admissionId = createAdmissionFromApplication({
+        applicant: record.applicant,
+        email: record.email,
+        phone: record.phone,
+        programme: record.programme,
+        applicationId: record.id,
+      });
       break;
     case 'reject':
       record.stage = 'rejected';
