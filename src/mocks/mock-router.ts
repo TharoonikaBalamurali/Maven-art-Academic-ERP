@@ -51,6 +51,7 @@ import { getInstallment, listInstallments } from './installments-data';
 import { getPayment, listPayments, recordPayment } from './payments-data';
 import type { RecordPaymentInput } from '@/features/payments/types';
 import { getOutstanding, listOutstanding } from './outstanding-data';
+import { getReceipt, listReceipts } from './receipts-data';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -714,6 +715,26 @@ const routes: Route[] = [
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'outstanding.view');
       const detail = getOutstanding(params.outstandingId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/receipts$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'receipts.view');
+      return listReceipts(listQueryFrom(ctx.request.query));
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/receipts\/(?<receiptId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'receipts.view');
+      const detail = getReceipt(params.receiptId ?? '');
       if (!detail) fail('not_found');
       return detail;
     },

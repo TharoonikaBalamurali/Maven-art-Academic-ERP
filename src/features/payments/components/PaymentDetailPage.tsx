@@ -87,7 +87,15 @@ function PaymentDetailView({ payment }: { payment: PaymentDetail }) {
               '—'
             )}
           </Info>
-          <Info label="Receipt">{payment.receiptId ?? 'Not issued'}</Info>
+          <Info label="Receipt">
+            {payment.receiptId ? (
+              <Link to={`/management/receipts/${payment.receiptId}`} className="text-[var(--accent)] hover:underline">
+                {payment.receiptId}
+              </Link>
+            ) : (
+              'Not issued'
+            )}
+          </Info>
         </CardBody>
       </Card>
 

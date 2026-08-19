@@ -402,6 +402,26 @@ export const managementRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
+  {
+    // Receipts (§24) — backend-issued receipts for recorded payments.
+    path: 'receipts',
+    element: (
+      <RequirePermission anyOf={['receipts.view']}>
+        {lazyRoute(() => import('@/features/receipts/components/ReceiptsPage'), (m) => m.ReceiptsPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'receipts/:receiptId',
+    element: (
+      <RequirePermission anyOf={['receipts.view']}>
+        {lazyRoute(
+          () => import('@/features/receipts/components/ReceiptDetailPage'),
+          (m) => m.ReceiptDetailPage,
+        )}
+      </RequirePermission>
+    ),
+  },
 
   // Modules handled explicitly above; the rest stay placeholders.
   ...MODULES.filter(
@@ -422,6 +442,7 @@ export const managementRoutes: RouteObject[] = [
         'installments',
         'payments',
         'outstanding',
+        'receipts',
       ].includes(module.path),
   ).flatMap<RouteObject>(
     (module) => {
