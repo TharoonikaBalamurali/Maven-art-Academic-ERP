@@ -57,7 +57,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | Students — details | `/management/students/:id` | `students.view` | **DONE** — 8 deep-linkable tabs (§14.1): Personal/Academic/Parent/Enrollment full; Attendance/Fees/Progress/Certificates backend rollup summaries linking to their module; not-found state |
 | Students — create | `/management/students/new` | `students.create` | **DONE** — grouped form, client + server validation, 422 field mapping, success toast → detail |
 | Students — edit | `/management/students/:id/edit` | `students.update` | **DONE** — same form prefilled from the record; server 422 mapping |
-| Parents | `/management/parents` | `parents.view` | PLACEHOLDER |
+| Parents — list + detail | `/management/parents`, `/parents/:id` | `parents.view` | **DONE** — read views (§ Phase 2): list with search; detail shows contact details and linked students (§8: linkage owned by the backend), each deep-linking to the student record. Create/update `TBD — BACKEND CONTRACT`. |
 | Faculty — list + detail | `/management/faculty`, `/faculty/:id` | `faculty.view` | **DONE** — list (search/sort/pagination); detail shows assigned batches + subjects, batches link to their record (§6) |
 | Courses — list + detail | `/management/courses`, `/courses/:id` | `courses.view` | **DONE** — list (search/sort/pagination); detail shows the course's batches linking to their record (§19) |
 | Batches — list | `/management/batches` | `batches.view` | **DONE** — server search/filter(course,status)/sort/pagination; Batch/Course/Faculty/Section/Students/Status columns |
@@ -77,10 +77,10 @@ non-foundation modules are `PLACEHOLDER` by design.
 | Academic Progress — list + detail | `/management/progress`, `/progress/:id` | `progress.view` | **DONE** — read views (§26, Phase 5): list with status filter and search; detail shows the captured score, the **backend-computed grade and result**, plus assessment context. The frontend never derives a grade from score/maxScore or decides pass/fail — grade and result are displayed verbatim (academic invariant). Score entry (`progress.update`, faculty) is a follow-up unit, `TBD — BACKEND CONTRACT`. |
 | Certificates — list + detail + issue | `/management/certificates`, `/certificates/:id` | `certificates.view` / `certificates.issue` | **DONE** — read views plus an issue action (§27, Phase 5): list with status filter and search; detail shows the certificate number, type, issue date and issuer. **Issue certificate** is gated on `certificates.issue` (Admin); the backend produces the certificate document and number — the frontend never generates a certificate (document invariant, as with receipts §24). Invalid payloads rejected (422). |
 | Reports — catalog + detail + export | `/management/reports`, `/reports/:id` | `reports.view` / `reports.export` | **DONE** — read views plus an export action (§ reporting, Phase 5): catalog with category filter and search; detail renders backend-computed metric cards and a breakdown table. **Every metric and table cell arrives display-ready from the backend and is rendered verbatim** — the frontend never aggregates or derives a figure. **Export** is gated on `reports.export` (Admin/Accounts; Faculty views only); the backend prepares the file — the client never generates it. |
-| Users | `/management/users` | `users.view` | PLACEHOLDER |
-| Roles & Permissions | `/management/roles` | `roles.view` | PLACEHOLDER |
-| Audit Logs | `/management/audit` | `audit.view` | PLACEHOLDER |
-| Settings | `/management/settings` | `settings.view` | PLACEHOLDER |
+| Users — list + detail | `/management/users`, `/users/:id` | `users.view` | **DONE** — read views (§ administration): list with role/status filters and search; detail shows the account, its role (linking to the role definition) and activity. Role permissions are enforced by the backend; create/update `TBD — BACKEND CONTRACT`. |
+| Roles & Permissions — list + detail | `/management/roles`, `/roles/:id` | `roles.view` | **DONE** — read views (§ administration, §12): list of roles with user/permission counts; detail shows the permission set grouped by domain. The mapping is **enforced by the backend**; the frontend uses it only to shape the UI. Editing `roles.update` `TBD`. |
+| Audit Logs — list + detail | `/management/audit`, `/audit/:id` | `audit.view` | **DONE** — read-only (§ administration): the trail recorded by the backend — actor, action, target, timestamp; detail adds role, IP and details. No client-side mutation of audit entries. |
+| Settings | `/management/settings` | `settings.view` | **DONE** — read view (§ administration): institution configuration grouped into sections (institution, academic, finance, notifications), rendered from backend values. Editing `settings.update` `TBD — BACKEND CONTRACT`. |
 
 ## Student / Parent portal (PDF §7–§8, §37, Phase 6)
 
@@ -127,6 +127,11 @@ non-foundation modules are `PLACEHOLDER` by design.
 | progress | `progress.contract.ts` | list, get | DONE (read) — grade and result are backend-computed; the client never derives a grade or decides pass/fail (§26) |
 | certificates | `certificates.contract.ts` | list, get, issue | DONE — issue needs certificates.issue; the backend produces the certificate document and number (§27) |
 | reports | `reports.contract.ts` | list, get, export | DONE — reports computed by the backend; every cell rendered verbatim; export needs reports.export |
+| parents | `parents.contract.ts` | list, get | DONE (read) — parent records and backend-owned student linkage (§8) |
+| users | `users.contract.ts` | list, get | DONE (read) — accounts and roles; permissions enforced by the backend |
+| roles | `roles.contract.ts` | list, get | DONE (read) — backend-enforced role → permission mapping (§12) |
+| audit | `audit.contract.ts` | list, get | DONE (read) — backend-recorded audit trail; no client mutation |
+| settings | `settings.contract.ts` | get | DONE (read) — institution configuration owned by the backend |
 | parents, fees, progress, certificates | — | — | NOT STARTED (Phase 4+) |
 
 ---

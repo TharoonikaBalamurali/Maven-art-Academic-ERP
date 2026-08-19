@@ -479,6 +479,83 @@ export const managementRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
+  {
+    // Parents (§ Phase 2) — parent records and their linked students.
+    path: 'parents',
+    element: (
+      <RequirePermission anyOf={['parents.view']}>
+        {lazyRoute(() => import('@/features/parents/components/ParentsPage'), (m) => m.ParentsPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'parents/:parentId',
+    element: (
+      <RequirePermission anyOf={['parents.view']}>
+        {lazyRoute(() => import('@/features/parents/components/ParentDetailPage'), (m) => m.ParentDetailPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    // Users (§ administration) — accounts and roles.
+    path: 'users',
+    element: (
+      <RequirePermission anyOf={['users.view']}>
+        {lazyRoute(() => import('@/features/users/components/UsersPage'), (m) => m.UsersPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'users/:userId',
+    element: (
+      <RequirePermission anyOf={['users.view']}>
+        {lazyRoute(() => import('@/features/users/components/UserDetailPage'), (m) => m.UserDetailPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    // Roles & Permissions (§ administration, §12) — backend-enforced role definitions.
+    path: 'roles',
+    element: (
+      <RequirePermission anyOf={['roles.view']}>
+        {lazyRoute(() => import('@/features/roles/components/RolesPage'), (m) => m.RolesPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'roles/:roleId',
+    element: (
+      <RequirePermission anyOf={['roles.view']}>
+        {lazyRoute(() => import('@/features/roles/components/RoleDetailPage'), (m) => m.RoleDetailPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    // Audit Logs (§ administration) — recorded by the backend; read-only.
+    path: 'audit',
+    element: (
+      <RequirePermission anyOf={['audit.view']}>
+        {lazyRoute(() => import('@/features/audit/components/AuditPage'), (m) => m.AuditPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'audit/:auditId',
+    element: (
+      <RequirePermission anyOf={['audit.view']}>
+        {lazyRoute(() => import('@/features/audit/components/AuditDetailPage'), (m) => m.AuditDetailPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    // Settings (§ administration) — institution configuration.
+    path: 'settings',
+    element: (
+      <RequirePermission anyOf={['settings.view']}>
+        {lazyRoute(() => import('@/features/settings/components/SettingsPage'), (m) => m.SettingsPage)}
+      </RequirePermission>
+    ),
+  },
 
   // Modules handled explicitly above; the rest stay placeholders.
   ...MODULES.filter(
@@ -503,6 +580,11 @@ export const managementRoutes: RouteObject[] = [
         'progress',
         'certificates',
         'reports',
+        'parents',
+        'users',
+        'roles',
+        'audit',
+        'settings',
       ].includes(module.path),
   ).flatMap<RouteObject>(
     (module) => {

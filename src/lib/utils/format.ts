@@ -33,6 +33,17 @@ export function formatDate(value: string): string {
   });
 }
 
+/** "19 Aug 2026, 10:24 AM" — date and time for audit trails and timestamps. */
+export function formatDateTime(value: string): string {
+  return new Date(value).toLocaleString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
 /** "9:00 AM – 10:30 AM" from two 24h "HH:MM" strings. */
 export function formatTimeRange(start: string, end: string): string {
   const to12h = (hhmm: string): string => {

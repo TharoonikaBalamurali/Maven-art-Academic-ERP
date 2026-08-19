@@ -56,6 +56,11 @@ import { getProgress, listProgress } from './progress-data';
 import { getCertificate, issueCertificate, listCertificates } from './certificates-data';
 import type { IssueCertificateInput } from '@/features/certificates/types';
 import { getReport, listReports, reportExists } from './reports-data';
+import { getParent, listParents } from './parents-data';
+import { getUser, listUsers } from './users-data';
+import { getRole, listRoles } from './roles-data';
+import { getAudit, listAudit } from './audit-data';
+import { getSettings } from './settings-data';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -839,6 +844,101 @@ const routes: Route[] = [
       const detail = getReport(params.reportId ?? '');
       if (!detail) fail('not_found');
       return detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/parents$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'parents.view');
+      return listParents(listQueryFrom(ctx.request.query));
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/parents\/(?<parentId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'parents.view');
+      const detail = getParent(params.parentId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/users$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'users.view');
+      return listUsers({
+        ...listQueryFrom(ctx.request.query),
+        filters: {
+          role: typeof ctx.request.query?.role === 'string' ? ctx.request.query.role : undefined,
+          status: typeof ctx.request.query?.status === 'string' ? ctx.request.query.status : undefined,
+        },
+      });
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/users\/(?<userId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'users.view');
+      const detail = getUser(params.userId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/roles$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'roles.view');
+      return listRoles(listQueryFrom(ctx.request.query));
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/roles\/(?<roleId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'roles.view');
+      const detail = getRole(params.roleId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/audit$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'audit.view');
+      return listAudit(listQueryFrom(ctx.request.query));
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/audit\/(?<auditId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'audit.view');
+      const detail = getAudit(params.auditId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/settings$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'settings.view');
+      return getSettings();
     },
   },
 ];
