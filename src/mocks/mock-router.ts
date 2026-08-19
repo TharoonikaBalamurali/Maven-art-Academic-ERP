@@ -48,6 +48,8 @@ import { getEnrollment, listEnrollments } from './enrollments-data';
 import { getFeeStructure, listFeeStructures } from './fee-structures-data';
 import { getFeeAssignment, listFeeAssignments } from './fee-assignments-data';
 import { getInstallment, listInstallments } from './installments-data';
+import { getPayment, listPayments, recordPayment } from './payments-data';
+import type { RecordPaymentInput } from '@/features/payments/types';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -648,6 +650,46 @@ const routes: Route[] = [
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'installments.view');
       const detail = getInstallment(params.installmentId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/payments$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'payments.view');
+      return listPayments({
+        ...listQueryFrom(ctx.request.query),
+        filters: {
+          method: typeof ctx.request.query?.method === 'string' ? ctx.request.query.method : undefined,
+          status: typeof ctx.request.query?.status === 'string' ? ctx.request.query.status : undefined,
+        },
+      });
+    },
+  },
+  {
+    method: 'POST',
+    pattern: /^\/payments$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      // Recording a payment needs the create permission — accounts only (§22).
+      requirePermission(identity, 'payments.create');
+      const body = (ctx.request.body ?? {}) as Partial<RecordPaymentInput>;
+      if (!body.student || typeof body.amount !== 'number' || body.amount <= 0 || !body.method || !body.paidAt) {
+        fail('validation', { status: 422 });
+      }
+      return recordPayment(body as RecordPaymentInput);
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/payments\/(?<paymentId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'payments.view');
+      const detail = getPayment(params.paymentId ?? '');
       if (!detail) fail('not_found');
       return detail;
     },

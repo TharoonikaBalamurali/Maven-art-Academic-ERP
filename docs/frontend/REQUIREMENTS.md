@@ -121,7 +121,8 @@ non-foundation modules are `PLACEHOLDER` by design.
 | fee_structures | `fee-structures.contract.ts` | list, get | DONE (read) — backend-authoritative amounts and totals; never computed on the client (§19) |
 | fee_assignments | `fee-assignments.contract.ts` | list, get | DONE (read) — assigned/paid/balance are separate backend figures; balance never derived on the client (§20) |
 | installments | `installments.contract.ts` | list, get | DONE (read) — per-installment amount and status are backend-owned; the schedule is never computed on the client (§21) |
-| parents, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 4+) |
+| payments | `payments.contract.ts` | list, get, record | DONE — record needs payments.create; the backend stores the transaction and issues the receipt (§22) |
+| parents, fees, progress, certificates | — | — | NOT STARTED (Phase 4+) |
 
 ---
 

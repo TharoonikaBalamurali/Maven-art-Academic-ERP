@@ -362,6 +362,26 @@ export const managementRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
+  {
+    // Payments (§22) — recorded transactions; recording needs payments.create.
+    path: 'payments',
+    element: (
+      <RequirePermission anyOf={['payments.view']}>
+        {lazyRoute(() => import('@/features/payments/components/PaymentsPage'), (m) => m.PaymentsPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'payments/:paymentId',
+    element: (
+      <RequirePermission anyOf={['payments.view']}>
+        {lazyRoute(
+          () => import('@/features/payments/components/PaymentDetailPage'),
+          (m) => m.PaymentDetailPage,
+        )}
+      </RequirePermission>
+    ),
+  },
 
   // Modules handled explicitly above; the rest stay placeholders.
   ...MODULES.filter(
@@ -380,6 +400,7 @@ export const managementRoutes: RouteObject[] = [
         'fee-structures',
         'fee-assignments',
         'installments',
+        'payments',
       ].includes(module.path),
   ).flatMap<RouteObject>(
     (module) => {
