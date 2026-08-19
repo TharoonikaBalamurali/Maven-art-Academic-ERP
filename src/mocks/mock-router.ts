@@ -47,6 +47,7 @@ import type { AdmissionAction } from '@/features/admissions/types';
 import { getEnrollment, listEnrollments } from './enrollments-data';
 import { getFeeStructure, listFeeStructures } from './fee-structures-data';
 import { getFeeAssignment, listFeeAssignments } from './fee-assignments-data';
+import { getInstallment, listInstallments } from './installments-data';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -624,6 +625,29 @@ const routes: Route[] = [
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'fee_assignments.view');
       const detail = getFeeAssignment(params.feeAssignmentId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/installments$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'installments.view');
+      return listInstallments({
+        ...listQueryFrom(ctx.request.query),
+        filters: { status: typeof ctx.request.query?.status === 'string' ? ctx.request.query.status : undefined },
+      });
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/installments\/(?<installmentId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'installments.view');
+      const detail = getInstallment(params.installmentId ?? '');
       if (!detail) fail('not_found');
       return detail;
     },

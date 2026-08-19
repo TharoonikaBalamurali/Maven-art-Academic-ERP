@@ -70,7 +70,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | Enrollments — list + detail | `/management/enrollments`, `/enrollments/:id` | `enrollments.view` | **DONE** — read views (§18): created on admission enrolment (§17 → §18 handoff); list with status filter and search across student/course/batch; detail shows the record with provenance back to its admission. Manual create and any status transitions are `TBD — BACKEND CONTRACT` (no transition permission in the spec). |
 | Fee Structures — list + detail | `/management/fee-structures`, `/fee-structures/:id` | `fee_structures.view` | **DONE** — read views (§19, Phase 4): list with status filter and search by course; detail shows the fee components and the **backend-authoritative total**. Every amount, including the total, is displayed verbatim from the backend and **never summed or recomputed on the client** (finance invariant). Create/update are `TBD — BACKEND CONTRACT`. |
 | Fee Assignments — list + detail | `/management/fee-assignments`, `/fee-assignments/:id` | `fee_assignments.view` | **DONE** — read views (§20, Phase 4): list with status filter, search by student/structure, sortable by balance; detail shows assigned / paid / balance and links the fee structure. Assigned, paid and balance are each **backend-authoritative and displayed verbatim** — the client never derives balance from assigned − paid (finance invariant). Create is `TBD — BACKEND CONTRACT`. |
-| Installments | `/management/installments` | `installments.view` | PLACEHOLDER |
+| Installments — list + detail | `/management/installments`, `/installments/:id` | `installments.view` | **DONE** — read views (§21, Phase 4): list with status filter, search by student, sortable by due date; detail shows the installment amount, due/paid dates and status with a link back to its fee assignment. Amount and status are **backend-authoritative and displayed verbatim** — the client never computes a schedule or status (finance invariant). Read-only (no create/update permission in the spec). |
 | Payments | `/management/payments` | `payments.view` / `payments.create` | PLACEHOLDER |
 | Outstanding Fees | `/management/outstanding` | `outstanding.view` | PLACEHOLDER |
 | Receipts | `/management/receipts` | `receipts.view` | PLACEHOLDER |
@@ -120,6 +120,7 @@ non-foundation modules are `PLACEHOLDER` by design.
 | enrollments | `enrollments.contract.ts` | list, get | DONE (read) — created by the §17 → §18 handoff; create/transitions pending backend contract |
 | fee_structures | `fee-structures.contract.ts` | list, get | DONE (read) — backend-authoritative amounts and totals; never computed on the client (§19) |
 | fee_assignments | `fee-assignments.contract.ts` | list, get | DONE (read) — assigned/paid/balance are separate backend figures; balance never derived on the client (§20) |
+| installments | `installments.contract.ts` | list, get | DONE (read) — per-installment amount and status are backend-owned; the schedule is never computed on the client (§21) |
 | parents, fees, payments, progress, certificates | — | — | NOT STARTED (Phase 4+) |
 
 ---

@@ -339,6 +339,29 @@ export const managementRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
+  {
+    // Installments (§21) — the backend-owned schedule of part-payments.
+    path: 'installments',
+    element: (
+      <RequirePermission anyOf={['installments.view']}>
+        {lazyRoute(
+          () => import('@/features/installments/components/InstallmentsPage'),
+          (m) => m.InstallmentsPage,
+        )}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'installments/:installmentId',
+    element: (
+      <RequirePermission anyOf={['installments.view']}>
+        {lazyRoute(
+          () => import('@/features/installments/components/InstallmentDetailPage'),
+          (m) => m.InstallmentDetailPage,
+        )}
+      </RequirePermission>
+    ),
+  },
 
   // Modules handled explicitly above; the rest stay placeholders.
   ...MODULES.filter(
@@ -356,6 +379,7 @@ export const managementRoutes: RouteObject[] = [
         'enrollments',
         'fee-structures',
         'fee-assignments',
+        'installments',
       ].includes(module.path),
   ).flatMap<RouteObject>(
     (module) => {
