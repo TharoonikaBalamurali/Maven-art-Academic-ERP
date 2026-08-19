@@ -155,10 +155,22 @@ export const managementRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
+  {
+    // Timetable (§20) — the published weekly schedule with batch/faculty/room views.
+    path: 'timetable',
+    element: (
+      <RequirePermission anyOf={['timetable.view']}>
+        {lazyRoute(
+          () => import('@/features/timetable/components/TimetablePage'),
+          (m) => m.TimetablePage,
+        )}
+      </RequirePermission>
+    ),
+  },
 
   // Modules handled explicitly above; the rest stay placeholders.
   ...MODULES.filter(
-    (module) => !['students', 'attendance', 'batches'].includes(module.path),
+    (module) => !['students', 'attendance', 'batches', 'timetable'].includes(module.path),
   ).flatMap<RouteObject>(
     (module) => {
     const routes: RouteObject[] = [

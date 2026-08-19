@@ -123,6 +123,47 @@ export function batchName(id: string): string {
   return SEED_BATCHES.find((b) => b.id === id)?.name ?? id;
 }
 
+/**
+ * Weekly timetable (§20). The backend owns scheduling; this is the published
+ * schedule the frontend merely lays out. Rooms are drawn from a fixed set.
+ */
+export interface SeedTimetableSlot {
+  id: string;
+  day: 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri';
+  batchId: string;
+  subject: string;
+  room: string;
+  start: string;
+  end: string;
+  facultyId: string;
+}
+
+export const SEED_ROOMS = ['Studio 1', 'Studio 2', 'Design Lab', 'Media Lab', 'Ceramics', 'Room 104'];
+
+export const SEED_TIMETABLE: readonly SeedTimetableSlot[] = [
+  // Monday
+  { id: 'tt-01', day: 'Mon', batchId: 'bat-bfa-1a', subject: 'Life Drawing', room: 'Studio 2', start: '09:00', end: '10:30', facultyId: 'u-faculty' },
+  { id: 'tt-02', day: 'Mon', batchId: 'bat-vcd-1a', subject: 'Typography', room: 'Design Lab', start: '09:00', end: '10:30', facultyId: 'fac-002' },
+  { id: 'tt-03', day: 'Mon', batchId: 'bat-bfa-2a', subject: 'Colour Theory', room: 'Studio 1', start: '11:00', end: '12:30', facultyId: 'u-faculty' },
+  { id: 'tt-04', day: 'Mon', batchId: 'bat-anim-1a', subject: 'Storyboarding', room: 'Media Lab', start: '13:30', end: '15:00', facultyId: 'fac-003' },
+  // Tuesday
+  { id: 'tt-05', day: 'Tue', batchId: 'bat-scul-1a', subject: 'Clay Modelling', room: 'Ceramics', start: '09:00', end: '11:00', facultyId: 'fac-004' },
+  { id: 'tt-06', day: 'Tue', batchId: 'bat-bfa-1a', subject: 'Art History', room: 'Room 104', start: '11:15', end: '12:15', facultyId: 'u-faculty' },
+  { id: 'tt-07', day: 'Tue', batchId: 'bat-vcd-1a', subject: 'Brand Identity', room: 'Design Lab', start: '13:30', end: '15:00', facultyId: 'fac-002' },
+  // Wednesday
+  { id: 'tt-08', day: 'Wed', batchId: 'bat-bfa-1a', subject: 'Life Drawing', room: 'Studio 2', start: '09:00', end: '10:30', facultyId: 'u-faculty' },
+  { id: 'tt-09', day: 'Wed', batchId: 'bat-anim-1a', subject: 'Character Design', room: 'Media Lab', start: '11:00', end: '12:30', facultyId: 'fac-003' },
+  { id: 'tt-10', day: 'Wed', batchId: 'bat-bfa-2a', subject: 'Printmaking', room: 'Studio 1', start: '13:30', end: '15:30', facultyId: 'u-faculty' },
+  // Thursday
+  { id: 'tt-11', day: 'Thu', batchId: 'bat-vcd-1a', subject: 'Typography', room: 'Design Lab', start: '09:00', end: '10:30', facultyId: 'fac-002' },
+  { id: 'tt-12', day: 'Thu', batchId: 'bat-scul-1a', subject: 'Mould Making', room: 'Ceramics', start: '11:00', end: '13:00', facultyId: 'fac-004' },
+  { id: 'tt-13', day: 'Thu', batchId: 'bat-bfa-1a', subject: 'Colour Theory', room: 'Studio 2', start: '14:00', end: '15:30', facultyId: 'u-faculty' },
+  // Friday
+  { id: 'tt-14', day: 'Fri', batchId: 'bat-anim-1a', subject: 'Animation Principles', room: 'Media Lab', start: '09:00', end: '11:00', facultyId: 'fac-003' },
+  { id: 'tt-15', day: 'Fri', batchId: 'bat-bfa-2a', subject: 'Portfolio Review', room: 'Studio 1', start: '11:15', end: '12:45', facultyId: 'u-faculty' },
+  { id: 'tt-16', day: 'Fri', batchId: 'bat-vcd-1a', subject: 'Editorial Design', room: 'Design Lab', start: '13:30', end: '15:00', facultyId: 'fac-002' },
+];
+
 export function courseName(id: string): string {
   return SEED_COURSES.find((c) => c.id === id)?.name ?? id;
 }

@@ -19,6 +19,7 @@ import type { StudentInput } from '@/features/students/types';
 import { rosterFor, submitAttendance, todaysClassesFor } from './attendance-data';
 import type { AttendanceSubmission } from '@/features/attendance/types';
 import { getBatchDetail, listBatches } from './batches-data';
+import { listTimetable, timetableOptions } from './timetable-data';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -335,6 +336,29 @@ const routes: Route[] = [
       const detail = getBatchDetail(params.batchId ?? '');
       if (!detail) fail('not_found');
       return detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/timetable\/options$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'timetable.view');
+      return timetableOptions();
+    },
+  },
+  {
+    // Registered after /timetable/options so the specific route wins.
+    method: 'GET',
+    pattern: /^\/timetable$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'timetable.view');
+      return listTimetable({
+        batchId: typeof ctx.request.query?.batchId === 'string' ? ctx.request.query.batchId : undefined,
+        facultyId: typeof ctx.request.query?.facultyId === 'string' ? ctx.request.query.facultyId : undefined,
+        room: typeof ctx.request.query?.room === 'string' ? ctx.request.query.room : undefined,
+      });
     },
   },
 ];
