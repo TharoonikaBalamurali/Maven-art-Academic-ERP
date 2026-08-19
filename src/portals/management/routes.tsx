@@ -422,6 +422,26 @@ export const managementRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
+  {
+    // Academic Progress (§26) — assessment results; grades computed by the backend.
+    path: 'progress',
+    element: (
+      <RequirePermission anyOf={['progress.view']}>
+        {lazyRoute(() => import('@/features/progress/components/ProgressPage'), (m) => m.ProgressPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'progress/:progressId',
+    element: (
+      <RequirePermission anyOf={['progress.view']}>
+        {lazyRoute(
+          () => import('@/features/progress/components/ProgressDetailPage'),
+          (m) => m.ProgressDetailPage,
+        )}
+      </RequirePermission>
+    ),
+  },
 
   // Modules handled explicitly above; the rest stay placeholders.
   ...MODULES.filter(
@@ -443,6 +463,7 @@ export const managementRoutes: RouteObject[] = [
         'payments',
         'outstanding',
         'receipts',
+        'progress',
       ].includes(module.path),
   ).flatMap<RouteObject>(
     (module) => {

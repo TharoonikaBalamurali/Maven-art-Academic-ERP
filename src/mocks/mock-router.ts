@@ -52,6 +52,7 @@ import { getPayment, listPayments, recordPayment } from './payments-data';
 import type { RecordPaymentInput } from '@/features/payments/types';
 import { getOutstanding, listOutstanding } from './outstanding-data';
 import { getReceipt, listReceipts } from './receipts-data';
+import { getProgress, listProgress } from './progress-data';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -735,6 +736,29 @@ const routes: Route[] = [
       const identity = identityFromToken(ctx.token);
       requirePermission(identity, 'receipts.view');
       const detail = getReceipt(params.receiptId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/progress$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'progress.view');
+      return listProgress({
+        ...listQueryFrom(ctx.request.query),
+        filters: { status: typeof ctx.request.query?.status === 'string' ? ctx.request.query.status : undefined },
+      });
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/progress\/(?<progressId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'progress.view');
+      const detail = getProgress(params.progressId ?? '');
       if (!detail) fail('not_found');
       return detail;
     },
