@@ -206,6 +206,38 @@ export function listStudents(query: ListQuery): Paginated<StudentListItem> {
   return { data: rows.slice(start, start + limit), page: safePage, limit, total, totalPages };
 }
 
+/**
+ * Global-search projection (§ search): matches the identifiers an administrator
+ * actually searches by — name, register number, admission number and roll
+ * number — and returns what a result row needs to identify the student.
+ */
+export function searchStudents(term: string, limit = 6) {
+  const q = term.trim().toLowerCase();
+  if (!q) return [];
+  return studentStore
+    .filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.registerNo.toLowerCase().includes(q) ||
+        s.admissionNo.toLowerCase().includes(q) ||
+        s.rollNo.toLowerCase().includes(q),
+    )
+    .slice(0, limit)
+    .map((s) => ({
+      id: s.id,
+      name: s.name,
+      registerNo: s.registerNo,
+      admissionNo: s.admissionNo,
+      rollNo: s.rollNo,
+      photoUrl: s.photoUrl,
+      course: courseName(s.courseId),
+      courseCode: courseCode(s.courseId),
+      batch: batchName(s.batchId),
+      section: s.section,
+      status: s.status,
+    }));
+}
+
 export function studentFilterOptions(): StudentFilterOptions {
   const usedCourseIds = new Set(studentStore.map((s) => s.courseId));
   return {

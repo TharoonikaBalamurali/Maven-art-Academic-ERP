@@ -12,6 +12,7 @@ import {
   createStudent,
   getStudentDetail,
   listStudents,
+  searchStudents,
   studentFilterOptions,
   updateStudent,
   updateStudentPhoto,
@@ -1069,6 +1070,57 @@ const routes: Route[] = [
       requirePermission(identity, 'portal.certificates.view');
       const child = typeof ctx.request.query?.student === 'string' ? ctx.request.query.student : undefined;
       return portalCertificates(child);
+    },
+  },
+  {
+    /**
+     * Global search (§ search). One endpoint, permission-scoped: each record
+     * kind is included only if the caller may read it. The backend does the
+     * matching — the client never filters records locally (§31).
+     */
+    method: 'GET',
+    pattern: /^\/search$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      const q = String(ctx.request.query?.q ?? '').trim();
+      if (q.length < 2) return { results: [] };
+
+      const can = (p: PermissionKey) => identity.permissions.includes(p);
+      const results: Record<string, unknown>[] = [];
+
+      if (can('students.view')) {
+        for (const s of searchStudents(q)) {
+          results.push({
+            id: s.id,
+            kind: 'student',
+            title: s.name,
+            subtitle: `${s.courseCode} · ${s.batch} · Section ${s.section}`,
+            to: `/management/students/${s.id}`,
+            registerNo: s.registerNo,
+            admissionNo: s.admissionNo,
+            rollNo: s.rollNo,
+            photoUrl: s.photoUrl,
+            status: s.status === 'on_leave' ? 'On leave' : s.status === 'graduated' ? 'Graduated' : 'Active',
+          });
+        }
+      }
+      if (can('faculty.view')) {
+        for (const f of listFaculty({ search: q, limit: 3 }).data) {
+          results.push({ id: f.id, kind: 'faculty', title: f.name, subtitle: f.email, to: `/management/faculty/${f.id}` });
+        }
+      }
+      if (can('courses.view')) {
+        for (const c of listCourses({ search: q, limit: 3 }).data) {
+          results.push({ id: c.id, kind: 'course', title: c.name, subtitle: `${c.code} · ${c.batchCount} batches`, to: `/management/courses/${c.id}` });
+        }
+      }
+      if (can('batches.view')) {
+        for (const b of listBatches({ search: q, limit: 3 }).data) {
+          results.push({ id: b.id, kind: 'batch', title: b.name, subtitle: `${b.courseCode} · ${b.studentCount} students`, to: `/management/batches/${b.id}` });
+        }
+      }
+
+      return { results };
     },
   },
   {
