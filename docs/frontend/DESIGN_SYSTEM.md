@@ -72,12 +72,13 @@ Roles, not sizes. Changing "how big is a table cell" is one edit.
 
 | Utility | Size | Use |
 | --- | --- | --- |
-| `text-caption` | 11px | Table headers, nav section labels, meta |
+| `text-caption` | 12px | Table headers, nav section labels, meta |
 | `text-body-sm` | 13px | Dense table content, helper text |
 | `text-body` | 14px | Default UI text — the workhorse |
-| `text-title` | 16px | Card and section titles |
-| `text-page` | 20px | The page `h1` |
-| `text-metric` | 24px | Dashboard figures |
+| `text-body-lg` | 16px | Emphasised record values |
+| `text-title` | 17px | Card and section titles |
+| `text-page` | 24px | The page `h1` (optically tracked in) |
+| `text-metric` | 30px | Dashboard figures |
 
 Weights: **400** body, **500** emphasis/nav, **600** headings. Nothing heavier.
 Numeric columns use `tabular-nums` so digits align.
@@ -95,10 +96,11 @@ Tailwind's 4px scale, applied at fixed levels:
 | --- | --- | --- |
 | `gap-1.5` / `gap-2` | 6–8px | Inside a control, chip groups |
 | `gap-3` / `p-3` | 12px | Table cells, filter bars, compact cards |
-| `p-4` / `gap-4` | 16px | Card bodies, dashboard grid gaps |
-| `mb-5` | 20px | Page header to content |
-| `mb-6` | 24px | Between content sections |
-| `page-gutter` | 16 → 24 → 32px | Page horizontal padding, responsive |
+| `p-4` / `gap-4` | 16px | Dashboard grid gaps |
+| `p-5` | 20px | Card bodies and headers |
+| `mb-6` | 24px | Page header to content |
+| `mb-8` | 32px | Between content sections |
+| `page-gutter` | 20 → 32 → 40px | Page horizontal padding, responsive |
 
 ### Content width (per page type)
 
@@ -125,9 +127,9 @@ from its route with no per-page styling.
 
 | Token | Value | Use |
 | --- | --- | --- |
-| `rounded-control` | 6px | Buttons, inputs, badges, nav rows |
-| `rounded-surface` | 8px | Cards, panels |
-| `rounded-overlay` | 12px | Modals, drawers, popovers |
+| `rounded-control` | 8px | Buttons, inputs, badges, nav rows |
+| `rounded-surface` | 12px | Cards, panels |
+| `rounded-overlay` | 16px | Modals, drawers, popovers |
 
 Tables have **square inner corners** — a grid, not a card.
 

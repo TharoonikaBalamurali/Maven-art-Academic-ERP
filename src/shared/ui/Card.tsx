@@ -36,7 +36,7 @@ export function CardHeader({
   return (
     <div
       className={cn(
-        'flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border)] px-4 py-3',
+        'flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border)] px-5 py-4',
         className,
       )}
     >
@@ -52,14 +52,14 @@ export function CardHeader({
 }
 
 export function CardBody({ className, children }: { className?: string; children: ReactNode }) {
-  return <div className={cn('p-4', className)}>{children}</div>;
+  return <div className={cn('p-5', className)}>{children}</div>;
 }
 
 export function CardFooter({ className, children }: { className?: string; children: ReactNode }) {
   return (
     <div
       className={cn(
-        'flex flex-wrap items-center justify-end gap-2 border-t border-[var(--border)] px-4 py-3',
+        'flex flex-wrap items-center justify-end gap-2 border-t border-[var(--border)] px-5 py-4',
         className,
       )}
     >

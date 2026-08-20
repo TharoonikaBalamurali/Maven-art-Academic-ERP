@@ -98,14 +98,14 @@ export function AppShell({
         <aside
           className={cn(
             'sticky top-0 hidden h-dvh shrink-0 flex-col',
-            'border-r border-[var(--border)] bg-[var(--surface-raised)] lg:flex',
+            'border-r border-[var(--border)] bg-[var(--surface-sunken)] lg:flex',
             'transition-[width] duration-200',
-            collapsed ? 'w-16' : 'w-60',
+            collapsed ? 'w-16' : 'w-64',
           )}
         >
           <div
             className={cn(
-              'flex h-14 shrink-0 items-center border-b border-[var(--border)]',
+              'flex h-16 shrink-0 items-center border-b border-[var(--border)]',
               collapsed ? 'justify-center px-2' : 'px-4',
             )}
           >
@@ -139,7 +139,7 @@ export function AppShell({
             id="main-content"
           tabIndex={-1}
             className={cn(
-              'page-gutter min-w-0 flex-1 py-5',
+              'page-gutter min-w-0 flex-1 py-7',
               // Leave room for the bottom tab bar on mobile.
               bottomItems.length > 0 && 'pb-24 sm:pb-6',
             )}

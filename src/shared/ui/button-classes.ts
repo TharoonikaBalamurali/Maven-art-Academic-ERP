@@ -12,11 +12,12 @@ export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
  *   link      — inline navigation that must not look like a button
  */
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: 'bg-[var(--accent)] text-[var(--accent-contrast)] hover:bg-[var(--accent-hover)]',
+  primary:
+    'bg-[var(--accent)] text-[var(--accent-contrast)] shadow-raised hover:bg-[var(--accent-hover)] active:shadow-none',
   secondary:
     'bg-[var(--surface-raised)] text-[var(--text)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:border-[var(--border-strong)]',
   ghost: 'text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]',
-  danger: 'bg-[var(--danger)] text-white hover:opacity-90',
+  danger: 'bg-[var(--danger)] text-white shadow-raised hover:opacity-90 active:shadow-none',
   link: 'text-[var(--accent)] underline underline-offset-4 hover:text-[var(--accent-hover)]',
 };
 
@@ -25,9 +26,9 @@ const VARIANTS: Record<ButtonVariant, string> = {
  * inside dense data tables, where a 44px row would waste vertical space.
  */
 const SIZES: Record<ButtonSize, string> = {
-  sm: 'min-h-8 px-2.5 text-body-sm gap-1.5',
-  md: 'min-h-11 px-3.5 text-body gap-2',
-  lg: 'min-h-12 px-5 text-title gap-2',
+  sm: 'min-h-9 px-3 text-body-sm gap-1.5',
+  md: 'min-h-11 px-4 text-body gap-2',
+  lg: 'min-h-12 px-6 text-title gap-2',
   icon: 'min-h-11 min-w-11 px-0 gap-0',
 };
 

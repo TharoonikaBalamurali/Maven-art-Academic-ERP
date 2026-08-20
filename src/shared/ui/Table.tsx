@@ -80,7 +80,7 @@ export function DataTable<TRow>({
   renderMobileCard,
   className,
 }: DataTableProps<TRow>) {
-  const cellPadding = density === 'compact' ? 'px-3 py-1.5' : 'px-3 py-2.5';
+  const cellPadding = density === 'compact' ? 'px-4 py-2' : 'px-4 py-3';
 
   const selectableRows = selection
     ? rows.filter((row) => selection.isSelectable?.(row) ?? true)
@@ -129,7 +129,7 @@ export function DataTable<TRow>({
           <thead>
             <tr className="border-b border-[var(--border)]">
               {selection && (
-                <th scope="col" className="w-10 px-3 py-2">
+                <th scope="col" className="w-10 px-4 py-2.5">
                   <input
                     type="checkbox"
                     checked={allSelected}
@@ -161,7 +161,7 @@ export function DataTable<TRow>({
                       isSorted ? (sort.sortDir === 'asc' ? 'ascending' : 'descending') : undefined
                     }
                     className={cn(
-                      'bg-[var(--surface-sunken)] px-3 py-2 text-left',
+                      'bg-[var(--surface-sunken)] px-4 py-2.5 text-left',
                       'text-caption font-semibold tracking-wide text-[var(--text-muted)] uppercase',
                       column.align === 'right' && 'text-right',
                       column.hideBelowMd && 'hidden md:table-cell',
@@ -201,7 +201,7 @@ export function DataTable<TRow>({
               })}
 
               {rowActions && (
-                <th scope="col" className="w-px bg-[var(--surface-sunken)] px-3 py-2">
+                <th scope="col" className="w-px bg-[var(--surface-sunken)] px-4 py-2.5">
                   <span className="sr-only">Actions</span>
                 </th>
               )}

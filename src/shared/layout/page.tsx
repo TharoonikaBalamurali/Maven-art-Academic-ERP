@@ -39,14 +39,14 @@ export interface PageHeaderProps {
  */
 export function PageHeader({ title, description, meta, actions }: PageHeaderProps) {
   return (
-    <header className="mb-5 flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+    <header className="mb-6 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-page font-semibold tracking-tight text-[var(--text)]">{title}</h1>
+          <h1 className="text-page font-semibold tracking-[var(--tracking-page)] text-[var(--text)]">{title}</h1>
           {meta}
         </div>
         {description && (
-          <p className="mt-1 max-w-2xl text-body text-[var(--text-muted)]">{description}</p>
+          <p className="mt-1.5 max-w-2xl text-body text-[var(--text-muted)]">{description}</p>
         )}
       </div>
       {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
@@ -75,7 +75,7 @@ export function SectionHeader({
   const Heading = `h${level}` as const;
 
   return (
-    <div className={cn('mb-3 flex flex-wrap items-end justify-between gap-3', className)}>
+    <div className={cn('mb-4 flex flex-wrap items-end justify-between gap-3', className)}>
       <div className="min-w-0">
         <Heading className="text-title font-semibold text-[var(--text)]">{title}</Heading>
         {description && (
@@ -109,7 +109,7 @@ export function ContentSection({
   className?: string;
 }) {
   return (
-    <section className={cn('mb-6 last:mb-0', className)}>
+    <section className={cn('mb-8 last:mb-0', className)}>
       {title && <SectionHeader title={title} description={description} actions={actions} />}
       {children}
     </section>
@@ -195,7 +195,7 @@ export function FilterBar({
     <div
       role="search"
       className={cn(
-        'flex flex-col gap-3 border-b border-[var(--border)] p-3',
+        'flex flex-col gap-3 border-b border-[var(--border)] p-4',
         'sm:flex-row sm:flex-wrap sm:items-end',
         className,
       )}

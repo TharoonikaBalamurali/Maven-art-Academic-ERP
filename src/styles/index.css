@@ -39,34 +39,40 @@
    * Named by role rather than by size, so a future change to "how big is a
    * table cell" is one edit here instead of a find-and-replace.
    */
-  --text-caption: 0.6875rem; /* 11px — table meta, nav section headings      */
-  --text-caption--line-height: 1rem;
+  --text-caption: 0.75rem; /*   12px — table meta, nav section headings      */
+  --text-caption--line-height: 1.125rem;
   --text-body-sm: 0.8125rem; /* 13px — dense table content                   */
-  --text-body-sm--line-height: 1.125rem;
+  --text-body-sm--line-height: 1.25rem;
   --text-body: 0.875rem; /*     14px — default UI text                       */
-  --text-body--line-height: 1.25rem;
-  --text-title: 1rem; /*        16px — card titles                          */
+  --text-body--line-height: 1.375rem;
+  --text-body-lg: 1rem; /*      16px — emphasised record values             */
+  --text-body-lg--line-height: 1.5rem;
+  --text-title: 1.0625rem; /*   17px — card titles                          */
   --text-title--line-height: 1.5rem;
-  --text-page: 1.25rem; /*      20px — page h1                              */
-  --text-page--line-height: 1.75rem;
-  --text-metric: 1.5rem; /*     24px — dashboard figures                    */
-  --text-metric--line-height: 2rem;
+  --text-page: 1.5rem; /*       24px — page h1                              */
+  --text-page--line-height: 2rem;
+  --text-metric: 1.875rem; /*   30px — dashboard figures                    */
+  --text-metric--line-height: 2.25rem;
+
+  /* Optical tightening for large type; body text stays at its natural
+   * tracking so dense tables remain legible. */
+  --tracking-page: -0.02em;
 
   /* --- Radius -------------------------------------------------------------
    * Three levels, each tied to a purpose. Prevents the "every component picks
    * its own roundness" drift found in the Day 1 audit.
    */
-  --radius-control: 0.375rem; /* buttons, inputs, badges-as-buttons */
-  --radius-surface: 0.5rem; /*   cards, panels, table wrappers      */
-  --radius-overlay: 0.75rem; /*  modals, drawers, popovers          */
+  --radius-control: 0.5rem; /*   buttons, inputs, badges-as-buttons */
+  --radius-surface: 0.75rem; /*  cards, panels, table wrappers      */
+  --radius-overlay: 1rem; /*     modals, drawers, popovers          */
 
   /* --- Elevation ----------------------------------------------------------
    * One shadow per elevation level. Deliberately shallow — an ERP reads as a
    * document, not as a stack of floating cards.
    */
-  --shadow-raised: 0 1px 2px 0 oklch(0 0 0 / 0.05);
-  --shadow-overlay: 0 4px 12px -2px oklch(0 0 0 / 0.12), 0 2px 4px -2px oklch(0 0 0 / 0.06);
-  --shadow-modal: 0 16px 40px -8px oklch(0 0 0 / 0.24);
+  --shadow-raised: 0 1px 2px 0 oklch(0 0 0 / 0.04), 0 1px 3px 0 oklch(0 0 0 / 0.03);
+  --shadow-overlay: 0 4px 12px -2px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.05);
+  --shadow-modal: 0 16px 40px -8px oklch(0 0 0 / 0.22);
 
   /* --- Layout -------------------------------------------------------------
    * Content width is chosen per PAGE TYPE, not one universal cap. Data-heavy
@@ -115,16 +121,16 @@
    */
   :root {
     /* Surfaces */
-    --surface: light-dark(oklch(0.985 0.002 264), oklch(0.185 0.012 264));
-    --surface-raised: light-dark(oklch(1 0 0), oklch(0.225 0.013 264));
-    --surface-sunken: light-dark(oklch(0.955 0.004 264), oklch(0.155 0.011 264));
-    --surface-hover: light-dark(oklch(0.965 0.004 264), oklch(0.26 0.014 264));
+    --surface: light-dark(oklch(0.976 0.003 264), oklch(0.175 0.012 264));
+    --surface-raised: light-dark(oklch(1 0 0), oklch(0.222 0.013 264));
+    --surface-sunken: light-dark(oklch(0.958 0.004 264), oklch(0.148 0.011 264));
+    --surface-hover: light-dark(oklch(0.968 0.005 264), oklch(0.26 0.014 264));
     /* Persistent selection (selected table rows), distinct from transient hover. */
     --surface-selected: light-dark(oklch(0.955 0.018 264), oklch(0.28 0.035 264));
 
     /* Lines */
-    --border: light-dark(oklch(0.9 0.006 264), oklch(0.31 0.013 264));
-    --border-strong: light-dark(oklch(0.82 0.008 264), oklch(0.4 0.015 264));
+    --border: light-dark(oklch(0.917 0.005 264), oklch(0.3 0.013 264));
+    --border-strong: light-dark(oklch(0.84 0.008 264), oklch(0.4 0.015 264));
 
     /* Text. Three levels, all verified against their intended surface:
      * `--text` for content, `--text-muted` for supporting copy, and
@@ -247,11 +253,11 @@
 
 /** Horizontal rhythm of the main content column, shared by every page. */
 @utility page-gutter {
-  padding-inline: 1rem;
+  padding-inline: 1.25rem;
   @media (width >= 40rem) {
-    padding-inline: 1.5rem;
+    padding-inline: 2rem;
   }
   @media (width >= 80rem) {
-    padding-inline: 2rem;
+    padding-inline: 2.5rem;
   }
 }

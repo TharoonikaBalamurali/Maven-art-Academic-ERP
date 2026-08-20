@@ -64,7 +64,7 @@ export function AppHeader({
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--surface-raised)]">
-      <div className="flex h-14 items-center gap-2 px-3 sm:px-4">
+      <div className="flex h-16 items-center gap-2 px-4 sm:px-5">
         <Button
           variant="ghost"
           size="icon"
