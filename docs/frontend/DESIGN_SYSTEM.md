@@ -100,7 +100,22 @@ Tailwind's 4px scale, applied at fixed levels:
 | `mb-6` | 24px | Between content sections |
 | `page-gutter` | 16 → 24 → 32px | Page horizontal padding, responsive |
 
-Max content width: `--container-content` (90rem).
+### Content width (per page type)
+
+There is no single content max-width. Each page type gets a width suited to its
+content, chosen by the shell from the route (see `shared/layout/pageWidth.ts`):
+
+| Page type | Token | Width | Applies to |
+| --- | --- | --- | --- |
+| Data / list / dashboard | `--container-wide` | 110rem (1760px) | Students, Payments, Reports, dashboards — fill the viewport |
+| Detail record | `--container-detail` | 80rem (1280px) | `:id` pages — a balanced reading measure |
+| Form | `--container-form` | 48rem (768px) | `/new`·`/edit` — a comfortable editing column |
+
+The width is inferred from each route's shape (`withPageWidth`): list/index →
+wide, `:param` → detail, `new`/`edit` → form. A route may override via
+`handle.pageWidth`. The Student/Parent portal defaults to `detail` (lighter
+content); Management defaults to `wide`. A new module inherits the correct width
+from its route with no per-page styling.
 
 ---
 
@@ -252,6 +267,8 @@ Breakpoints: `sm` 640, `md` 768, `lg` 1024, `xl` 1280.
 | Mobile | Basic | **First-class** |
 
 - Sidebar is persistent from `lg`; a drawer below that.
+- Content width is chosen per page type (see §4), so data grids use the full
+  viewport while forms stay to a readable column — no universal narrow cap.
 - Tables scroll horizontally in Management; Student/Parent tables provide
   `renderMobileCard`.
 - Student/Parent gains a bottom tab bar under `sm`.

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, type ReactNode } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useMatches } from 'react-router-dom';
 import { useUiStore } from '@/app/state/ui.store';
 import { filterNavSections } from '@/config/navigation/filter';
 import { usePermissions } from '@/features/auth/hooks';
@@ -11,6 +11,7 @@ import { BrandMark } from './BrandMark';
 import { Breadcrumbs } from './Breadcrumbs';
 import { SidebarNav } from './SidebarNav';
 import { useBreadcrumbs } from './useBreadcrumbs';
+import { PAGE_WIDTH_VAR, resolvePageWidth, type PageWidth } from './pageWidth';
 
 export interface AppShellProps {
   portalLabel: string;
@@ -26,6 +27,12 @@ export interface AppShellProps {
   bottomNavItems?: readonly NavItem[];
   /** Management is desktop-first: its sidebar is persistent from `lg` up (§33). */
   collapsibleSidebar?: boolean;
+  /**
+   * Content width used when a route does not declare its own (§ Day 2A). The
+   * management portal is data-first (`wide`); the lighter student/parent portal
+   * reads better at a `detail` measure.
+   */
+  defaultPageWidth?: PageWidth;
   children?: ReactNode;
 }
 
@@ -45,10 +52,13 @@ export function AppShell({
   profilePath,
   bottomNavItems,
   collapsibleSidebar = true,
+  defaultPageWidth = 'wide',
   children,
 }: AppShellProps) {
   const { permissionSet } = usePermissions();
   const location = useLocation();
+  const matches = useMatches();
+  const pageWidth = resolvePageWidth(matches, defaultPageWidth);
   const sidebarCollapsed = useUiStore((state) => state.sidebarCollapsed);
   const mobileNavOpen = useUiStore((state) => state.mobileNavOpen);
   const setMobileNavOpen = useUiStore((state) => state.setMobileNavOpen);
@@ -134,7 +144,7 @@ export function AppShell({
               bottomItems.length > 0 && 'pb-24 sm:pb-6',
             )}
           >
-            <div className="mx-auto w-full max-w-(--container-content)">
+            <div className="mx-auto w-full" style={{ maxWidth: PAGE_WIDTH_VAR[pageWidth] }}>
               <Breadcrumbs crumbs={crumbs} />
               {children ?? <Outlet />}
             </div>

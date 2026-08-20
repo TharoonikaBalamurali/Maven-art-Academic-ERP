@@ -1,6 +1,7 @@
 import type { RouteObject } from 'react-router-dom';
 import { RequirePermission } from '@/app/router/guards';
 import { lazyRoute } from '@/app/router/lazyRoute';
+import { withPageWidth } from '@/shared/layout/pageWidth';
 import { ModulePlaceholder } from '@/portals/shared/ModulePlaceholder';
 import type { PermissionKey } from '@/shared/types';
 
@@ -53,7 +54,7 @@ const MODULES: readonly ModuleRoute[] = [
   { path: 'settings', title: 'Settings', description: 'Institution settings.', permission: 'settings.view', phase: 'Phase 5' },
 ];
 
-export const managementRoutes: RouteObject[] = [
+const baseRoutes: RouteObject[] = [
   {
     index: true,
     element: lazyRoute(
@@ -623,3 +624,10 @@ export const managementRoutes: RouteObject[] = [
     return routes;
   }),
 ];
+
+/**
+ * Content width is inferred from each route's shape (§ Day 2A): lists and the
+ * dashboard stay `wide`, `:id` detail routes read at a balanced measure, and
+ * `/new`·`/edit` forms use a narrow column. New modules inherit this for free.
+ */
+export const managementRoutes: RouteObject[] = withPageWidth(baseRoutes);

@@ -34,6 +34,7 @@ export function StudentParentLayout() {
       profilePath="/portal/profile"
       bottomNavItems={BOTTOM_NAV}
       collapsibleSidebar={false}
+      defaultPageWidth="detail"
     />
   );
 }

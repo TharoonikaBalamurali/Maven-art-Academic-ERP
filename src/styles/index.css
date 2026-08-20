@@ -68,8 +68,16 @@
   --shadow-overlay: 0 4px 12px -2px oklch(0 0 0 / 0.12), 0 2px 4px -2px oklch(0 0 0 / 0.06);
   --shadow-modal: 0 16px 40px -8px oklch(0 0 0 / 0.24);
 
-  /* --- Layout -------------------------------------------------------------*/
-  --container-content: 90rem; /* max width of the main content column */
+  /* --- Layout -------------------------------------------------------------
+   * Content width is chosen per PAGE TYPE, not one universal cap. Data-heavy
+   * screens breathe into wide viewports; forms stay readable; detail pages sit
+   * at a balanced measure. The shell picks one of these per route (see
+   * `pageWidth.ts`); a new module inherits the right width from its route shape.
+   */
+  --container-wide: 110rem; /*   1760px — data grids, lists, dashboards        */
+  --container-detail: 80rem; /*  1280px — detail records, balanced reading      */
+  --container-form: 48rem; /*    768px  — form columns, kept to a readable measure */
+  --container-content: var(--container-wide); /* back-compat alias */
 }
 
 @layer base {
