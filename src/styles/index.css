@@ -157,6 +157,15 @@
     --warning-surface: light-dark(oklch(0.96 0.05 75), oklch(0.27 0.06 75));
     --info: light-dark(oklch(0.52 0.13 235), oklch(0.75 0.12 235));
     --info-surface: light-dark(oklch(0.95 0.035 235), oklch(0.26 0.06 235));
+
+    /* --- Chart categorical series -------------------------------------------
+     * Two brand-adjacent hues for a 2-series chart. Deep-indigo vs gold — a
+     * large hue AND lightness separation (CVD-safe, and it survives print). Text
+     * still wears ink tokens; these only fill the marks.
+     */
+    --chart-1: light-dark(oklch(0.42 0.11 264), oklch(0.72 0.13 264)); /* indigo */
+    --chart-2: light-dark(oklch(0.72 0.13 75), oklch(0.80 0.13 75)); /* gold  */
+    --chart-grid: light-dark(oklch(0.92 0.005 264), oklch(0.32 0.012 264));
   }
 
   html {

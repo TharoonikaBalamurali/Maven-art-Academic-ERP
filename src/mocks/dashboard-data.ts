@@ -32,6 +32,43 @@ import { listAudit } from './audit-data';
  * roster). Mock-only; a real backend computes these.
  */
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// Demonstration monthly series — a real backend aggregates these.
+const ADMISSIONS_TREND = [
+  [32, 12], [26, 9], [18, 7], [30, 14], [12, 5], [22, 8],
+  [41, 18], [28, 11], [34, 15], [26, 12], [17, 6], [23, 10],
+];
+const COLLECTIONS_TREND = [
+  [2.9, 3.4], [2.4, 2.9], [1.8, 2.2], [2.6, 2.9], [1.2, 1.8], [2.2, 2.4],
+  [3.6, 3.9], [2.8, 3.1], [3.2, 3.4], [2.6, 2.9], [1.7, 2.1], [2.3, 2.6],
+];
+
+const DASHBOARD_EVENTS = [
+  { id: 'ev-1', date: '2026-08-22', title: 'Art History — Quiz' },
+  { id: 'ev-2', date: '2026-08-24', title: 'Parent–teacher meeting' },
+  { id: 'ev-3', date: '2026-08-28', title: 'Annual function' },
+  { id: 'ev-4', date: '2026-09-05', title: 'Sports competition' },
+];
+
+const TOP_PERFORMERS = {
+  week: [
+    { id: 'tp-1', name: 'Neha Krishnan', registerNo: 'MAA20260018', className: 'BFA Year 1 · A', score: 98.7 },
+    { id: 'tp-2', name: 'Aisha Rahman', registerNo: 'MAA20260014', className: 'Photography · A', score: 98.2 },
+    { id: 'tp-3', name: 'Kabir Menon', registerNo: 'MAA20260024', className: 'VCD Year 1 · B', score: 97.0 },
+  ],
+  month: [
+    { id: 'tp-4', name: 'Priya Iyer', registerNo: 'MAA20260009', className: 'BFA Year 2 · A', score: 96.4 },
+    { id: 'tp-1', name: 'Neha Krishnan', registerNo: 'MAA20260018', className: 'BFA Year 1 · A', score: 95.8 },
+    { id: 'tp-5', name: 'Rahul Verma', registerNo: 'MAA20260021', className: 'VCD Year 1 · B', score: 94.9 },
+  ],
+  year: [
+    { id: 'tp-6', name: 'Arjun Reddy', registerNo: 'MAA20260003', className: 'BFA Year 3 · A', score: 93.1 },
+    { id: 'tp-4', name: 'Priya Iyer', registerNo: 'MAA20260009', className: 'BFA Year 2 · A', score: 92.6 },
+    { id: 'tp-2', name: 'Aisha Rahman', registerNo: 'MAA20260014', className: 'Photography · A', score: 91.7 },
+  ],
+};
+
 function toClass(seed: (typeof SEED_CLASSES_TODAY)[number]): DashboardClass {
   return {
     id: seed.id,
@@ -159,6 +196,18 @@ function adminSummary(): AdminDashboard {
     recentActivity,
     recentAdmissions: SEED_RECENT_ADMISSIONS.map((a) => ({ ...a })),
     upcomingClasses: SEED_CLASSES_TODAY.slice(0, 5).map(toClass),
+    admissionsTrend: MONTHS.map((month, i) => ({
+      month,
+      enquiries: ADMISSIONS_TREND[i]?.[0] ?? 0,
+      admissions: ADMISSIONS_TREND[i]?.[1] ?? 0,
+    })),
+    events: DASHBOARD_EVENTS.map((e) => ({ ...e })),
+    topPerformers: {
+      week: TOP_PERFORMERS.week.map((p) => ({ ...p })),
+      month: TOP_PERFORMERS.month.map((p) => ({ ...p })),
+      year: TOP_PERFORMERS.year.map((p) => ({ ...p })),
+    },
+    attendanceRings: { students: TODAYS_ATTENDANCE_PCT, faculty: 96 },
   };
 }
 
@@ -173,6 +222,18 @@ function accountsSummary(): AccountsDashboard {
     },
     recentTransactions: SEED_TRANSACTIONS.map((t) => ({ ...t })),
     upcomingInstallments: SEED_UPCOMING_INSTALLMENTS.map((i) => ({ ...i })),
+    collectionsTrend: MONTHS.map((month, i) => ({
+      month,
+      // Stored in whole rupees; the chart formats to lakhs/thousands.
+      collected: Math.round((COLLECTIONS_TREND[i]?.[0] ?? 0) * 1_000_000),
+      billed: Math.round((COLLECTIONS_TREND[i]?.[1] ?? 0) * 1_000_000),
+    })),
+    events: SEED_UPCOMING_INSTALLMENTS.map((inst) => ({
+      id: `fev-${inst.id}`,
+      date: inst.dueOn,
+      title: `Installment due · ${inst.student}`,
+    })),
+    collectionRate: 84,
   };
 }
 

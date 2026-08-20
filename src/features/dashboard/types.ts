@@ -24,6 +24,37 @@ export interface DashboardClass {
   end: string;
 }
 
+/** A dated item for the dashboard calendar / events list. */
+export interface DashboardEvent {
+  id: Id;
+  date: IsoDateString;
+  title: string;
+}
+
+/** One month of the admissions trend chart. */
+export interface AdmissionsTrendPoint {
+  month: string;
+  enquiries: number;
+  admissions: number;
+}
+
+/** One month of the collections trend chart (Finance). */
+export interface CollectionsTrendPoint {
+  month: string;
+  collected: number;
+  billed: number;
+}
+
+/** A ranked student on the Top Performers board. */
+export interface TopPerformer {
+  id: Id;
+  name: string;
+  registerNo: string;
+  className: string;
+  /** Backend-computed score/percentage, displayed verbatim. */
+  score: number;
+}
+
 /**
  * An item in the Admin action centre.
  *
@@ -150,6 +181,12 @@ export interface AdminDashboard {
   recentActivity: AdminActivityEntry[];
   recentAdmissions: { id: Id; name: string; programme: string; admittedAt: IsoDateString }[];
   upcomingClasses: DashboardClass[];
+
+  /** Visual dashboard feeds. */
+  admissionsTrend: AdmissionsTrendPoint[];
+  events: DashboardEvent[];
+  topPerformers: { week: TopPerformer[]; month: TopPerformer[]; year: TopPerformer[] };
+  attendanceRings: { students: number; faculty: number };
 }
 
 export interface AccountsDashboard {
@@ -175,6 +212,12 @@ export interface AccountsDashboard {
     amount: number;
     dueOn: IsoDateString;
   }[];
+
+  /** Visual dashboard feeds. */
+  collectionsTrend: CollectionsTrendPoint[];
+  events: DashboardEvent[];
+  /** Backend-computed collection rate (%), displayed verbatim. */
+  collectionRate: number;
 }
 
 export interface FacultyDashboard {

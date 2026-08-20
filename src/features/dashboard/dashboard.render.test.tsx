@@ -66,6 +66,17 @@ const admin: AdminData = {
   upcomingClasses: [
     { id: 'c1', batch: 'BFA Year 1 · A', subject: 'Life Drawing', room: 'Studio 2', start: '09:00', end: '10:30' },
   ],
+  admissionsTrend: [
+    { month: 'Jan', enquiries: 32, admissions: 12 },
+    { month: 'Feb', enquiries: 26, admissions: 9 },
+  ],
+  events: [{ id: 'ev1', date: '2026-08-24', title: 'Parent–teacher meeting' }],
+  topPerformers: {
+    week: [{ id: 'tp1', name: 'Neha Krishnan', registerNo: 'MAA20260018', className: 'BFA Year 1 · A', score: 98.7 }],
+    month: [{ id: 'tp2', name: 'Priya Iyer', registerNo: 'MAA20260009', className: 'BFA Year 2 · A', score: 96.4 }],
+    year: [{ id: 'tp3', name: 'Arjun Reddy', registerNo: 'MAA20260003', className: 'BFA Year 3 · A', score: 93.1 }],
+  },
+  attendanceRings: { students: 92, faculty: 96 },
 };
 
 const accounts: AccountsData = {
@@ -77,6 +88,12 @@ const accounts: AccountsData = {
   upcomingInstallments: [
     { id: 'i1', student: 'Farhan Sheikh', registerNo: 'MAA20260004', amount: 45000, dueOn: '2026-08-25' },
   ],
+  collectionsTrend: [
+    { month: 'Jan', collected: 2900000, billed: 3400000 },
+    { month: 'Feb', collected: 2400000, billed: 2900000 },
+  ],
+  events: [{ id: 'fev1', date: '2026-08-25', title: 'Installment due · Farhan Sheikh' }],
+  collectionRate: 84,
 };
 
 const faculty: FacultyData = {
@@ -92,26 +109,30 @@ const faculty: FacultyData = {
 };
 
 describe('AdminDashboard', () => {
-  it('shows operational figures formatted for the institution', () => {
-    signIn('admin', ['students.view', 'payments.view', 'attendance.view', 'admissions.view', 'applications.review']);
+  it('shows headline tiles, the trend chart, performers and the action centre', () => {
+    signIn('admin', ['students.view', 'payments.view', 'attendance.view', 'admissions.view', 'applications.review', 'progress.view']);
     renderWithProviders(<AdminDashboard data={admin} />);
 
-    expect(screen.getByText('Total Students')).toBeInTheDocument();
+    expect(screen.getAllByText('Students').length).toBeGreaterThan(0);
     expect(screen.getAllByText('146').length).toBeGreaterThan(0);
+    // Attendance ring shows the backend percentage.
     expect(screen.getAllByText('92%').length).toBeGreaterThan(0);
+    // Top performers board (progress.view).
+    expect(screen.getByRole('heading', { name: 'Top performers' })).toBeInTheDocument();
     expect(screen.getByText('Neha Krishnan')).toBeInTheDocument();
-    // New sections are present and permission-gated.
+    // Trend chart + action centre.
+    expect(screen.getByRole('heading', { name: 'Admissions trend' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Action centre' })).toBeInTheDocument();
     expect(screen.getByText('Applications to review')).toBeInTheDocument();
   });
 
-  it('hides the collection tile from an admin without payments.view', () => {
+  it('hides the collection tile and performers from an admin without those permissions', () => {
     signIn('admin', ['students.view']);
     renderWithProviders(<AdminDashboard data={admin} />);
 
-    expect(screen.getByText('Total Students')).toBeInTheDocument();
-    expect(screen.queryByText('Collection (This Month)')).not.toBeInTheDocument();
-    expect(screen.queryByText('Recent admissions')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Students').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Collection (month)')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Top performers' })).not.toBeInTheDocument();
   });
 });
 
@@ -120,7 +141,8 @@ describe('AccountsDashboard', () => {
     signIn('accounts', ['payments.view', 'outstanding.view', 'installments.view']);
     renderWithProviders(<AccountsDashboard data={accounts} />);
 
-    expect(screen.getByText("Today's Collection")).toBeInTheDocument();
+    expect(screen.getByText("Today's collection")).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Collections' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Recent transactions' })).toBeInTheDocument();
     expect(screen.getByText('Arjun Menon')).toBeInTheDocument();
     // Currency is formatted, not a raw number.
