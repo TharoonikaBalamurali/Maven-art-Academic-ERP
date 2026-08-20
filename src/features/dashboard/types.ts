@@ -1,4 +1,4 @@
-import type { Id, IsoDateString, Role } from '@/shared/types';
+import type { Id, IsoDateString, KnownOr, Role } from '@/shared/types';
 
 /**
  * Dashboard summary types (§13).
@@ -220,6 +220,41 @@ export interface AccountsDashboard {
   collectionRate: number;
 }
 
+export type FacultyActivityStatus = KnownOr<'done' | 'now' | 'upcoming'>;
+
+/** Syllabus coverage for a batch the faculty member teaches. */
+export interface FacultyBatchProgress {
+  id: Id;
+  name: string;
+  course: string;
+  section: string;
+  subjects: string[];
+  /** Backend-provided coverage; the client never computes it. */
+  covered: number;
+  total: number;
+  nextUp: string;
+  studentCount: number;
+}
+
+/** One of today's classes as an activity card. */
+export interface FacultyTodayActivity {
+  id: Id;
+  subject: string;
+  batch: string;
+  status: FacultyActivityStatus;
+  minutes: number;
+  /** Attendance marked so far / expected. */
+  done: number;
+  total: number;
+}
+
+/** A day column in the weekly activity board. */
+export interface FacultyWeekDay {
+  day: string;
+  totalMinutes: number;
+  items: { id: Id; subject: string; batch: string; status: FacultyActivityStatus }[];
+}
+
 export interface FacultyDashboard {
   authority: 'faculty';
   kpis: {
@@ -227,7 +262,14 @@ export interface FacultyDashboard {
     assignedBatches: number;
     pendingAttendance: number;
     studentCount: number;
+    /** Backend-computed average attendance across recent sessions. */
+    attendanceRate: number;
+    /** Total scheduled teaching minutes today. */
+    teachingMinutesToday: number;
   };
+  batches: FacultyBatchProgress[];
+  todaysActivity: FacultyTodayActivity[];
+  weeklyActivity: FacultyWeekDay[];
   todaysSchedule: DashboardClass[];
   pendingAttendance: { id: Id; batch: string; subject: string; date: IsoDateString }[];
   recentAttendance: {

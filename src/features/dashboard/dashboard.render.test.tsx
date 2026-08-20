@@ -98,7 +98,16 @@ const accounts: AccountsData = {
 
 const faculty: FacultyData = {
   authority: 'faculty',
-  kpis: { todaysClasses: 3, assignedBatches: 2, pendingAttendance: 1, studentCount: 60 },
+  kpis: { todaysClasses: 3, assignedBatches: 2, pendingAttendance: 1, studentCount: 60, attendanceRate: 91, teachingMinutesToday: 270 },
+  batches: [
+    { id: 'bat-bfa-1a', name: 'BFA Year 1 · A', course: 'BFA — Bachelor of Fine Arts', section: 'A', subjects: ['Life Drawing', 'Art History'], covered: 6, total: 8, nextUp: 'Advanced Figure Composition', studentCount: 32 },
+  ],
+  todaysActivity: [
+    { id: 'c1', subject: 'Life Drawing', batch: 'BFA Year 1 · A', status: 'now', minutes: 90, done: 20, total: 32 },
+  ],
+  weeklyActivity: [
+    { day: 'Mon', totalMinutes: 150, items: [{ id: 'tt-01', subject: 'Life Drawing', batch: 'BFA Year 1 · A', status: 'done' }] },
+  ],
   todaysSchedule: [
     { id: 'c1', batch: 'BFA Year 1 · A', subject: 'Life Drawing', room: 'Studio 2', start: '09:00', end: '10:30' },
   ],
@@ -151,22 +160,28 @@ describe('AccountsDashboard', () => {
 });
 
 describe('FacultyDashboard', () => {
-  it("shows the faculty member's own schedule and attendance", () => {
+  it("shows the faculty member's KPIs, batch coverage and today's activity", () => {
     signIn('faculty', ['batches.view', 'attendance.view', 'attendance.mark', 'students.view', 'timetable.view']);
     renderWithProviders(<FacultyDashboard data={faculty} />);
 
-    expect(screen.getByRole('heading', { name: "Today's schedule" })).toBeInTheDocument();
-    // "Life Drawing" legitimately appears in both the schedule and the recent
-    // attendance table — its presence, not uniqueness, is what matters.
+    // Headline teaching KPIs.
+    expect(screen.getByText('Attendance rate')).toBeInTheDocument();
+    expect(screen.getByText('91%')).toBeInTheDocument();
+    // Batch coverage card + today's activity.
+    expect(screen.getAllByText('BFA Year 1 · A').length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: "Today's activity" })).toBeInTheDocument();
     expect(screen.getAllByText('Life Drawing').length).toBeGreaterThan(0);
-    expect(screen.getByRole('heading', { name: 'Attendance to mark' })).toBeInTheDocument();
+    // Mark-attendance action (attendance.mark) and the weekly board (timetable.view).
+    expect(screen.getByRole('link', { name: 'Mark attendance' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Weekly activity' })).toBeInTheDocument();
   });
 
-  it('hides the mark-attendance widget from faculty without attendance.mark', () => {
+  it('hides mark-attendance and the weekly board without those permissions', () => {
     signIn('faculty', ['batches.view', 'attendance.view', 'students.view']);
     renderWithProviders(<FacultyDashboard data={faculty} />);
 
-    expect(screen.getByText("Today's schedule")).toBeInTheDocument();
-    expect(screen.queryByText('Attendance to mark')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: "Today's activity" })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Mark attendance' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Weekly activity' })).not.toBeInTheDocument();
   });
 });

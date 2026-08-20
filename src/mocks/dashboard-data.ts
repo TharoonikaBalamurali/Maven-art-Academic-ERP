@@ -8,6 +8,8 @@ import type {
 import type { Role } from '@/shared/types';
 import {
   batchName,
+  courseCode,
+  courseName,
   FACULTY_ACCOUNT_ID,
   FINANCE,
   PENDING_APPLICATIONS,
@@ -19,6 +21,7 @@ import {
   SEED_RECENT_ADMISSIONS,
   SEED_RECENT_ATTENDANCE,
   SEED_STUDENTS,
+  SEED_TIMETABLE,
   SEED_TRANSACTIONS,
   SEED_UPCOMING_INSTALLMENTS,
   TODAYS_ATTENDANCE_PCT,
@@ -237,6 +240,27 @@ function accountsSummary(): AccountsDashboard {
   };
 }
 
+function minutes(start: string, end: string): number {
+  const [sh, sm] = start.split(':').map(Number);
+  const [eh, em] = end.split(':').map(Number);
+  return (eh ?? 0) * 60 + (em ?? 0) - ((sh ?? 0) * 60 + (sm ?? 0));
+}
+
+// Deterministic coverage per batch — echoes the reference's 6/8, 3/8 feel.
+const BATCH_COVERAGE: Record<string, { covered: number; total: number; nextUp: string }> = {
+  'bat-bfa-1a': { covered: 6, total: 8, nextUp: 'Advanced Figure Composition' },
+  'bat-bfa-2a': { covered: 3, total: 8, nextUp: 'Etching & Intaglio' },
+};
+
+const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+const DAY_STATUS: Record<string, 'done' | 'now' | 'upcoming'> = {
+  Mon: 'done',
+  Tue: 'done',
+  Wed: 'now',
+  Thu: 'upcoming',
+  Fri: 'upcoming',
+};
+
 function facultySummary(): FacultyDashboard {
   // Only classes and batches assigned to the faculty account (§6): faculty see
   // their own teaching load, never a global view.
@@ -250,6 +274,56 @@ function facultySummary(): FacultyDashboard {
     .filter((c) => !SEED_RECENT_ATTENDANCE.some((a) => a.batchId === c.batchId && a.subject === c.subject))
     .map((c) => ({ id: c.id, batch: batchName(c.batchId), subject: c.subject, date: '2026-08-18' }));
 
+  const recentAttendance = SEED_RECENT_ATTENDANCE.filter((a) => myBatchIds.has(a.batchId)).map((a) => ({
+    id: a.id,
+    batch: batchName(a.batchId),
+    subject: a.subject,
+    date: a.date,
+    present: a.present,
+    total: a.total,
+  }));
+
+  const attendanceRate = recentAttendance.length
+    ? Math.round((recentAttendance.reduce((s, a) => s + a.present / a.total, 0) / recentAttendance.length) * 100)
+    : 0;
+
+  const teachingMinutesToday = myClasses.reduce((s, c) => s + minutes(c.start, c.end), 0);
+
+  // Batch coverage cards (the "subject progress" of the reference).
+  const batches = myBatches.map((b) => {
+    const subjects = [...new Set(SEED_TIMETABLE.filter((t) => t.batchId === b.id && t.facultyId === FACULTY_ACCOUNT_ID).map((t) => t.subject))];
+    const cov = BATCH_COVERAGE[b.id] ?? { covered: 4, total: 8, nextUp: 'Next module' };
+    return {
+      id: b.id,
+      name: b.name,
+      course: `${courseCode(b.courseId)} — ${courseName(b.courseId)}`,
+      section: b.section,
+      subjects: subjects.length ? subjects : ['Studio practice'],
+      covered: cov.covered,
+      total: cov.total,
+      nextUp: cov.nextUp,
+      studentCount: SEED_STUDENTS.filter((s) => s.batchId === b.id).length,
+    };
+  });
+
+  // Today's activity cards: first class done, one in progress, the rest upcoming.
+  const todaysActivity = myClasses.map((c, i) => {
+    const total = SEED_STUDENTS.filter((s) => s.batchId === c.batchId).length || 24;
+    const status: 'done' | 'now' | 'upcoming' = i === 0 ? 'done' : i === 1 ? 'now' : 'upcoming';
+    const done = status === 'done' ? total : status === 'now' ? Math.round(total * 0.6) : 0;
+    return { id: c.id, subject: c.subject, batch: batchName(c.batchId), status, minutes: minutes(c.start, c.end), done, total };
+  });
+
+  // Weekly board: this faculty's timetable grouped by day.
+  const weeklyActivity = WEEK_DAYS.map((day) => {
+    const slots = SEED_TIMETABLE.filter((t) => t.day === day && t.facultyId === FACULTY_ACCOUNT_ID);
+    return {
+      day,
+      totalMinutes: slots.reduce((s, t) => s + minutes(t.start, t.end), 0),
+      items: slots.map((t) => ({ id: t.id, subject: t.subject, batch: batchName(t.batchId), status: DAY_STATUS[day] ?? 'upcoming' })),
+    };
+  }).filter((d) => d.items.length > 0);
+
   return {
     authority: 'faculty',
     kpis: {
@@ -257,17 +331,15 @@ function facultySummary(): FacultyDashboard {
       assignedBatches: myBatches.length,
       pendingAttendance: pending.length,
       studentCount,
+      attendanceRate,
+      teachingMinutesToday,
     },
+    batches,
+    todaysActivity,
+    weeklyActivity,
     todaysSchedule: myClasses.map(toClass),
     pendingAttendance: pending,
-    recentAttendance: SEED_RECENT_ATTENDANCE.filter((a) => myBatchIds.has(a.batchId)).map((a) => ({
-      id: a.id,
-      batch: batchName(a.batchId),
-      subject: a.subject,
-      date: a.date,
-      present: a.present,
-      total: a.total,
-    })),
+    recentAttendance,
   };
 }
 
