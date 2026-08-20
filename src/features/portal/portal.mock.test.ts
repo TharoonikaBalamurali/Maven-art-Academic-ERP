@@ -29,6 +29,12 @@ describe('portal mock API (§7, §8)', () => {
     expect(overview.student.registerNo).toBe('MAA20260001');
     expect(overview.attendance?.percentage).toBe(92);
     expect(overview.fees?.outstanding).toBe(98000);
+    // Dashboard feeds are backend-provided and scoped to the caller.
+    expect(overview.fees?.paid).toBe(60000);
+    expect(overview.todaySchedule.some((s) => s.status === 'now')).toBe(true);
+    expect(overview.upcomingActivities.length).toBeGreaterThan(0);
+    expect(overview.reminders.length).toBeGreaterThan(0);
+    expect(overview.recentGrades.length).toBeGreaterThan(0);
   });
 
   it('gives a parent the same portal overview scope (selected child, §8)', () => {

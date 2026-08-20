@@ -17,12 +17,51 @@ export interface PortalStudentRef {
   batch: string;
 }
 
+/** One class in "today's schedule" — status positions it on the timeline. */
+export interface PortalScheduleItem {
+  id: string;
+  subject: string;
+  time: string;
+  room: string;
+  status: KnownOr<'done' | 'now' | 'upcoming'>;
+}
+
+/** An upcoming exam / deadline / event on the dashboard feed. */
+export interface PortalActivity {
+  id: string;
+  title: string;
+  date: IsoDateString;
+  meta: string;
+}
+
+/** A small "smart reminder" card, optionally linking into a module. */
+export interface PortalReminder {
+  id: string;
+  label: string;
+  detail: string;
+  to?: string;
+}
+
+/** A recent assessment result for the dashboard performance strip. */
+export interface PortalRecentGrade {
+  id: string;
+  assessment: string;
+  grade: string;
+}
+
 export interface PortalOverview {
   student: PortalStudentRef;
   attendance: { percentage: number; present: number; total: number } | null;
-  fees: { outstanding: number; status: string } | null;
+  /** Backend-authoritative fee figures (displayed verbatim). */
+  fees: { assigned: number; paid: number; outstanding: number; status: string } | null;
   nextClass: { subject: string; day: string; time: string; room: string } | null;
   latestGrade: { assessment: string; grade: string } | null;
+  /** Count of items awaiting the student (assignments, forms, unpaid dues). */
+  pendingTasks: number;
+  todaySchedule: PortalScheduleItem[];
+  upcomingActivities: PortalActivity[];
+  reminders: PortalReminder[];
+  recentGrades: PortalRecentGrade[];
 }
 
 export interface PortalProfile {

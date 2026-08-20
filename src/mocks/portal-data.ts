@@ -42,9 +42,31 @@ const NITHYA: ChildBundle = {
   overview: {
     student: { name: 'Nithya Balan', registerNo: 'MAA20260001', course: 'Bachelor of Fine Arts', batch: 'BFA Year 1 · A' },
     attendance: { percentage: 92, present: 118, total: 128 },
-    fees: { outstanding: 98000, status: 'partial' },
+    fees: { assigned: 158000, paid: 60000, outstanding: 98000, status: 'partial' },
     nextClass: { subject: 'Foundation Drawing', day: 'Monday', time: '09:00 – 10:30', room: 'Studio 2' },
     latestGrade: { assessment: 'Foundation Drawing — Midterm', grade: 'A+' },
+    pendingTasks: 3,
+    todaySchedule: [
+      { id: 'ts-1', subject: 'Foundation Drawing', time: '09:00 – 10:30', room: 'Studio 2', status: 'done' },
+      { id: 'ts-2', subject: 'Art History', time: '11:00 – 12:00', room: 'Room 4', status: 'now' },
+      { id: 'ts-3', subject: 'Colour & Composition', time: '13:00 – 15:00', room: 'Studio 1', status: 'upcoming' },
+    ],
+    upcomingActivities: [
+      { id: 'ua-1', title: 'Art History — Quiz', date: '2026-08-22', meta: 'Room 4 · 11:00 AM' },
+      { id: 'ua-2', title: 'Parent–teacher meeting', date: '2026-08-24', meta: 'Virtual · 4:00 PM' },
+      { id: 'ua-3', title: 'Foundation Drawing — Final', date: '2026-08-28', meta: 'Studio 2 · 10:00 AM' },
+      { id: 'ua-4', title: 'Fee installment 2 due', date: '2026-09-15', meta: '₹50,000' },
+    ],
+    reminders: [
+      { id: 'rm-1', label: 'Next class', detail: 'Art History · Room 4', to: '/portal/timetable' },
+      { id: 'rm-2', label: 'Fee due', detail: '₹50,000 due 15 Sep', to: '/portal/fees' },
+      { id: 'rm-3', label: 'New grade published', detail: 'Foundation Drawing — Midterm', to: '/portal/progress' },
+    ],
+    recentGrades: [
+      { id: 'prg-803', assessment: 'Foundation Drawing — Midterm', grade: 'A+' },
+      { id: 'prg-810', assessment: 'Colour & Composition — Assignment 1', grade: 'B+' },
+      { id: 'prg-811', assessment: 'Art History — Quiz 1', grade: 'B' },
+    ],
   },
   profile: {
     name: 'Nithya Balan', registerNo: 'MAA20260001', email: 'nithya.balan@example.com', phone: '+91 90000 20001',
@@ -119,9 +141,27 @@ const ARJUN: ChildBundle = {
   overview: {
     student: { name: 'Arjun Balan', registerNo: 'MAA20260050', course: 'Photography', batch: 'PH Year 1 · A' },
     attendance: { percentage: 84, present: 96, total: 114 },
-    fees: { outstanding: 0, status: 'paid' },
+    fees: { assigned: 130000, paid: 130000, outstanding: 0, status: 'paid' },
     nextClass: { subject: 'Studio Lighting', day: 'Tuesday', time: '10:00 – 12:00', room: 'Photo Lab' },
     latestGrade: { assessment: 'Composition — Midterm', grade: 'B+' },
+    pendingTasks: 1,
+    todaySchedule: [
+      { id: 'ts-a1', subject: 'Composition', time: '09:00 – 11:00', room: 'Photo Lab', status: 'done' },
+      { id: 'ts-a2', subject: 'Studio Lighting', time: '12:00 – 14:00', room: 'Photo Lab', status: 'now' },
+      { id: 'ts-a3', subject: 'Digital Post-production', time: '15:00 – 17:00', room: 'Computer Lab', status: 'upcoming' },
+    ],
+    upcomingActivities: [
+      { id: 'ua-a1', title: 'Portfolio review', date: '2026-08-26', meta: 'Studio · 2:00 PM' },
+      { id: 'ua-a2', title: 'Composition — Final', date: '2026-08-30', meta: 'Photo Lab · 10:00 AM' },
+    ],
+    reminders: [
+      { id: 'rm-a1', label: 'Next class', detail: 'Studio Lighting · Photo Lab', to: '/portal/timetable' },
+      { id: 'rm-a2', label: 'Fees cleared', detail: 'No dues outstanding', to: '/portal/fees' },
+    ],
+    recentGrades: [
+      { id: 'prg-901', assessment: 'Composition — Midterm', grade: 'B+' },
+      { id: 'prg-902', assessment: 'Studio Lighting — Assignment 1', grade: 'A' },
+    ],
   },
   profile: {
     name: 'Arjun Balan', registerNo: 'MAA20260050', email: 'arjun.balan@example.com', phone: '+91 90000 20050',
