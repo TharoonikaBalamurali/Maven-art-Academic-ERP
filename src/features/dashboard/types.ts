@@ -24,8 +24,40 @@ export interface DashboardClass {
   end: string;
 }
 
+/**
+ * An item in the Admin action centre.
+ *
+ * The BACKEND decides what needs attention and how urgent it is; the frontend
+ * only renders and links. `permission` lets the UI hide an item the caller may
+ * not act on, and `to` is omitted when the destination module does not exist
+ * yet (the count is still worth surfacing).
+ */
+export interface AdminActionItem {
+  id: Id;
+  label: string;
+  count: number;
+  priority: 'high' | 'medium' | 'low';
+  /** Permission required to see/act on this item. */
+  permission: string;
+  /** Destination module; omitted while a module is pending. */
+  to?: string;
+}
+
+/** One entry of the backend's administrative audit trail (§18). */
+export interface AdminActivityEntry {
+  id: Id;
+  action: string;
+  entity: string;
+  actor: string;
+  at: IsoDateString;
+}
+
 export interface AdminDashboard {
   authority: 'admin';
+  /**
+   * Headline KPIs kept from the original contract so existing consumers and
+   * tests continue to work; the grouped sections below add the detail.
+   */
   kpis: {
     totalStudents: number;
     activeBatches: number;
@@ -35,6 +67,87 @@ export interface AdminDashboard {
     feeCollectionThisMonth: number;
     outstandingFees: number;
   };
+
+  /** Student population by lifecycle status (§5, §6). */
+  students: {
+    total: number;
+    active: number;
+    newThisMonth: number;
+    onLeave: number;
+    transferred: number;
+    withdrawn: number;
+    completed: number;
+  };
+
+  /** Academic structure (§10). */
+  academics: {
+    totalCourses: number;
+    activeCourses: number;
+    totalBatches: number;
+    activeBatches: number;
+    classesToday: number;
+  };
+
+  /** Faculty operations (§11). Counts only — no private faculty data. */
+  faculty: {
+    total: number;
+    active: number;
+    teachingToday: number;
+    attendancePending: number;
+  };
+
+  /** Admissions pipeline (§8, §9). */
+  admissions: {
+    newEnquiries: number;
+    followUpsDue: number;
+    pendingApplications: number;
+    underReview: number;
+    approved: number;
+    rejected: number;
+    recentAdmissions: number;
+    pendingEnrollment: number;
+  };
+
+  /** Institution-level finance visibility (§13) — not the Accounts dashboard. */
+  finance: {
+    todaysCollection: number;
+    monthlyCollection: number;
+    outstandingTotal: number;
+    studentsWithOutstanding: number;
+    pendingPayments: number;
+    installmentsDue: number;
+    overdueInstallments: number;
+  };
+
+  /** Attendance overview (§12). */
+  attendance: {
+    todaysPct: number;
+    present: number;
+    absent: number;
+    onLeave: number;
+    classesConducted: number;
+    classesRemaining: number;
+    pendingSubmission: number;
+  };
+
+  /**
+   * Student affairs (§ discipline, leave/OD). Summary counts only — sensitive
+   * case detail is never surfaced on a dashboard card (§31).
+   */
+  studentAffairs: {
+    disciplineOpen: number;
+    disciplineUnderReview: number;
+    disciplineActionRequired: number;
+    leavePending: number;
+    odPending: number;
+  };
+
+  /** Certificates and institutional communication (§15, §16). */
+  documents: { certificatesIssued: number; certificateRequests: number };
+  communication: { activeAnnouncements: number; scheduledAnnouncements: number; draftAnnouncements: number };
+
+  actionCentre: AdminActionItem[];
+  recentActivity: AdminActivityEntry[];
   recentAdmissions: { id: Id; name: string; programme: string; admittedAt: IsoDateString }[];
   upcomingClasses: DashboardClass[];
 }

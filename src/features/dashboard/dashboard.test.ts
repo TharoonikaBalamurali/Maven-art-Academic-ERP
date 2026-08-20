@@ -43,6 +43,22 @@ describe('dashboard mock API', () => {
     expect(admin.kpis.todaysAttendancePct).toBeLessThanOrEqual(100);
   });
 
+  it('returns the grouped admin overview with an internally-consistent student split', () => {
+    const admin = summaryFor('admin@mavenart.test') as AdminDashboard;
+    // Student lifecycle counts reconcile to the enrolled total.
+    const { active, onLeave, transferred, withdrawn, completed, total } = admin.students;
+    expect(active + onLeave + transferred + withdrawn + completed).toBe(total);
+    // The grouped sections are present.
+    expect(admin.academics.totalCourses).toBeGreaterThan(0);
+    expect(admin.faculty.total).toBeGreaterThan(0);
+    expect(admin.finance.monthlyCollection).toBe(admin.kpis.feeCollectionThisMonth);
+    // The action centre only carries items with a positive count, each with a permission.
+    expect(admin.actionCentre.length).toBeGreaterThan(0);
+    expect(admin.actionCentre.every((i) => i.count > 0 && i.permission.length > 0)).toBe(true);
+    // Recent activity is sourced from the audit trail.
+    expect(admin.recentActivity.length).toBeGreaterThan(0);
+  });
+
   it('returns a finance-shaped summary for Accounts', () => {
     const summary = summaryFor('accounts@mavenart.test');
     expect(summary.authority).toBe('accounts');

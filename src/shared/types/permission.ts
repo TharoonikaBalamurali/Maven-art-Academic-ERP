@@ -72,6 +72,21 @@ export const PERMISSIONS = [
   'reports.view',
   'reports.export',
 
+  // Student affairs — confidential; summary counts only on dashboards (§31).
+  // TBD — BACKEND CONTRACT: the detail modules are pending; these keys exist so
+  // the Admin overview can be permission-gated from the start.
+  'discipline.view',
+  'discipline.create',
+  'discipline.update',
+  'leave.view',
+  'leave.approve',
+  'od.view',
+  'od.approve',
+
+  // Communication
+  'announcements.view',
+  'announcements.create',
+
   // Administration
   'users.view',
   'users.create',
