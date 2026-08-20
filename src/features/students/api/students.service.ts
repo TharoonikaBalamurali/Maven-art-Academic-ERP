@@ -31,4 +31,8 @@ export const studentsService = {
   update(studentId: Id, input: StudentInput, options?: RequestOptions): Promise<StudentDetail> {
     return apiClient.call(studentsContract.update, { params: { studentId }, body: input, options });
   },
+
+  updatePhoto(studentId: Id, photo: string | null, options?: RequestOptions): Promise<StudentDetail> {
+    return apiClient.call(studentsContract.updatePhoto, { params: { studentId }, body: { photo }, options });
+  },
 };

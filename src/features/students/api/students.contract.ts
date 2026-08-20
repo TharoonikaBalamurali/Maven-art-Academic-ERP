@@ -47,4 +47,17 @@ export const studentsContract = {
     auth: true,
     permission: 'students.update',
   }),
+  /**
+   * Sets or clears the profile photo. A real backend takes a multipart upload
+   * and stores the file; this contract carries a data URI (or null) so the mock
+   * and the http transport share one shape until storage exists.
+   *
+   * TBD — BACKEND CONTRACT: multipart upload + storage URL.
+   */
+  updatePhoto: endpoint<{ photo: string | null }, StudentDetail>({
+    method: 'POST',
+    path: '/students/:studentId/photo',
+    auth: true,
+    permission: 'students.update',
+  }),
 } as const;

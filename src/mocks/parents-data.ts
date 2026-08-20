@@ -47,3 +47,13 @@ export function getParent(id: string): ParentDetail | null {
   const r = store.find((p) => p.id === id);
   return r ? toDetail(r) : null;
 }
+
+/**
+ * The Student ↔ Parent link: returns the parent-directory id whose linked
+ * students include `studentId`, or null. Lets the student profile deep-link to
+ * a real parent record without duplicating parent data.
+ */
+export function findParentIdForStudent(studentId: string): string | null {
+  const parent = store.find((p) => p.students.some((s) => s.id === studentId));
+  return parent?.id ?? null;
+}

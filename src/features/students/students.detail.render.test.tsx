@@ -9,6 +9,7 @@ import type { StudentDetail } from './types';
 const useStudent = vi.fn();
 vi.mock('./hooks/useStudents', () => ({
   useStudent: (...args: unknown[]) => useStudent(...args),
+  useUpdateStudentPhoto: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
 const { StudentDetailPage } = await import('./components/StudentDetailPage');
@@ -16,8 +17,12 @@ const { StudentDetailPage } = await import('./components/StudentDetailPage');
 const DETAIL: StudentDetail = {
   id: 'stu-001',
   registerNo: 'MAA20260001',
+  admissionNo: 'ADM/2026/1001',
+  rollNo: 'BFA-A-01',
   name: 'Nithya Balan',
+  photoUrl: null,
   status: 'active',
+  joiningDate: '2024-07-20',
   courseId: 'crs-bfa',
   course: 'Bachelor of Fine Arts',
   courseCode: 'BFA',
@@ -25,10 +30,25 @@ const DETAIL: StudentDetail = {
   batch: 'BFA Year 1 · A',
   section: 'A',
   personal: {
+    firstName: 'Nithya',
+    middleName: '',
+    lastName: 'Balan',
     dateOfBirth: '2005-04-12',
+    age: 20,
+    gender: 'female',
     email: 'nithya.balan@student.mavenart.test',
     phone: '+91 98000 12345',
-    address: '12, Gallery Road, Chennai',
+    alternatePhone: '',
+    address: {
+      line1: '12, Gallery Road',
+      line2: '',
+      area: 'Besant Nagar',
+      city: 'Chennai',
+      district: 'Chennai',
+      state: 'Tamil Nadu',
+      country: 'India',
+      postalCode: '600090',
+    },
     bloodGroup: 'O+',
     admissionDate: '2024-07-15',
   },
@@ -41,8 +61,25 @@ const DETAIL: StudentDetail = {
     enrollmentStatus: 'Enrolled',
   },
   parents: [
-    { id: 'p1', name: 'Mr. Ramesh Balan', relation: 'Father', phone: '+91 97000 11111', email: 'parent.balan@mavenart.test' },
+    {
+      id: 'p1',
+      parentId: 'par-201',
+      name: 'Mr. Ramesh Balan',
+      relation: 'Father',
+      phone: '+91 97000 11111',
+      alternatePhone: '+91 96000 22222',
+      email: 'parent.balan@mavenart.test',
+      occupation: 'Architect',
+      professionalAddress: '3, Commerce Towers, Chennai',
+      residentialAddress: '12, Gallery Road, Chennai',
+      isEmergencyContact: true,
+      guardianStatus: 'Primary guardian',
+    },
   ],
+  siblings: [
+    { id: 's1', name: 'Kabir Balan', relation: 'Brother', dateOfBirth: '2010-05-15', institution: 'Maven Art Academy', className: 'Grade 8' },
+  ],
+  medical: { foodAllergies: 'Peanuts', otherAllergies: '', accessibility: '', emergencyContact: '+91 90000 33333', notes: '' },
   enrollment: { course: 'Bachelor of Fine Arts', batch: 'BFA Year 1 · A', status: 'Active', startDate: '2024-08-01', endDate: null },
   summary: {
     attendance: { percent: 92, present: 55, total: 60 },
@@ -67,15 +104,18 @@ beforeEach(() => {
 });
 
 describe('StudentDetailPage', () => {
-  it('shows the identity header and all eight tabs (§14.1)', () => {
+  it('shows the identity header and the 360° tabs (§14.1)', () => {
     signIn('admin', ['students.view']);
     renderAt('/management/students/stu-001');
 
     expect(screen.getByRole('heading', { level: 1, name: 'Nithya Balan' })).toBeInTheDocument();
-    for (const tab of ['Personal', 'Academic', 'Parents', 'Enrollment', 'Attendance', 'Fees', 'Progress', 'Certificates']) {
+    // Key identifiers in the profile header.
+    expect(screen.getByText('ADM/2026/1001')).toBeInTheDocument();
+    expect(screen.getByText('BFA-A-01')).toBeInTheDocument();
+    for (const tab of ['Biodata', 'Admission', 'Parent / Guardian', 'Family', 'Academic', 'Attendance', 'Fees', 'Progress', 'Certificates']) {
       expect(screen.getByRole('tab', { name: tab })).toBeInTheDocument();
     }
-    // Personal tab is the default panel.
+    // Biodata is the default panel — the student's email is shown there.
     expect(screen.getByText('nithya.balan@student.mavenart.test')).toBeInTheDocument();
   });
 

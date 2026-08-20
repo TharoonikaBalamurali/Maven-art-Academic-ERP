@@ -8,15 +8,20 @@ import { StudentForm, type StudentFormValues } from './StudentForm';
 
 const EMPTY_STUDENT: StudentFormValues = {
   name: '',
+  gender: '',
   dateOfBirth: '',
+  bloodGroup: '',
   email: '',
   phone: '',
-  bloodGroup: '',
-  address: '',
+  alternatePhone: '',
+  rollNo: '',
+  admissionNo: '',
+  address: { line1: '', line2: '', area: '', city: '', district: '', state: '', country: 'India', postalCode: '' },
   courseId: '',
   batchId: '',
   section: '',
   status: 'active',
+  medical: { foodAllergies: '', otherAllergies: '', accessibility: '', emergencyContact: '', notes: '' },
 };
 
 /**
@@ -27,18 +32,23 @@ const EMPTY_STUDENT: StudentFormValues = {
  * `FormSection`/`FormActions`, client-side shape validation for fast feedback,
  * and server-side 422 field errors mapped back onto the inputs (§30).
  */
-function toFormValues(detail: StudentDetail) {
+function toFormValues(detail: StudentDetail): StudentFormValues {
   return {
     name: detail.name,
+    gender: detail.personal.gender,
     dateOfBirth: detail.personal.dateOfBirth,
+    bloodGroup: detail.personal.bloodGroup,
     email: detail.personal.email,
     phone: detail.personal.phone,
-    bloodGroup: detail.personal.bloodGroup,
-    address: detail.personal.address,
+    alternatePhone: detail.personal.alternatePhone,
+    rollNo: detail.rollNo,
+    admissionNo: detail.admissionNo,
+    address: { ...detail.personal.address },
     courseId: detail.courseId,
     batchId: detail.batchId,
     section: detail.section,
     status: detail.status,
+    medical: { ...detail.medical },
   };
 }
 

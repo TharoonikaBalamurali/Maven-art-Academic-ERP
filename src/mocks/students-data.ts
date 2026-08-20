@@ -1,8 +1,12 @@
 import type {
+  Gender,
+  StudentAddress,
   StudentDetail,
   StudentFilterOptions,
   StudentInput,
   StudentListItem,
+  StudentMedical,
+  StudentSibling,
   StudentStatus,
 } from '@/features/students/types';
 import type { FieldErrors, ListQuery, Paginated } from '@/shared/types';
@@ -14,25 +18,38 @@ import {
   SEED_COURSES,
   SEED_STUDENTS,
 } from './seed';
+import { findParentIdForStudent } from './parents-data';
 
 /**
  * In-memory students store for the mock backend.
  *
- * Behaves like a real data store within the session: the list, detail, create
- * and update endpoints all read and write this one array, so creating or
- * editing a student is reflected everywhere immediately. Demonstration data,
- * reset on reload; a real backend persists. Only the mock router imports this.
+ * Behaves like a real data store within the session: the list, detail, create,
+ * update and photo endpoints all read and write this one array, so a change is
+ * reflected everywhere immediately. Demonstration data, reset on reload; a real
+ * backend persists. Only the mock router imports this.
  */
 
 const CITIES = ['Chennai', 'Coimbatore', 'Madurai', 'Bengaluru', 'Kochi', 'Hyderabad'];
+const DISTRICTS = ['Chennai', 'Coimbatore', 'Madurai', 'Bengaluru Urban', 'Ernakulam', 'Hyderabad'];
+const STATES = ['Tamil Nadu', 'Tamil Nadu', 'Tamil Nadu', 'Karnataka', 'Kerala', 'Telangana'];
+const AREAS = ['Besant Nagar', 'R.S. Puram', 'Anna Nagar', 'Indiranagar', 'Panampilly Nagar', 'Banjara Hills'];
 const BLOOD_GROUPS = ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-'];
 const GRADES = ['A+', 'A', 'B+', 'B', 'A'];
 const SUBJECTS = ['Life Drawing', 'Colour Theory', 'Typography', 'Storyboarding', 'Clay Modelling'];
+const FATHER_NAMES = ['Ramesh', 'Suresh', 'Anil', 'Vijay', 'Prakash'];
+const MOTHER_NAMES = ['Latha', 'Uma', 'Radha', 'Geetha', 'Shanti'];
+const OCCUPATIONS = ['Architect', 'Doctor', 'Business owner', 'Teacher', 'Engineer'];
+const SIBLING_NAMES = ['Aarav', 'Diya', 'Kabir', 'Meera', 'Vivaan', 'Anika'];
+const SCHOOLS = ['Maven Art Academy', 'St. Xavier’s School', 'DAV Public School', 'National College'];
 
 interface StudentRecord {
   id: string;
   registerNo: string;
+  admissionNo: string;
+  rollNo: string;
   name: string;
+  gender: Gender | '';
+  photoUrl: string | null;
   courseId: string;
   batchId: string;
   section: string;
@@ -40,9 +57,12 @@ interface StudentRecord {
   dateOfBirth: string;
   email: string;
   phone: string;
+  alternatePhone: string;
   bloodGroup: string;
-  address: string;
+  address: StudentAddress;
   admissionDate: string;
+  joiningDate: string;
+  medical: StudentMedical;
 }
 
 function slug(name: string): string {
@@ -56,27 +76,70 @@ function hash(id: string): number {
   return h;
 }
 
-function seedPersonal(index: number, name: string): Omit<StudentRecord, 'id' | 'registerNo' | 'name' | 'courseId' | 'batchId' | 'section' | 'status'> {
+function ageFrom(dateOfBirth: string): number | null {
+  const dob = new Date(dateOfBirth);
+  if (Number.isNaN(dob.getTime())) return null;
+  const now = new Date();
+  let age = now.getFullYear() - dob.getFullYear();
+  const m = now.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age -= 1;
+  return age;
+}
+
+function nameParts(full: string): { firstName: string; middleName: string; lastName: string } {
+  const parts = full.trim().split(/\s+/);
+  if (parts.length === 1) return { firstName: parts[0] ?? '', middleName: '', lastName: '' };
   return {
-    dateOfBirth: `${2004 + (index % 3)}-0${(index % 9) + 1}-${String((index % 27) + 1).padStart(2, '0')}`,
-    email: `${slug(name)}@student.mavenart.test`,
-    phone: `+91 9${String(80000000 + index * 12345).slice(0, 9)}`,
-    bloodGroup: BLOOD_GROUPS[index % BLOOD_GROUPS.length] ?? 'O+',
-    address: `${(index % 40) + 1}, Gallery Road, ${CITIES[index % CITIES.length]}`,
-    admissionDate: `${2024 + (index % 2)}-07-15`,
+    firstName: parts[0] ?? '',
+    middleName: parts.slice(1, -1).join(' '),
+    lastName: parts[parts.length - 1] ?? '',
   };
 }
 
-const studentStore: StudentRecord[] = SEED_STUDENTS.map((student, index) => ({
-  id: student.id,
-  registerNo: student.registerNo,
-  name: student.name,
-  courseId: student.courseId,
-  batchId: student.batchId,
-  section: student.section,
-  status: student.status,
-  ...seedPersonal(index + 1, student.name),
-}));
+function seedRecord(student: (typeof SEED_STUDENTS)[number], index: number): StudentRecord {
+  const i = index + 1;
+  const g = i % 6;
+  const gender: Gender = i % 2 === 0 ? 'female' : 'male';
+  return {
+    id: student.id,
+    registerNo: student.registerNo,
+    admissionNo: `ADM/2026/${String(1000 + i)}`,
+    rollNo: `${courseCode(student.courseId)}-${student.section}-${String((i % 40) + 1).padStart(2, '0')}`,
+    name: student.name,
+    gender,
+    photoUrl: null,
+    courseId: student.courseId,
+    batchId: student.batchId,
+    section: student.section,
+    status: student.status,
+    dateOfBirth: `${2004 + (i % 3)}-0${(i % 9) + 1}-${String((i % 27) + 1).padStart(2, '0')}`,
+    email: `${slug(student.name)}@student.mavenart.test`,
+    phone: `+91 9${String(80000000 + i * 12345).slice(0, 9)}`,
+    alternatePhone: i % 3 === 0 ? `+91 9${String(70000000 + i * 321).slice(0, 9)}` : '',
+    bloodGroup: BLOOD_GROUPS[i % BLOOD_GROUPS.length] ?? 'O+',
+    address: {
+      line1: `${(i % 40) + 1}, Gallery Road`,
+      line2: i % 4 === 0 ? 'Near Art District' : '',
+      area: AREAS[g] ?? 'Besant Nagar',
+      city: CITIES[g] ?? 'Chennai',
+      district: DISTRICTS[g] ?? 'Chennai',
+      state: STATES[g] ?? 'Tamil Nadu',
+      country: 'India',
+      postalCode: `6000${String((i % 90) + 10)}`,
+    },
+    admissionDate: `${2024 + (i % 2)}-07-15`,
+    joiningDate: `${2024 + (i % 2)}-07-20`,
+    medical: {
+      foodAllergies: i % 5 === 0 ? 'Peanuts' : '',
+      otherAllergies: i % 7 === 0 ? 'Pollen' : '',
+      accessibility: i % 11 === 0 ? 'Requires seating near the front' : '',
+      emergencyContact: `+91 9${String(90000000 + i * 77).slice(0, 9)}`,
+      notes: '',
+    },
+  };
+}
+
+const studentStore: StudentRecord[] = SEED_STUDENTS.map((student, index) => seedRecord(student, index));
 
 let nextRegisterSeq = studentStore.length + 1;
 
@@ -159,12 +222,29 @@ export function studentFilterOptions(): StudentFilterOptions {
 
 // --- Detail -----------------------------------------------------------------
 
+function seedSiblings(id: string, surname: string): StudentSibling[] {
+  const h = hash(id);
+  const count = h % 3; // 0, 1 or 2 siblings
+  return Array.from({ length: count }, (_, k) => {
+    const idx = (h + k) % SIBLING_NAMES.length;
+    return {
+      id: `sib-${id}-${k}`,
+      name: `${SIBLING_NAMES[idx]} ${surname}`,
+      relation: (h + k) % 2 === 0 ? 'Brother' : 'Sister',
+      dateOfBirth: `${2008 + ((h + k) % 6)}-0${((h + k) % 9) + 1}-15`,
+      institution: SCHOOLS[(h + k) % SCHOOLS.length] ?? 'Maven Art Academy',
+      className: `Grade ${((h + k) % 10) + 2}`,
+    };
+  });
+}
+
 export function getStudentDetail(id: string): StudentDetail | null {
   const record = studentStore.find((s) => s.id === id);
   if (!record) return null;
 
   const h = hash(id);
   const surname = record.name.split(' ').slice(-1)[0] ?? 'Kumar';
+  const { firstName, middleName, lastName } = nameParts(record.name);
   const year = ['1st Year', '2nd Year', '3rd Year'][h % 3] ?? '1st Year';
 
   const feeTotal = 90000 + (h % 4) * 15000;
@@ -175,11 +255,18 @@ export function getStudentDetail(id: string): StudentDetail | null {
   const attendancePercent = 74 + (h % 24);
   const attendanceTotal = 60;
 
+  const directoryParentId = findParentIdForStudent(id);
+  const residential = `${record.address.line1}, ${record.address.area}, ${record.address.city}`;
+
   return {
     id: record.id,
     registerNo: record.registerNo,
+    admissionNo: record.admissionNo,
+    rollNo: record.rollNo,
     name: record.name,
+    photoUrl: record.photoUrl,
     status: record.status,
+    joiningDate: record.joiningDate,
     courseId: record.courseId,
     course: courseName(record.courseId),
     courseCode: courseCode(record.courseId),
@@ -188,10 +275,16 @@ export function getStudentDetail(id: string): StudentDetail | null {
     section: record.section,
 
     personal: {
+      firstName,
+      middleName,
+      lastName,
       dateOfBirth: record.dateOfBirth,
+      age: ageFrom(record.dateOfBirth),
+      gender: record.gender,
       email: record.email,
       phone: record.phone,
-      address: record.address,
+      alternatePhone: record.alternatePhone,
+      address: { ...record.address },
       bloodGroup: record.bloodGroup,
       admissionDate: record.admissionDate,
     },
@@ -206,19 +299,35 @@ export function getStudentDetail(id: string): StudentDetail | null {
     parents: [
       {
         id: `par-${record.id}-f`,
-        name: `Mr. ${['Ramesh', 'Suresh', 'Anil', 'Vijay', 'Prakash'][h % 5]} ${surname}`,
+        parentId: directoryParentId,
+        name: `Mr. ${FATHER_NAMES[h % 5]} ${surname}`,
         relation: 'Father',
         phone: `+91 9${String(70000000 + (h % 9999999)).slice(0, 9)}`,
+        alternatePhone: `+91 9${String(60000000 + (h % 9999999)).slice(0, 9)}`,
         email: `parent.${slug(surname)}@mavenart.test`,
+        occupation: OCCUPATIONS[h % OCCUPATIONS.length] ?? 'Business owner',
+        professionalAddress: `${(h % 30) + 1}, Commerce Towers, ${record.address.city}`,
+        residentialAddress: residential,
+        isEmergencyContact: true,
+        guardianStatus: 'Primary guardian',
       },
       {
         id: `par-${record.id}-m`,
-        name: `Mrs. ${['Latha', 'Uma', 'Radha', 'Geetha', 'Shanti'][h % 5]} ${surname}`,
+        parentId: null,
+        name: `Mrs. ${MOTHER_NAMES[h % 5]} ${surname}`,
         relation: 'Mother',
         phone: `+91 9${String(60000000 + (h % 9999999)).slice(0, 9)}`,
+        alternatePhone: '',
         email: `parent.${slug(surname)}.m@mavenart.test`,
+        occupation: OCCUPATIONS[(h + 2) % OCCUPATIONS.length] ?? 'Teacher',
+        professionalAddress: '',
+        residentialAddress: residential,
+        isEmergencyContact: false,
+        guardianStatus: 'Guardian',
       },
     ],
+    siblings: seedSiblings(id, surname),
+    medical: { ...record.medical },
     enrollment: {
       course: courseName(record.courseId),
       batch: batchName(record.batchId),
@@ -240,11 +349,12 @@ export function getStudentDetail(id: string): StudentDetail | null {
   };
 }
 
-// --- Write (create / update) ------------------------------------------------
+// --- Write (create / update / photo) ----------------------------------------
 
 const KNOWN_COURSE_IDS = new Set(SEED_COURSES.map((c) => c.id));
 const KNOWN_BATCH_IDS = new Set(SEED_BATCHES.map((b) => b.id));
 const KNOWN_STATUSES = new Set(['active', 'on_leave', 'graduated']);
+const KNOWN_GENDERS = new Set(['male', 'female', 'other']);
 
 /**
  * Server-side validation (§30): the backend re-checks everything the client
@@ -255,6 +365,7 @@ function validate(input: StudentInput, selfId?: string): FieldErrors {
   const errors: FieldErrors = {};
   const required: [keyof StudentInput, string][] = [
     ['name', 'Name is required.'],
+    ['gender', 'Gender is required.'],
     ['dateOfBirth', 'Date of birth is required.'],
     ['email', 'Email is required.'],
     ['phone', 'Phone is required.'],
@@ -270,6 +381,7 @@ function validate(input: StudentInput, selfId?: string): FieldErrors {
   if (input.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(input.email)) {
     errors.email = ['Enter a valid email address.'];
   }
+  if (input.gender && !KNOWN_GENDERS.has(input.gender)) errors.gender = ['Unknown gender.'];
   if (input.courseId && !KNOWN_COURSE_IDS.has(input.courseId)) errors.courseId = ['Unknown course.'];
   if (input.batchId && !KNOWN_BATCH_IDS.has(input.batchId)) errors.batchId = ['Unknown batch.'];
   if (input.status && !KNOWN_STATUSES.has(input.status)) errors.status = ['Unknown status.'];
@@ -291,17 +403,45 @@ export interface StudentWriteResult {
   detail?: StudentDetail;
 }
 
+function normalizeAddress(a: Partial<StudentAddress> | undefined): StudentAddress {
+  return {
+    line1: a?.line1?.trim() ?? '',
+    line2: a?.line2?.trim() ?? '',
+    area: a?.area?.trim() ?? '',
+    city: a?.city?.trim() ?? '',
+    district: a?.district?.trim() ?? '',
+    state: a?.state?.trim() ?? '',
+    country: a?.country?.trim() || 'India',
+    postalCode: a?.postalCode?.trim() ?? '',
+  };
+}
+
+function normalizeMedical(m: Partial<StudentMedical> | undefined): StudentMedical {
+  return {
+    foodAllergies: m?.foodAllergies?.trim() ?? '',
+    otherAllergies: m?.otherAllergies?.trim() ?? '',
+    accessibility: m?.accessibility?.trim() ?? '',
+    emergencyContact: m?.emergencyContact?.trim() ?? '',
+    notes: m?.notes?.trim() ?? '',
+  };
+}
+
 function applyInput(record: StudentRecord, input: StudentInput): void {
   record.name = input.name.trim();
+  record.gender = input.gender;
   record.dateOfBirth = input.dateOfBirth;
   record.email = input.email.trim();
   record.phone = input.phone.trim();
+  record.alternatePhone = input.alternatePhone?.trim() ?? '';
   record.bloodGroup = input.bloodGroup.trim();
-  record.address = input.address.trim();
+  record.address = normalizeAddress(input.address);
+  record.medical = normalizeMedical(input.medical);
   record.courseId = input.courseId;
   record.batchId = input.batchId;
   record.section = input.section;
   record.status = input.status;
+  if (input.rollNo?.trim()) record.rollNo = input.rollNo.trim();
+  if (input.admissionNo?.trim()) record.admissionNo = input.admissionNo.trim();
 }
 
 export function createStudent(input: StudentInput): StudentWriteResult {
@@ -311,10 +451,15 @@ export function createStudent(input: StudentInput): StudentWriteResult {
   const seq = nextRegisterSeq;
   nextRegisterSeq += 1;
   const id = `stu-${String(1000 + seq)}`;
+  const today = new Date().toISOString().slice(0, 10);
   const record: StudentRecord = {
     id,
     registerNo: `MAA2026${String(seq).padStart(4, '0')}`,
+    admissionNo: input.admissionNo?.trim() || `ADM/2026/${String(1000 + seq)}`,
+    rollNo: input.rollNo?.trim() || `${courseCode(input.courseId)}-${input.section}-${String(seq).padStart(2, '0')}`,
     name: input.name.trim(),
+    gender: input.gender,
+    photoUrl: null,
     courseId: input.courseId,
     batchId: input.batchId,
     section: input.section,
@@ -322,9 +467,12 @@ export function createStudent(input: StudentInput): StudentWriteResult {
     dateOfBirth: input.dateOfBirth,
     email: input.email.trim(),
     phone: input.phone.trim(),
+    alternatePhone: input.alternatePhone?.trim() ?? '',
     bloodGroup: input.bloodGroup.trim(),
-    address: input.address.trim(),
-    admissionDate: new Date().toISOString().slice(0, 10),
+    address: normalizeAddress(input.address),
+    admissionDate: today,
+    joiningDate: today,
+    medical: normalizeMedical(input.medical),
   };
   // New students appear at the top of the list.
   studentStore.unshift(record);
@@ -340,4 +488,16 @@ export function updateStudent(id: string, input: StudentInput): StudentWriteResu
 
   applyInput(record, input);
   return { ok: true, detail: getStudentDetail(id) ?? undefined };
+}
+
+/**
+ * Sets or clears the student's profile photo. A real backend stores the file
+ * and returns its URL; the mock accepts a data URI (or null) and echoes it back
+ * on the detail record. Basic type/size are enforced client-side before upload.
+ */
+export function updateStudentPhoto(id: string, photo: string | null): StudentDetail | null {
+  const record = studentStore.find((s) => s.id === id);
+  if (!record) return null;
+  record.photoUrl = photo;
+  return getStudentDetail(id);
 }

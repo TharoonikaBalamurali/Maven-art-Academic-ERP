@@ -115,6 +115,17 @@ describe('students mock API', () => {
       expect(detail.personal.email).toContain('@');
       expect(detail.parents.length).toBeGreaterThan(0);
       expect(detail.enrollment.course).toBeTruthy();
+      // Biodata: structured identity + address, backend-provided age.
+      expect(detail.admissionNo).toMatch(/^ADM\//);
+      expect(detail.rollNo).toBeTruthy();
+      expect(detail.personal.firstName).toBeTruthy();
+      expect(detail.personal.gender).toBeTruthy();
+      expect(typeof detail.personal.age).toBe('number');
+      expect(detail.personal.address.city).toBeTruthy();
+      // Parent link carries the full guardian record and an explicit relationship.
+      expect(detail.parents[0]?.relation).toBeTruthy();
+      expect(detail.parents.some((p) => p.isEmergencyContact)).toBe(true);
+      expect(detail.medical).toBeDefined();
       // Rollups present but internally consistent (paid + pending = total).
       expect(detail.summary.fees.paid + detail.summary.fees.pending).toBe(detail.summary.fees.total);
       expect(detail.summary.attendance.percent).toBeGreaterThanOrEqual(0);
@@ -150,15 +161,20 @@ describe('students mock API', () => {
   describe('create / update', () => {
     const validInput: StudentInput = {
       name: 'Test Candidate',
+      gender: 'female',
       dateOfBirth: '2005-06-15',
+      bloodGroup: 'O+',
       email: `unique.${Date.now()}@student.mavenart.test`,
       phone: '+91 90000 00000',
-      bloodGroup: 'O+',
-      address: '1, Studio Lane, Chennai',
+      alternatePhone: '',
+      rollNo: '',
+      admissionNo: '',
+      address: { line1: '1, Studio Lane', line2: '', area: 'Besant Nagar', city: 'Chennai', district: 'Chennai', state: 'Tamil Nadu', country: 'India', postalCode: '600090' },
       courseId: 'crs-bfa',
       batchId: 'bat-bfa-1a',
       section: 'A',
       status: 'active',
+      medical: { foodAllergies: '', otherAllergies: '', accessibility: '', emergencyContact: '', notes: '' },
     };
 
     function create(body: unknown, token = admin()) {
@@ -244,6 +260,34 @@ describe('students mock API', () => {
       expect(() =>
         handleMockRequest(
           request({ method: 'PUT', path: `/students/${firstId()}`, body: validInput }),
+          loginAs('faculty@mavenart.test'),
+        ),
+      ).toThrowError(expect.objectContaining({ kind: 'forbidden' }));
+    });
+  });
+
+  describe('profile photo', () => {
+    it('sets and clears the profile photo (students.update)', () => {
+      const id = firstId();
+      const dataUri = 'data:image/png;base64,AAAA';
+
+      const set = handleMockRequest(
+        request({ method: 'POST', path: `/students/${id}/photo`, body: { photo: dataUri } }),
+        admin(),
+      ) as StudentDetail;
+      expect(set.photoUrl).toBe(dataUri);
+
+      const cleared = handleMockRequest(
+        request({ method: 'POST', path: `/students/${id}/photo`, body: { photo: null } }),
+        admin(),
+      ) as StudentDetail;
+      expect(cleared.photoUrl).toBeNull();
+    });
+
+    it('requires students.update to change the photo', () => {
+      expect(() =>
+        handleMockRequest(
+          request({ method: 'POST', path: `/students/${firstId()}/photo`, body: { photo: null } }),
           loginAs('faculty@mavenart.test'),
         ),
       ).toThrowError(expect.objectContaining({ kind: 'forbidden' }));

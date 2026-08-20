@@ -9,6 +9,60 @@ import type { Id, KnownOr } from '@/shared/types';
  */
 export type StudentStatus = KnownOr<'active' | 'on_leave' | 'graduated'>;
 
+export type Gender = KnownOr<'male' | 'female' | 'other'>;
+
+export const GENDER_LABEL: Record<string, string> = {
+  male: 'Male',
+  female: 'Female',
+  other: 'Other',
+};
+
+/** A structured residential address (§ biodata). */
+export interface StudentAddress {
+  line1: string;
+  line2: string;
+  area: string;
+  city: string;
+  district: string;
+  state: string;
+  country: string;
+  postalCode: string;
+}
+
+export function emptyAddress(): StudentAddress {
+  return { line1: '', line2: '', area: '', city: '', district: '', state: '', country: 'India', postalCode: '' };
+}
+
+/** One line of an address, for compact display. */
+export function formatAddress(a: StudentAddress): string {
+  return [a.line1, a.line2, a.area, a.city, a.district, a.state, a.country, a.postalCode]
+    .filter((part) => part && part.trim())
+    .join(', ');
+}
+
+/** Health / accessibility / emergency notes — sensitive, authorized views only (§31). */
+export interface StudentMedical {
+  foodAllergies: string;
+  otherAllergies: string;
+  accessibility: string;
+  emergencyContact: string;
+  notes: string;
+}
+
+export function emptyMedical(): StudentMedical {
+  return { foodAllergies: '', otherAllergies: '', accessibility: '', emergencyContact: '', notes: '' };
+}
+
+/** A sibling / family member linked to the student (§ family). */
+export interface StudentSibling {
+  id: Id;
+  name: string;
+  relation: string;
+  dateOfBirth: string | null;
+  institution: string;
+  className: string;
+}
+
 export interface StudentListItem {
   id: Id;
   registerNo: string;
@@ -41,15 +95,20 @@ export interface StudentFilterOptions {
  */
 export interface StudentInput {
   name: string;
+  gender: Gender | '';
   dateOfBirth: string;
+  bloodGroup: string;
   email: string;
   phone: string;
-  bloodGroup: string;
-  address: string;
+  alternatePhone: string;
+  rollNo: string;
+  admissionNo: string;
+  address: StudentAddress;
   courseId: Id;
   batchId: Id;
   section: string;
   status: StudentStatus;
+  medical: StudentMedical;
 }
 
 export const STUDENT_STATUS_LABEL: Record<string, string> = {
@@ -71,19 +130,40 @@ export const STUDENT_STATUS_LABEL: Record<string, string> = {
  * TBD — BACKEND CONTRACT: field names and which rollups the detail endpoint
  * carries are provisional.
  */
+/**
+ * A parent/guardian linked to a student.
+ *
+ * The relationship is explicit (`relation`) and — when the backend shares a
+ * parent directory — deep-linkable via `parentId` (Student ↔ Parent, not
+ * duplicated free text). Contact and professional details are carried so the
+ * admin sees the full guardian record from the student's profile.
+ */
 export interface StudentParentLink {
   id: Id;
+  /** Id in the parent directory, when known (§ Student ↔ Parent). */
+  parentId: Id | null;
   name: string;
   relation: string;
   phone: string;
+  alternatePhone: string;
   email: string;
+  occupation: string;
+  professionalAddress: string;
+  residentialAddress: string;
+  isEmergencyContact: boolean;
+  guardianStatus: string;
 }
 
 export interface StudentDetail {
   id: Id;
   registerNo: string;
+  admissionNo: string;
+  rollNo: string;
   name: string;
+  /** Backend storage URL / data URI; null when no photo is set. */
+  photoUrl: string | null;
   status: StudentStatus;
+  joiningDate: string;
   courseId: Id;
   course: string;
   courseCode: string;
@@ -92,10 +172,17 @@ export interface StudentDetail {
   section: string;
 
   personal: {
+    firstName: string;
+    middleName: string;
+    lastName: string;
     dateOfBirth: string;
+    /** Backend-provided age; the client does not treat it as authoritative. */
+    age: number | null;
+    gender: Gender | '';
     email: string;
     phone: string;
-    address: string;
+    alternatePhone: string;
+    address: StudentAddress;
     bloodGroup: string;
     admissionDate: string;
   };
@@ -108,6 +195,8 @@ export interface StudentDetail {
     enrollmentStatus: string;
   };
   parents: StudentParentLink[];
+  siblings: StudentSibling[];
+  medical: StudentMedical;
   enrollment: {
     course: string;
     batch: string;

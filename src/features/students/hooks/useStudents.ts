@@ -58,3 +58,14 @@ export function useUpdateStudent(id: Id) {
     },
   });
 }
+
+/** Sets or clears the student's profile photo (§ profile photo). */
+export function useUpdateStudentPhoto(id: Id) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (photo: string | null) => studentsService.updatePhoto(id, photo),
+    onSuccess: (detail) => {
+      queryClient.setQueryData(studentKeys.detail(id), detail);
+    },
+  });
+}

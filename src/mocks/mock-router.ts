@@ -14,6 +14,7 @@ import {
   listStudents,
   studentFilterOptions,
   updateStudent,
+  updateStudentPhoto,
 } from './students-data';
 import type { StudentInput } from '@/features/students/types';
 import { rosterFor, submitAttendance, todaysClassesFor } from './attendance-data';
@@ -337,6 +338,19 @@ const routes: Route[] = [
       if (!result) fail('not_found');
       if (!result.ok) fail('validation', { fieldErrors: result.fieldErrors });
       return result.detail;
+    },
+  },
+  {
+    // Registered BEFORE the `:studentId` GET so this longer path wins.
+    method: 'POST',
+    pattern: /^\/students\/(?<studentId>[^/]+)\/photo$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'students.update');
+      const photo = (ctx.request.body as { photo?: string | null })?.photo ?? null;
+      const detail = updateStudentPhoto(params.studentId ?? '', photo);
+      if (!detail) fail('not_found');
+      return detail;
     },
   },
   {

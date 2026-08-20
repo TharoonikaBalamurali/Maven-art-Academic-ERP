@@ -33,30 +33,44 @@ const OPTIONS: StudentFilterOptions = {
   ],
 };
 
+const ADDRESS = { line1: '1, Studio Lane', line2: '', area: 'Besant Nagar', city: 'Chennai', district: 'Chennai', state: 'Tamil Nadu', country: 'India', postalCode: '600090' };
+const EMPTY_ADDRESS = { line1: '', line2: '', area: '', city: '', district: '', state: '', country: 'India', postalCode: '' };
+const MEDICAL = { foodAllergies: '', otherAllergies: '', accessibility: '', emergencyContact: '', notes: '' };
+
 const FILLED = {
   name: 'Test Candidate',
+  gender: 'female',
   dateOfBirth: '2005-06-15',
+  bloodGroup: 'O+',
   email: 'test.candidate@student.mavenart.test',
   phone: '+91 90000 00000',
-  bloodGroup: 'O+',
-  address: '1, Studio Lane, Chennai',
+  alternatePhone: '',
+  rollNo: '',
+  admissionNo: '',
+  address: ADDRESS,
   courseId: 'crs-bfa',
   batchId: 'bat-bfa-1a',
   section: 'A',
   status: 'active',
+  medical: MEDICAL,
 };
 
 const EMPTY = {
   name: '',
+  gender: '',
   dateOfBirth: '',
+  bloodGroup: '',
   email: '',
   phone: '',
-  bloodGroup: '',
-  address: '',
+  alternatePhone: '',
+  rollNo: '',
+  admissionNo: '',
+  address: EMPTY_ADDRESS,
   courseId: '',
   batchId: '',
   section: '',
   status: 'active',
+  medical: MEDICAL,
 };
 
 beforeEach(() => {
@@ -65,12 +79,13 @@ beforeEach(() => {
 });
 
 describe('StudentForm', () => {
-  it('groups fields into Personal and Academic sections', () => {
+  it('groups fields into sectioned biodata and admission blocks', () => {
     signIn('admin', ['students.create']);
     renderWithProviders(<StudentForm mode="create" initialValues={EMPTY} />);
 
-    expect(screen.getByRole('heading', { name: 'Personal information' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Academic information' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Identity' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Admission & academics' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Health & special information' })).toBeInTheDocument();
     expect(screen.getByLabelText(/Full name/)).toBeInTheDocument();
     expect(screen.getByLabelText(/Course/)).toBeInTheDocument();
   });
