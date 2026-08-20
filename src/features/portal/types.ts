@@ -214,3 +214,46 @@ export interface PortalChildren {
 export interface PortalScopeQuery {
   student?: string;
 }
+
+/* ------------------------------------------------------------------ */
+/* Online fee payment (Razorpay).                                     */
+/* ------------------------------------------------------------------ */
+
+/** The channels the checkout offers. */
+export type PortalPaymentChannel = KnownOr<'card' | 'upi' | 'netbanking'>;
+
+/**
+ * A Razorpay order created by the backend. `keyId` is the publishable key —
+ * present only when a real gateway is configured; empty in the sandbox, which
+ * tells the client to run the demonstration flow instead of opening Checkout.
+ *
+ * TBD — BACKEND CONTRACT: the backend creates the order server-side with its
+ * secret key and returns these fields.
+ */
+export interface PortalPayOrder {
+  orderId: string;
+  /** Amount in paise, as Razorpay expects. */
+  amount: number;
+  currency: string;
+  keyId: string;
+}
+
+/** Payload the client sends to verify + record a completed payment. */
+export interface PortalPayVerifyInput {
+  orderId: string;
+  /** Amount in rupees actually paid. */
+  amount: number;
+  method: PortalPaymentChannel;
+  razorpayPaymentId: string;
+  razorpaySignature: string;
+  student?: string;
+}
+
+/** The backend's result after verifying the signature and recording the payment. */
+export interface PortalPayResult {
+  paymentId: string;
+  receiptNo: string;
+  status: string;
+  /** The updated fee summary, so the UI reflects the new balance immediately. */
+  fees: PortalFees;
+}

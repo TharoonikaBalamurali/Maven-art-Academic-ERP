@@ -1,7 +1,8 @@
 import { formatCurrency, formatDate } from '@/lib/utils/format';
 import { ContentSection, PageHeader } from '@/shared/layout/page';
 import { Badge, Card, CardBody, QueryBoundary, Skeleton, type BadgeTone } from '@/shared/ui';
-import { usePortalFees } from '../hooks/usePortal';
+import { usePortalFees, usePortalOverview } from '../hooks/usePortal';
+import { PayFeesButton } from './PayFees';
 import type { PortalFees, PortalInstallmentStatus } from '../types';
 
 const STATUS_LABEL: Record<string, string> = { paid: 'Paid', due: 'Due', upcoming: 'Upcoming', overdue: 'Overdue' };
@@ -11,9 +12,15 @@ function statusTone(status: PortalInstallmentStatus): BadgeTone { return STATUS_
 /** Portal fees (§7) — the caller's fee summary; all amounts backend-authoritative. */
 export function PortalFeesPage() {
   const query = usePortalFees();
+  const overview = usePortalOverview();
+  const studentName = overview.data?.student.name ?? 'your account';
   return (
     <>
-      <PageHeader title="Fees" description="Your fee summary, as reported by the backend." />
+      <PageHeader
+        title="Fees"
+        description="Your fee summary, as reported by the backend."
+        actions={query.data && query.data.outstanding > 0 ? <PayFeesButton outstanding={query.data.outstanding} studentName={studentName} /> : undefined}
+      />
       <QueryBoundary isPending={query.isPending} isError={query.isError} error={query.error} onRetry={() => void query.refetch()} loadingFallback={<Card><CardBody><Skeleton className="h-40 w-full" /></CardBody></Card>}>
         {query.data && <FeesView fees={query.data} />}
       </QueryBoundary>

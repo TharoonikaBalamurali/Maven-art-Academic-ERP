@@ -7,6 +7,9 @@ import type {
   PortalFees,
   PortalOverview,
   PortalPayments,
+  PortalPayOrder,
+  PortalPayResult,
+  PortalPayVerifyInput,
   PortalProfile,
   PortalProgress,
   PortalScopeQuery,
@@ -32,4 +35,13 @@ export const portalContract = {
   fees: endpoint<void, PortalFees, PortalScopeQuery>({ method: 'GET', path: '/portal/fees', auth: true, permission: 'portal.fees.view' }),
   payments: endpoint<void, PortalPayments, PortalScopeQuery>({ method: 'GET', path: '/portal/payments', auth: true, permission: 'portal.payments.view' }),
   certificates: endpoint<void, PortalCertificates, PortalScopeQuery>({ method: 'GET', path: '/portal/certificates', auth: true, permission: 'portal.certificates.view' }),
+
+  /**
+   * Online fee payment (Razorpay). `createOrder` asks the backend to open a
+   * Razorpay order (server-side, with the secret key); `verifyPayment` hands the
+   * gateway's response back for signature verification and recording. The client
+   * never verifies a payment or decides the resulting balance itself.
+   */
+  createPayOrder: endpoint<{ amount: number; student?: string }, PortalPayOrder>({ method: 'POST', path: '/portal/payments/order', auth: true, permission: 'portal.fees.view' }),
+  verifyPayment: endpoint<PortalPayVerifyInput, PortalPayResult>({ method: 'POST', path: '/portal/payments/verify', auth: true, permission: 'portal.fees.view' }),
 } as const;

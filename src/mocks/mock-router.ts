@@ -63,6 +63,8 @@ import { getRole, listRoles } from './roles-data';
 import { getAudit, listAudit } from './audit-data';
 import { getSettings } from './settings-data';
 import {
+  createPortalOrder,
+  payChildFees,
   portalAttendance,
   portalCertificates,
   portalChildren,
@@ -74,6 +76,7 @@ import {
   portalProgress,
   portalTimetable,
 } from './portal-data';
+import type { PortalPaymentChannel, PortalPayVerifyInput } from '@/features/portal/types';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -1066,6 +1069,32 @@ const routes: Route[] = [
       requirePermission(identity, 'portal.certificates.view');
       const child = typeof ctx.request.query?.student === 'string' ? ctx.request.query.student : undefined;
       return portalCertificates(child);
+    },
+  },
+  {
+    // Razorpay: the backend creates the order with its secret key (§ online fee payment).
+    method: 'POST',
+    pattern: /^\/portal\/payments\/order$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'portal.fees.view');
+      const amount = Number((ctx.request.body as { amount?: number })?.amount);
+      if (!Number.isFinite(amount) || amount <= 0) fail('validation', { status: 422 });
+      return createPortalOrder(amount);
+    },
+  },
+  {
+    // Razorpay: the backend verifies the signature and records the payment.
+    method: 'POST',
+    pattern: /^\/portal\/payments\/verify$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'portal.fees.view');
+      const body = (ctx.request.body ?? {}) as Partial<PortalPayVerifyInput>;
+      if (!body.orderId || !body.razorpayPaymentId || !Number.isFinite(Number(body.amount)) || Number(body.amount) <= 0) {
+        fail('validation', { status: 422 });
+      }
+      return payChildFees(body.student, Number(body.amount), (body.method ?? 'card') as PortalPaymentChannel);
     },
   },
 ];

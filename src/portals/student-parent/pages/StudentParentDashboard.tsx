@@ -14,6 +14,7 @@ import { useCurrentIdentity } from '@/features/auth/hooks';
 import { PermissionGuard } from '@/features/auth/PermissionGuard';
 import { usePortalOverview } from '@/features/portal/hooks/usePortal';
 import { PortalCalendar } from '@/features/portal/components/PortalCalendar';
+import { PayFeesButton } from '@/features/portal/components/PayFees';
 import { useNotifications } from '@/features/notifications/hooks/useNotifications';
 import { formatCurrency, formatDate } from '@/lib/utils/format';
 import { QuickAction, SummaryCard, WidgetCard } from '@/shared/dashboard';
@@ -164,7 +165,7 @@ export function StudentParentDashboard() {
                 </Link>
               }
             >
-              {overview?.fees ? <FeeSummary fees={overview.fees} /> : <p className="py-6 text-center text-body-sm text-[var(--text-subtle)]">No fee data.</p>}
+              {overview?.fees ? <FeeSummary fees={overview.fees} studentName={overview.student.name} /> : <p className="py-6 text-center text-body-sm text-[var(--text-subtle)]">No fee data.</p>}
             </WidgetCard>
           </PermissionGuard>
 
@@ -353,7 +354,7 @@ function DateChip({ iso }: { iso: string }) {
   );
 }
 
-function FeeSummary({ fees }: { fees: NonNullable<PortalOverview['fees']> }) {
+function FeeSummary({ fees, studentName }: { fees: NonNullable<PortalOverview['fees']>; studentName: string }) {
   // Backend-authoritative figures; the bar visualises paid/assigned, it is not a
   // recomputation of the balance.
   const pct = fees.assigned > 0 ? Math.min(100, Math.round((fees.paid / fees.assigned) * 100)) : 0;
@@ -373,6 +374,11 @@ function FeeSummary({ fees }: { fees: NonNullable<PortalOverview['fees']> }) {
         <span>Paid {formatCurrency(fees.paid)}</span>
         <span>of {formatCurrency(fees.assigned)}</span>
       </div>
+      {fees.outstanding > 0 && (
+        <div className="pt-1">
+          <PayFeesButton outstanding={fees.outstanding} studentName={studentName} variant="secondary" size="sm" />
+        </div>
+      )}
     </div>
   );
 }

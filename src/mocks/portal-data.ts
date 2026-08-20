@@ -5,7 +5,10 @@ import type {
   PortalCourse,
   PortalFees,
   PortalOverview,
+  PortalPaymentChannel,
   PortalPayments,
+  PortalPayOrder,
+  PortalPayResult,
   PortalProfile,
   PortalProgress,
   PortalTimetable,
@@ -243,3 +246,54 @@ export function portalProgress(childId?: string): PortalProgress { return resolv
 export function portalFees(childId?: string): PortalFees { return resolve(childId).fees; }
 export function portalPayments(childId?: string): PortalPayments { return resolve(childId).payments; }
 export function portalCertificates(childId?: string): PortalCertificates { return resolve(childId).certificates; }
+
+/* ------------------------------------------------------------------ */
+/* Online fee payment (§ online fee payment).                         */
+/* ------------------------------------------------------------------ */
+
+let paySeq = 980;
+let receiptSeq = 981;
+const CHANNEL_LABEL: Record<string, string> = { card: 'card', upi: 'upi', netbanking: 'netbanking' };
+
+/**
+ * Creates a "Razorpay order". A real backend calls Razorpay with its secret key;
+ * the mock returns an order shape with an EMPTY `keyId`, which signals the client
+ * to run the sandbox flow (no real charge). Amount is echoed in paise.
+ */
+export function createPortalOrder(amountRupees: number): PortalPayOrder {
+  const orderId = `order_${Date.now()}_${paySeq}`;
+  paySeq += 1;
+  return { orderId, amount: Math.round(amountRupees * 100), currency: 'INR', keyId: '' };
+}
+
+/**
+ * Records a verified payment against the child and reduces the balance. A real
+ * backend verifies the Razorpay signature first; the mock accepts the sandbox
+ * signature and updates the in-session fee state so every fee view reflects it.
+ */
+export function payChildFees(childId: string | undefined, amountRupees: number, method: PortalPaymentChannel): PortalPayResult {
+  const bundle = resolve(childId);
+  const amount = Math.max(0, Math.round(amountRupees));
+
+  const paid = bundle.fees.paid + amount;
+  const outstanding = Math.max(0, bundle.fees.outstanding - amount);
+  const status = outstanding <= 0 ? 'paid' : 'partial';
+
+  bundle.fees = { ...bundle.fees, paid, outstanding, status };
+  const ovFees = bundle.overview.fees ?? { assigned: bundle.fees.assigned, paid, outstanding, status };
+  bundle.overview = { ...bundle.overview, fees: { ...ovFees, paid, outstanding, status } };
+
+  const receiptNo = `MA/2026/0${receiptSeq}`;
+  const paymentId = `pay-${paySeq}`;
+  paySeq += 1;
+  receiptSeq += 1;
+
+  bundle.payments = {
+    records: [
+      { id: paymentId, amount, method: CHANNEL_LABEL[method] ?? method, date: new Date().toISOString().slice(0, 10), receiptNo, status: 'recorded' },
+      ...bundle.payments.records,
+    ],
+  };
+
+  return { paymentId, receiptNo, status: 'recorded', fees: bundle.fees };
+}

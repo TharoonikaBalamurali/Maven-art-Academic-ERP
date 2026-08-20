@@ -122,4 +122,43 @@ describe('portal mock API (§7, §8)', () => {
     expect(arjunFees.assigned).toBe(130000);
     expect(arjunFees.status).toBe('paid');
   });
+
+  it('pays fees online: creates an order, verifies, and reduces the balance (§ Razorpay)', () => {
+    // Order creation returns a sandbox order (empty keyId → client runs sandbox).
+    const order = handleMockRequest(
+      request({ method: 'POST', path: '/portal/payments/order', body: { amount: 40000 } }),
+      student(),
+    ) as { orderId: string; amount: number; currency: string; keyId: string };
+    expect(order.orderId).toMatch(/^order_/);
+    expect(order.amount).toBe(4_000_000); // paise
+    expect(order.currency).toBe('INR');
+    expect(order.keyId).toBe('');
+
+    const before = (handleMockRequest(request({ method: 'GET', path: '/portal/fees' }), student()) as { outstanding: number }).outstanding;
+
+    const result = handleMockRequest(
+      request({
+        method: 'POST',
+        path: '/portal/payments/verify',
+        body: { orderId: order.orderId, amount: 40000, method: 'upi', razorpayPaymentId: 'pay_sandbox_1', razorpaySignature: 'sandbox' },
+      }),
+      student(),
+    ) as { paymentId: string; receiptNo: string; status: string; fees: { outstanding: number } };
+
+    expect(result.status).toBe('recorded');
+    expect(result.receiptNo).toMatch(/^MA\//);
+    expect(result.fees.outstanding).toBe(before - 40000);
+
+    // The payment now appears in the caller's payment history.
+    const payments = handleMockRequest(request({ method: 'GET', path: '/portal/payments' }), student()) as {
+      records: { method: string; amount: number }[];
+    };
+    expect(payments.records.some((p) => p.method === 'upi' && p.amount === 40000)).toBe(true);
+  });
+
+  it('rejects an invalid pay order (422)', () => {
+    expect(() =>
+      handleMockRequest(request({ method: 'POST', path: '/portal/payments/order', body: { amount: 0 } }), student()),
+    ).toThrowError(expect.objectContaining({ kind: 'validation' }));
+  });
 });

@@ -8,6 +8,9 @@ import type {
   PortalFees,
   PortalOverview,
   PortalPayments,
+  PortalPayOrder,
+  PortalPayResult,
+  PortalPayVerifyInput,
   PortalProfile,
   PortalProgress,
   PortalScopeQuery,
@@ -50,5 +53,11 @@ export const portalService = {
   },
   certificates(childId?: string | null, options?: RequestOptions): Promise<PortalCertificates> {
     return apiClient.call(portalContract.certificates, { query: scope(childId), options });
+  },
+  createPayOrder(amount: number, childId?: string | null, options?: RequestOptions): Promise<PortalPayOrder> {
+    return apiClient.call(portalContract.createPayOrder, { body: { amount, student: childId ?? undefined }, options });
+  },
+  verifyPayment(input: PortalPayVerifyInput, options?: RequestOptions): Promise<PortalPayResult> {
+    return apiClient.call(portalContract.verifyPayment, { body: input, options });
   },
 };
