@@ -18,6 +18,7 @@ import { PayFeesButton } from '@/features/portal/components/PayFees';
 import { useNotifications } from '@/features/notifications/hooks/useNotifications';
 import { formatCurrency, formatDate } from '@/lib/utils/format';
 import { QuickAction, SummaryCard, WidgetCard } from '@/shared/dashboard';
+import { ScheduleTable } from '@/features/portal/components/ScheduleTable';
 import { Badge, Card, CardBody, ErrorState } from '@/shared/ui';
 import type { PortalOverview } from '@/features/portal/types';
 
@@ -217,27 +218,7 @@ export function StudentParentDashboard() {
             }
           >
             {overview && overview.todaySchedule.length > 0 ? (
-              <ul className="flex flex-col gap-1">
-                {overview.todaySchedule.map((s) => (
-                  <li key={s.id} className="flex items-start gap-3 rounded-control px-2 -mx-2 py-1.5">
-                    <span
-                      className={`mt-1 block h-9 w-1 shrink-0 rounded-full ${
-                        s.status === 'now' ? 'bg-[var(--accent)]' : s.status === 'done' ? 'bg-[var(--border-strong)]' : 'bg-[var(--warning)]'
-                      }`}
-                      aria-hidden="true"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="truncate text-body font-medium text-[var(--text)]">{s.subject}</p>
-                        {s.status === 'now' && <Badge tone="accent">Now</Badge>}
-                      </div>
-                      <p className="truncate text-body-sm text-[var(--text-muted)]">
-                        {s.time} · {s.room}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              <ScheduleTable items={overview.todaySchedule} />
             ) : (
               <p className="py-6 text-center text-body-sm text-[var(--text-subtle)]">No classes today.</p>
             )}
