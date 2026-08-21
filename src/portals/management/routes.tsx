@@ -44,6 +44,10 @@ const MODULES: readonly ModuleRoute[] = [
   { path: 'outstanding', title: 'Outstanding Fees', description: 'Outstanding balances reported by the backend.', permission: 'outstanding.view', phase: 'Phase 4' },
   { path: 'receipts', title: 'Receipts', description: 'Payment receipts.', permission: 'receipts.view', phase: 'Phase 4' },
 
+  { path: 'discipline', title: 'Discipline', description: 'Confidential incident records.', permission: 'discipline.view', phase: 'Phase 5' },
+  { path: 'leave', title: 'Leave / OD', description: 'Student leave and on-duty requests.', permission: 'leave.view', phase: 'Phase 5' },
+  { path: 'announcements', title: 'Announcements', description: 'Institutional communication.', permission: 'announcements.view', phase: 'Phase 5' },
+
   { path: 'progress', title: 'Academic Progress', description: 'Assessments, scores and grades.', permission: 'progress.view', phase: 'Phase 5' },
   { path: 'certificates', title: 'Certificates', description: 'Certificates issued from backend storage.', permission: 'certificates.view', phase: 'Phase 5' },
   { path: 'reports', title: 'Reports', description: 'Operational and financial reporting.', permission: 'reports.view', phase: 'Phase 5' },
@@ -464,6 +468,57 @@ const baseRoutes: RouteObject[] = [
     ),
   },
   {
+    // Discipline (§ student affairs) — confidential incident records.
+    path: 'discipline',
+    element: (
+      <RequirePermission anyOf={['discipline.view']}>
+        {lazyRoute(() => import('@/features/discipline/components/DisciplinePage'), (m) => m.DisciplinePage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'discipline/:caseId',
+    element: (
+      <RequirePermission anyOf={['discipline.view']}>
+        {lazyRoute(() => import('@/features/discipline/components/DisciplineDetailPage'), (m) => m.DisciplineDetailPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    // Leave / OD (§ student affairs) — approval state machine owned by the backend.
+    path: 'leave',
+    element: (
+      <RequirePermission anyOf={['leave.view']}>
+        {lazyRoute(() => import('@/features/leave/components/LeavePage'), (m) => m.LeavePage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'leave/:requestId',
+    element: (
+      <RequirePermission anyOf={['leave.view']}>
+        {lazyRoute(() => import('@/features/leave/components/LeaveDetailPage'), (m) => m.LeaveDetailPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    // Announcements (§ communication) — the backend owns delivery.
+    path: 'announcements',
+    element: (
+      <RequirePermission anyOf={['announcements.view']}>
+        {lazyRoute(() => import('@/features/announcements/components/AnnouncementsPage'), (m) => m.AnnouncementsPage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'announcements/:announcementId',
+    element: (
+      <RequirePermission anyOf={['announcements.view']}>
+        {lazyRoute(() => import('@/features/announcements/components/AnnouncementDetailPage'), (m) => m.AnnouncementDetailPage)}
+      </RequirePermission>
+    ),
+  },
+  {
     // Reports (§ reporting) — backend-computed reports; export needs reports.export.
     path: 'reports',
     element: (
@@ -581,6 +636,9 @@ const baseRoutes: RouteObject[] = [
         'progress',
         'certificates',
         'reports',
+        'discipline',
+        'leave',
+        'announcements',
         'parents',
         'users',
         'roles',

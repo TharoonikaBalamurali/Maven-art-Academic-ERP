@@ -28,6 +28,9 @@ import {
   TOTAL_ENROLLED,
 } from './seed';
 import { listAudit } from './audit-data';
+import { disciplineCounts } from './discipline-data';
+import { leaveCounts } from './leave-data';
+import { announcementCounts } from './announcements-data';
 
 /**
  * Derives each authority's dashboard summary from the shared seed, so every
@@ -132,12 +135,16 @@ function adminSummary(): AdminDashboard {
     overdueInstallments: 1,
   };
 
+  // Real counts from the discipline and leave stores — the dashboard and the
+  // modules can no longer disagree.
+  const dc = disciplineCounts();
+  const lc = leaveCounts();
   const studentAffairs = {
-    disciplineOpen: 2,
-    disciplineUnderReview: 1,
-    disciplineActionRequired: 1,
-    leavePending: 3,
-    odPending: 2,
+    disciplineOpen: dc.open,
+    disciplineUnderReview: dc.underReview,
+    disciplineActionRequired: dc.actionRequired,
+    leavePending: lc.leavePending,
+    odPending: lc.odPending,
   };
 
   // The backend decides the action centre; the mock derives it from the same
@@ -149,9 +156,9 @@ function adminSummary(): AdminDashboard {
     { id: 'ac-att', label: 'Attendance not yet submitted', count: attendance.pendingSubmission, priority: 'high', permission: 'attendance.view', to: '/management/attendance' },
     { id: 'ac-out', label: 'Students with outstanding fees', count: finance.studentsWithOutstanding, priority: 'medium', permission: 'outstanding.view', to: '/management/outstanding' },
     { id: 'ac-inst', label: 'Overdue installments', count: finance.overdueInstallments, priority: 'medium', permission: 'installments.view', to: '/management/installments' },
-    { id: 'ac-disc', label: 'Discipline cases needing action', count: studentAffairs.disciplineActionRequired, priority: 'high', permission: 'discipline.view' },
-    { id: 'ac-leave', label: 'Leave requests pending', count: studentAffairs.leavePending, priority: 'medium', permission: 'leave.approve' },
-    { id: 'ac-od', label: 'OD requests pending', count: studentAffairs.odPending, priority: 'low', permission: 'od.approve' },
+    { id: 'ac-disc', label: 'Discipline cases needing action', count: studentAffairs.disciplineActionRequired, priority: 'high', permission: 'discipline.view', to: '/management/discipline' },
+    { id: 'ac-leave', label: 'Leave requests pending', count: studentAffairs.leavePending, priority: 'medium', permission: 'leave.approve', to: '/management/leave' },
+    { id: 'ac-od', label: 'OD requests pending', count: studentAffairs.odPending, priority: 'low', permission: 'od.approve', to: '/management/leave' },
     { id: 'ac-cert', label: 'Certificate requests', count: 1, priority: 'low', permission: 'certificates.issue', to: '/management/certificates' },
   ];
   const actionCentre = actionItems.filter((item) => item.count > 0);
@@ -194,7 +201,7 @@ function adminSummary(): AdminDashboard {
     attendance,
     studentAffairs,
     documents: { certificatesIssued: 4, certificateRequests: 1 },
-    communication: { activeAnnouncements: 2, scheduledAnnouncements: 1, draftAnnouncements: 1 },
+    communication: (() => { const a = announcementCounts(); return { activeAnnouncements: a.active, scheduledAnnouncements: a.scheduled, draftAnnouncements: a.drafts }; })(),
     actionCentre,
     recentActivity,
     recentAdmissions: SEED_RECENT_ADMISSIONS.map((a) => ({ ...a })),

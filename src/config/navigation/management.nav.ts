@@ -9,9 +9,11 @@ import {
   GraduationCap,
   LayoutDashboard,
   Layers,
+  Megaphone,
   Receipt,
   ScrollText,
   Settings,
+  ShieldAlert,
   ShieldCheck,
   UserCog,
   Users,
@@ -68,6 +70,21 @@ export const MANAGEMENT_NAV: readonly NavSection[] = [
       { id: 'payments', label: 'Payments', to: '/management/payments', icon: CreditCard, anyOf: ['payments.view'] },
       { id: 'outstanding', label: 'Outstanding Fees', to: '/management/outstanding', icon: Wallet, anyOf: ['outstanding.view'] },
       { id: 'receipts', label: 'Receipts', to: '/management/receipts', icon: Receipt, anyOf: ['receipts.view'] },
+    ],
+  },
+  {
+    id: 'affairs',
+    label: 'Student Affairs',
+    items: [
+      { id: 'discipline', label: 'Discipline', to: '/management/discipline', icon: ShieldAlert, anyOf: ['discipline.view'] },
+      { id: 'leave', label: 'Leave / OD', to: '/management/leave', icon: CalendarDays, anyOf: ['leave.view', 'od.view'] },
+    ],
+  },
+  {
+    id: 'communication',
+    label: 'Communication',
+    items: [
+      { id: 'announcements', label: 'Announcements', to: '/management/announcements', icon: Megaphone, anyOf: ['announcements.view'] },
     ],
   },
   {

@@ -78,6 +78,11 @@ import {
   portalTimetable,
 } from './portal-data';
 import type { PortalPaymentChannel, PortalPayVerifyInput } from '@/features/portal/types';
+import { getDisciplineCase, listDiscipline } from './discipline-data';
+import { decideLeave, getLeaveRequest, listLeave } from './leave-data';
+import type { LeaveAction } from '@/features/leave/types';
+import { createAnnouncement, getAnnouncement, listAnnouncements } from './announcements-data';
+import type { AnnouncementInput } from '@/features/announcements/types';
 
 /**
  * In-memory mock backend (Day 1 step 14).
@@ -1070,6 +1075,109 @@ const routes: Route[] = [
       requirePermission(identity, 'portal.certificates.view');
       const child = typeof ctx.request.query?.student === 'string' ? ctx.request.query.student : undefined;
       return portalCertificates(child);
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/discipline$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'discipline.view');
+      return listDiscipline({
+        ...listQueryFrom(ctx.request.query),
+        filters: {
+          status: typeof ctx.request.query?.status === 'string' ? ctx.request.query.status : undefined,
+          severity: typeof ctx.request.query?.severity === 'string' ? ctx.request.query.severity : undefined,
+        },
+      });
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/discipline\/(?<caseId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'discipline.view');
+      const detail = getDisciplineCase(params.caseId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/leave$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'leave.view');
+      return listLeave({
+        ...listQueryFrom(ctx.request.query),
+        filters: {
+          status: typeof ctx.request.query?.status === 'string' ? ctx.request.query.status : undefined,
+          kind: typeof ctx.request.query?.kind === 'string' ? ctx.request.query.kind : undefined,
+        },
+      });
+    },
+  },
+  {
+    method: 'POST',
+    pattern: /^\/leave\/(?<requestId>[^/]+)\/(?<action>approve|reject)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      // Deciding a request needs the approve permission (§ student affairs).
+      requirePermission(identity, 'leave.approve');
+      const note = (ctx.request.body as { note?: string })?.note;
+      const result = decideLeave(params.requestId ?? '', (params.action ?? '') as LeaveAction, identity.profile.fullName, note);
+      if (result.kind === 'not_found') fail('not_found');
+      if (result.kind === 'conflict') fail('conflict', { status: 409 });
+      return result.detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/leave\/(?<requestId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'leave.view');
+      const detail = getLeaveRequest(params.requestId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/announcements$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'announcements.view');
+      return listAnnouncements({
+        ...listQueryFrom(ctx.request.query),
+        filters: {
+          status: typeof ctx.request.query?.status === 'string' ? ctx.request.query.status : undefined,
+          audience: typeof ctx.request.query?.audience === 'string' ? ctx.request.query.audience : undefined,
+        },
+      });
+    },
+  },
+  {
+    method: 'POST',
+    pattern: /^\/announcements$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'announcements.create');
+      const body = (ctx.request.body ?? {}) as Partial<AnnouncementInput>;
+      if (!body.title?.trim() || !body.body?.trim() || !body.audience) fail('validation', { status: 422 });
+      return createAnnouncement(body as AnnouncementInput, identity.profile.fullName);
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/announcements\/(?<announcementId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'announcements.view');
+      const detail = getAnnouncement(params.announcementId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
     },
   },
   {
