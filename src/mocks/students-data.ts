@@ -1,5 +1,8 @@
 import type {
   Gender,
+  PreviousInstitution,
+  StudentClosure,
+  StudentClosureInput,
   StudentAddress,
   StudentDetail,
   StudentFilterOptions,
@@ -63,6 +66,8 @@ interface StudentRecord {
   admissionDate: string;
   joiningDate: string;
   medical: StudentMedical;
+  previousInstitution: PreviousInstitution;
+  closure: StudentClosure | null;
 }
 
 function slug(name: string): string {
@@ -136,6 +141,16 @@ function seedRecord(student: (typeof SEED_STUDENTS)[number], index: number): Stu
       emergencyContact: `+91 9${String(90000000 + i * 77).slice(0, 9)}`,
       notes: '',
     },
+    previousInstitution: {
+      name: ['St. Xavier’s Higher Secondary', 'DAV Public School', 'National Higher Secondary', 'Kendriya Vidyalaya'][i % 4] ?? '',
+      lastClass: 'Class XII',
+      tcNumber: `TC/${2023 + (i % 2)}/${String(400 + i)}`,
+      tcDate: `${2023 + (i % 2)}-05-${String((i % 27) + 1).padStart(2, '0')}`,
+      boardOrUniversity: i % 2 === 0 ? 'CBSE' : 'State Board',
+      yearOfLeaving: String(2023 + (i % 2)),
+      reasonForLeaving: 'Completed schooling',
+    },
+    closure: null,
   };
 }
 
@@ -247,7 +262,9 @@ export function studentFilterOptions(): StudentFilterOptions {
     statuses: [
       { value: 'active', label: 'Active' },
       { value: 'on_leave', label: 'On leave' },
-      { value: 'graduated', label: 'Graduated' },
+      { value: 'completed', label: 'Completed' },
+      { value: 'transferred', label: 'Transferred' },
+      { value: 'withdrawn', label: 'Withdrawn' },
     ],
   };
 }
@@ -360,6 +377,8 @@ export function getStudentDetail(id: string): StudentDetail | null {
     ],
     siblings: seedSiblings(id, surname),
     medical: { ...record.medical },
+    previousInstitution: { ...record.previousInstitution },
+    closure: record.closure ? { ...record.closure } : null,
     enrollment: {
       course: courseName(record.courseId),
       batch: batchName(record.batchId),
@@ -385,7 +404,7 @@ export function getStudentDetail(id: string): StudentDetail | null {
 
 const KNOWN_COURSE_IDS = new Set(SEED_COURSES.map((c) => c.id));
 const KNOWN_BATCH_IDS = new Set(SEED_BATCHES.map((b) => b.id));
-const KNOWN_STATUSES = new Set(['active', 'on_leave', 'graduated']);
+const KNOWN_STATUSES = new Set(['active', 'on_leave', 'completed', 'transferred', 'withdrawn', 'graduated']);
 const KNOWN_GENDERS = new Set(['male', 'female', 'other']);
 
 /**
@@ -458,6 +477,18 @@ function normalizeMedical(m: Partial<StudentMedical> | undefined): StudentMedica
   };
 }
 
+function normalizePrev(p: Partial<PreviousInstitution> | undefined): PreviousInstitution {
+  return {
+    name: p?.name?.trim() ?? '',
+    lastClass: p?.lastClass?.trim() ?? '',
+    tcNumber: p?.tcNumber?.trim() ?? '',
+    tcDate: p?.tcDate?.trim() ?? '',
+    boardOrUniversity: p?.boardOrUniversity?.trim() ?? '',
+    yearOfLeaving: p?.yearOfLeaving?.trim() ?? '',
+    reasonForLeaving: p?.reasonForLeaving?.trim() ?? '',
+  };
+}
+
 function applyInput(record: StudentRecord, input: StudentInput): void {
   record.name = input.name.trim();
   record.gender = input.gender;
@@ -468,6 +499,7 @@ function applyInput(record: StudentRecord, input: StudentInput): void {
   record.bloodGroup = input.bloodGroup.trim();
   record.address = normalizeAddress(input.address);
   record.medical = normalizeMedical(input.medical);
+  record.previousInstitution = normalizePrev(input.previousInstitution);
   record.courseId = input.courseId;
   record.batchId = input.batchId;
   record.section = input.section;
@@ -505,6 +537,8 @@ export function createStudent(input: StudentInput): StudentWriteResult {
     admissionDate: today,
     joiningDate: today,
     medical: normalizeMedical(input.medical),
+    previousInstitution: normalizePrev(input.previousInstitution),
+    closure: null,
   };
   // New students appear at the top of the list.
   studentStore.unshift(record);
@@ -532,4 +566,62 @@ export function updateStudentPhoto(id: string, photo: string | null): StudentDet
   if (!record) return null;
   record.photoUrl = photo;
   return getStudentDetail(id);
+}
+
+
+// --- Admission closure (§ admission closure) --------------------------------
+
+const CLOSURE_STATUS: Record<string, string> = {
+  completion: 'completed',
+  transfer: 'transferred',
+  withdrawal: 'withdrawn',
+};
+
+export type ClosureResult =
+  | { kind: 'ok'; detail: StudentDetail }
+  | { kind: 'not_found' }
+  | { kind: 'conflict' };
+
+/**
+ * Closes an admission. The record is preserved and moves to a closed status —
+ * it is never deleted (§ institutional records). Closing an already-closed
+ * admission is a conflict; the backend owns that rule.
+ */
+export function closeStudentAdmission(id: string, input: StudentClosureInput, closedBy: string): ClosureResult {
+  const record = studentStore.find((s) => s.id === id);
+  if (!record) return { kind: 'not_found' };
+  if (record.closure) return { kind: 'conflict' };
+
+  const today = new Date().toISOString().slice(0, 10);
+  record.closure = {
+    type: input.type,
+    effectiveDate: input.effectiveDate,
+    reason: input.reason.trim(),
+    tcNumber: input.tcNumber?.trim() ?? '',
+    tcIssuedOn: input.tcNumber?.trim() ? today : null,
+    destination: input.destination?.trim() ?? '',
+    clearance: input.clearance?.trim() ?? '',
+    remarks: input.remarks?.trim() ?? '',
+    closedBy,
+    closedOn: today,
+  };
+  record.status = (CLOSURE_STATUS[String(input.type)] ?? 'withdrawn') as StudentRecord['status'];
+  return { kind: 'ok', detail: getStudentDetail(id)! };
+}
+
+/** Closed student records, for the institutional archive. */
+export function closedStudents() {
+  return studentStore
+    .filter((s) => s.closure !== null)
+    .map((s) => ({
+      id: s.id,
+      name: s.name,
+      registerNo: s.registerNo,
+      admissionNo: s.admissionNo,
+      courseId: s.courseId,
+      batchId: s.batchId,
+      section: s.section,
+      status: s.status,
+      closure: s.closure!,
+    }));
 }

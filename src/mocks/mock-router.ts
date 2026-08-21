@@ -14,10 +14,11 @@ import {
   listStudents,
   searchStudents,
   studentFilterOptions,
+  closeStudentAdmission,
   updateStudent,
   updateStudentPhoto,
 } from './students-data';
-import type { StudentInput } from '@/features/students/types';
+import type { StudentClosureInput, StudentInput } from '@/features/students/types';
 import { rosterFor, submitAttendance, todaysClassesFor } from './attendance-data';
 import type { AttendanceSubmission } from '@/features/attendance/types';
 import { getBatchDetail, listBatches } from './batches-data';
@@ -82,6 +83,7 @@ import { getDisciplineCase, listDiscipline } from './discipline-data';
 import { decideLeave, getLeaveRequest, listLeave } from './leave-data';
 import type { LeaveAction } from '@/features/leave/types';
 import { createAnnouncement, getAnnouncement, listAnnouncements } from './announcements-data';
+import { getArchivedBatch, listArchivedBatches, listClosedStudents } from './archive-data';
 import type { AnnouncementInput } from '@/features/announcements/types';
 
 /**
@@ -346,6 +348,21 @@ const routes: Route[] = [
       const result = updateStudent(params.studentId ?? '', (ctx.request.body ?? {}) as StudentInput);
       if (!result) fail('not_found');
       if (!result.ok) fail('validation', { fieldErrors: result.fieldErrors });
+      return result.detail;
+    },
+  },
+  {
+    // Admission closure (§ admission closure) — registered before `:studentId`.
+    method: 'POST',
+    pattern: /^\/students\/(?<studentId>[^/]+)\/close$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'students.update');
+      const body = (ctx.request.body ?? {}) as Partial<StudentClosureInput>;
+      if (!body.type || !body.effectiveDate || !body.reason?.trim()) fail('validation', { status: 422 });
+      const result = closeStudentAdmission(params.studentId ?? '', body as StudentClosureInput, identity.profile.fullName);
+      if (result.kind === 'not_found') fail('not_found');
+      if (result.kind === 'conflict') fail('conflict', { status: 409 });
       return result.detail;
     },
   },
@@ -1075,6 +1092,39 @@ const routes: Route[] = [
       requirePermission(identity, 'portal.certificates.view');
       const child = typeof ctx.request.query?.student === 'string' ? ctx.request.query.student : undefined;
       return portalCertificates(child);
+    },
+  },
+  {
+    // Archive (§ archive) — passed-out batches; specific path before :batchId.
+    method: 'GET',
+    pattern: /^\/archive\/batches$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'batches.view');
+      return listArchivedBatches(listQueryFrom(ctx.request.query));
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/archive\/students$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'students.view');
+      return listClosedStudents({
+        ...listQueryFrom(ctx.request.query),
+        filters: { outcome: typeof ctx.request.query?.outcome === 'string' ? ctx.request.query.outcome : undefined },
+      });
+    },
+  },
+  {
+    method: 'GET',
+    pattern: /^\/archive\/batches\/(?<batchId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'batches.view');
+      const detail = getArchivedBatch(params.batchId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
     },
   },
   {

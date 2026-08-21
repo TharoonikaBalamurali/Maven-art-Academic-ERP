@@ -1,4 +1,5 @@
 import {
+  Archive,
   Award,
   BookOpen,
   CalendarDays,
@@ -48,6 +49,7 @@ export const MANAGEMENT_NAV: readonly NavSection[] = [
       { id: 'batches', label: 'Batches', to: '/management/batches', icon: Layers, anyOf: ['batches.view'] },
       { id: 'timetable', label: 'Timetable', to: '/management/timetable', icon: CalendarDays, anyOf: ['timetable.view'] },
       { id: 'attendance', label: 'Attendance', to: '/management/attendance', icon: ClipboardCheck, anyOf: ['attendance.view'] },
+      { id: 'archive', label: 'Archive', to: '/management/archive', icon: Archive, anyOf: ['batches.view'] },
     ],
   },
   {

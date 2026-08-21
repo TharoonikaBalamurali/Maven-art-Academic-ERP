@@ -1,6 +1,7 @@
 import { apiClient, toListParams } from '@/lib/api';
 import type { Id, ListQuery, Paginated, RequestOptions } from '@/shared/types';
 import type {
+  StudentClosureInput,
   StudentDetail,
   StudentFilterOptions,
   StudentInput,
@@ -30,6 +31,10 @@ export const studentsService = {
 
   update(studentId: Id, input: StudentInput, options?: RequestOptions): Promise<StudentDetail> {
     return apiClient.call(studentsContract.update, { params: { studentId }, body: input, options });
+  },
+
+  close(studentId: Id, input: StudentClosureInput, options?: RequestOptions): Promise<StudentDetail> {
+    return apiClient.call(studentsContract.close, { params: { studentId }, body: input, options });
   },
 
   updatePhoto(studentId: Id, photo: string | null, options?: RequestOptions): Promise<StudentDetail> {

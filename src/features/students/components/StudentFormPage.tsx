@@ -22,6 +22,7 @@ const EMPTY_STUDENT: StudentFormValues = {
   section: '',
   status: 'active',
   medical: { foodAllergies: '', otherAllergies: '', accessibility: '', emergencyContact: '', notes: '' },
+  previousInstitution: { name: '', lastClass: '', tcNumber: '', tcDate: '', boardOrUniversity: '', yearOfLeaving: '', reasonForLeaving: '' },
 };
 
 /**
@@ -49,6 +50,7 @@ function toFormValues(detail: StudentDetail): StudentFormValues {
     section: detail.section,
     status: detail.status,
     medical: { ...detail.medical },
+    previousInstitution: { ...detail.previousInstitution },
   };
 }
 

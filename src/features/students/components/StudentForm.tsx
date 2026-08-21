@@ -40,6 +40,15 @@ const schema = z.object({
   batchId: z.string().min(1, 'Select a batch.'),
   section: z.string().min(1, 'Select a section.'),
   status: z.string().min(1, 'Select a status.'),
+  previousInstitution: z.object({
+    name: z.string().default(''),
+    lastClass: z.string().default(''),
+    tcNumber: z.string().default(''),
+    tcDate: z.string().default(''),
+    boardOrUniversity: z.string().default(''),
+    yearOfLeaving: z.string().default(''),
+    reasonForLeaving: z.string().default(''),
+  }),
   medical: z.object({
     foodAllergies: z.string().default(''),
     otherAllergies: z.string().default(''),
@@ -176,6 +185,22 @@ export function StudentForm({ mode, studentId, initialValues }: StudentFormProps
         />
         <Select label="Section" required placeholder="Select a section" options={sectionOptions} error={errors.section?.message} {...form.register('section')} />
         <Select label="Status" required options={STATUS_OPTIONS} error={errors.status?.message} {...form.register('status')} />
+      </FormSection>
+
+      <FormSection
+        title="Previous institution"
+        description="Prior schooling and the Transfer Certificate submitted at admission."
+        columns={2}
+      >
+        <FormFieldWide>
+          <Input label="Institution name" {...form.register('previousInstitution.name')} />
+        </FormFieldWide>
+        <Input label="Last class / course" {...form.register('previousInstitution.lastClass')} />
+        <Input label="Board / university" {...form.register('previousInstitution.boardOrUniversity')} />
+        <Input label="TC number" {...form.register('previousInstitution.tcNumber')} />
+        <DatePicker label="TC date" {...form.register('previousInstitution.tcDate')} />
+        <Input label="Year of leaving" {...form.register('previousInstitution.yearOfLeaving')} />
+        <Input label="Reason for leaving" {...form.register('previousInstitution.reasonForLeaving')} />
       </FormSection>
 
       <FormSection title="Health & special information" description="Confidential — kept for the institution’s duty of care." columns={2}>

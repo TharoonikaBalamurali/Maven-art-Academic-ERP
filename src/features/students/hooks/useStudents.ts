@@ -1,7 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Id, ListQuery } from '@/shared/types';
 import { studentsService } from '../api/students.service';
-import type { StudentInput } from '../types';
+import type { StudentClosureInput, StudentInput } from '../types';
 
 export const studentKeys = {
   all: ['students'] as const,
@@ -55,6 +55,20 @@ export function useUpdateStudent(id: Id) {
       queryClient.setQueryData(studentKeys.detail(id), detail);
       void queryClient.invalidateQueries({ queryKey: studentKeys.list({}) });
       void queryClient.invalidateQueries({ queryKey: [...studentKeys.all, 'list'] });
+    },
+  });
+}
+
+/** Closes an admission (§ admission closure). */
+export function useCloseAdmission(id: Id) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: StudentClosureInput) => studentsService.close(id, input),
+    onSuccess: (detail) => {
+      queryClient.setQueryData(studentKeys.detail(id), detail);
+      // The roster and the archive both changed.
+      void queryClient.invalidateQueries({ queryKey: studentKeys.all });
+      void queryClient.invalidateQueries({ queryKey: ['archive'] });
     },
   });
 }

@@ -44,6 +44,7 @@ const MODULES: readonly ModuleRoute[] = [
   { path: 'outstanding', title: 'Outstanding Fees', description: 'Outstanding balances reported by the backend.', permission: 'outstanding.view', phase: 'Phase 4' },
   { path: 'receipts', title: 'Receipts', description: 'Payment receipts.', permission: 'receipts.view', phase: 'Phase 4' },
 
+  { path: 'archive', title: 'Archive', description: 'Passed-out batches and closed student records.', permission: 'batches.view', phase: 'Phase 5' },
   { path: 'discipline', title: 'Discipline', description: 'Confidential incident records.', permission: 'discipline.view', phase: 'Phase 5' },
   { path: 'leave', title: 'Leave / OD', description: 'Student leave and on-duty requests.', permission: 'leave.view', phase: 'Phase 5' },
   { path: 'announcements', title: 'Announcements', description: 'Institutional communication.', permission: 'announcements.view', phase: 'Phase 5' },
@@ -468,6 +469,23 @@ const baseRoutes: RouteObject[] = [
     ),
   },
   {
+    // Archive (§ archive) — passed batches + closed student records.
+    path: 'archive',
+    element: (
+      <RequirePermission anyOf={['batches.view']}>
+        {lazyRoute(() => import('@/features/archive/components/ArchivePage'), (m) => m.ArchivePage)}
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'archive/:batchId',
+    element: (
+      <RequirePermission anyOf={['batches.view']}>
+        {lazyRoute(() => import('@/features/archive/components/ArchiveDetailPage'), (m) => m.ArchiveDetailPage)}
+      </RequirePermission>
+    ),
+  },
+  {
     // Discipline (§ student affairs) — confidential incident records.
     path: 'discipline',
     element: (
@@ -636,6 +654,7 @@ const baseRoutes: RouteObject[] = [
         'progress',
         'certificates',
         'reports',
+        'archive',
         'discipline',
         'leave',
         'announcements',

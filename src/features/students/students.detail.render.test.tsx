@@ -80,6 +80,8 @@ const DETAIL: StudentDetail = {
     { id: 's1', name: 'Kabir Balan', relation: 'Brother', dateOfBirth: '2010-05-15', institution: 'Maven Art Academy', className: 'Grade 8' },
   ],
   medical: { foodAllergies: 'Peanuts', otherAllergies: '', accessibility: '', emergencyContact: '+91 90000 33333', notes: '' },
+  previousInstitution: { name: 'St. Xavier’s Higher Secondary', lastClass: 'Class XII', tcNumber: 'TC/2023/401', tcDate: '2023-05-12', boardOrUniversity: 'CBSE', yearOfLeaving: '2023', reasonForLeaving: 'Completed schooling' },
+  closure: null,
   enrollment: { course: 'Bachelor of Fine Arts', batch: 'BFA Year 1 · A', status: 'Active', startDate: '2024-08-01', endDate: null },
   summary: {
     attendance: { percent: 92, present: 55, total: 60 },

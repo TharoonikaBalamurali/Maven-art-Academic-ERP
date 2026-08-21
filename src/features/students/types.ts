@@ -7,7 +7,77 @@ import type { Id, KnownOr } from '@/shared/types';
  * returns display-ready course/batch names so the table needs no second lookup;
  * the ids are included for links and filtering.
  */
-export type StudentStatus = KnownOr<'active' | 'on_leave' | 'graduated'>;
+/**
+ * Student lifecycle status. `active`/`on_leave` are live records; the three
+ * CLOSED statuses (`completed`, `transferred`, `withdrawn`) end the admission —
+ * the record is preserved for the institutional archive but no longer edited.
+ */
+export type StudentStatus = KnownOr<'active' | 'on_leave' | 'completed' | 'transferred' | 'withdrawn' | 'graduated'>;
+
+/** Statuses that mean the admission is closed and the record is archived. */
+export const CLOSED_STATUSES: readonly string[] = ['completed', 'transferred', 'withdrawn', 'graduated'];
+
+export function isClosedStatus(status: StudentStatus): boolean {
+  return CLOSED_STATUSES.includes(String(status));
+}
+
+/** How an admission ended (§ admission closure). */
+export type ClosureType = KnownOr<'completion' | 'transfer' | 'withdrawal'>;
+
+export const CLOSURE_TYPE_LABEL: Record<string, string> = {
+  completion: 'Course completed',
+  transfer: 'Transferred out',
+  withdrawal: 'Withdrawn',
+};
+
+/**
+ * The closure record. Written once when the admission ends and preserved with
+ * the student — the institution must be able to answer "when and why did this
+ * student leave, and what document was issued?" years later.
+ */
+export interface StudentClosure {
+  type: ClosureType;
+  effectiveDate: string;
+  reason: string;
+  /** Transfer Certificate number issued on exit, when applicable. */
+  tcNumber: string;
+  tcIssuedOn: string | null;
+  /** Receiving institution / branch for a transfer. */
+  destination: string;
+  clearance: string;
+  remarks: string;
+  closedBy: string;
+  closedOn: string;
+}
+
+/** Payload submitted to close an admission. */
+export interface StudentClosureInput {
+  type: ClosureType;
+  effectiveDate: string;
+  reason: string;
+  tcNumber?: string;
+  destination?: string;
+  clearance?: string;
+  remarks?: string;
+}
+
+/**
+ * Prior schooling captured at admission (§ admission intake). A Transfer
+ * Certificate from the previous institution is a standard admission document.
+ */
+export interface PreviousInstitution {
+  name: string;
+  lastClass: string;
+  tcNumber: string;
+  tcDate: string;
+  boardOrUniversity: string;
+  yearOfLeaving: string;
+  reasonForLeaving: string;
+}
+
+export function emptyPreviousInstitution(): PreviousInstitution {
+  return { name: '', lastClass: '', tcNumber: '', tcDate: '', boardOrUniversity: '', yearOfLeaving: '', reasonForLeaving: '' };
+}
 
 export type Gender = KnownOr<'male' | 'female' | 'other'>;
 
@@ -109,11 +179,15 @@ export interface StudentInput {
   section: string;
   status: StudentStatus;
   medical: StudentMedical;
+  previousInstitution: PreviousInstitution;
 }
 
 export const STUDENT_STATUS_LABEL: Record<string, string> = {
   active: 'Active',
   on_leave: 'On leave',
+  completed: 'Completed',
+  transferred: 'Transferred',
+  withdrawn: 'Withdrawn',
   graduated: 'Graduated',
 };
 
@@ -197,6 +271,9 @@ export interface StudentDetail {
   parents: StudentParentLink[];
   siblings: StudentSibling[];
   medical: StudentMedical;
+  previousInstitution: PreviousInstitution;
+  /** Present only once the admission has been closed (§ admission closure). */
+  closure: StudentClosure | null;
   enrollment: {
     course: string;
     batch: string;

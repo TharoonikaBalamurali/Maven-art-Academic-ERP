@@ -1,6 +1,6 @@
-import { type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ShieldAlert } from 'lucide-react';
+import { Archive, ArrowLeft, ShieldAlert } from 'lucide-react';
 import { PermissionGuard } from '@/features/auth/PermissionGuard';
 import { usePermissions } from '@/features/auth/hooks';
 import { formatCurrency, formatDate, formatPercent } from '@/lib/utils/format';
@@ -17,8 +17,11 @@ import {
 } from '@/shared/ui';
 import { useStudent } from '../hooks/useStudents';
 import { StudentPhoto } from './StudentPhoto';
+import { CloseAdmissionDialog } from './CloseAdmissionDialog';
 import {
+  CLOSURE_TYPE_LABEL,
   GENDER_LABEL,
+  isClosedStatus,
   STUDENT_STATUS_LABEL,
   type StudentDetail,
   type StudentParentLink,
@@ -27,6 +30,9 @@ import {
 const STATUS_TONE: Record<string, BadgeTone> = {
   active: 'success',
   on_leave: 'warning',
+  completed: 'info',
+  transferred: 'info',
+  withdrawn: 'neutral',
   graduated: 'neutral',
 };
 
@@ -209,6 +215,37 @@ function buildTabs(student: StudentDetail): TabDefinition[] {
               ]}
             />
           </SubSection>
+          <SubSection title="Previous institution">
+            <DetailList
+              items={[
+                ['Institution', student.previousInstitution.name],
+                ['Last class', student.previousInstitution.lastClass],
+                ['Board / university', student.previousInstitution.boardOrUniversity],
+                ['TC number', student.previousInstitution.tcNumber],
+                ['TC date', student.previousInstitution.tcDate ? formatDate(student.previousInstitution.tcDate) : ''],
+                ['Year of leaving', student.previousInstitution.yearOfLeaving],
+                ['Reason for leaving', student.previousInstitution.reasonForLeaving],
+              ]}
+            />
+          </SubSection>
+          {student.closure && (
+            <SubSection title="Admission closure">
+              <DetailList
+                items={[
+                  ['Closure type', CLOSURE_TYPE_LABEL[student.closure.type] ?? student.closure.type],
+                  ['Effective date', formatDate(student.closure.effectiveDate)],
+                  ['Reason', student.closure.reason],
+                  ['TC number issued', student.closure.tcNumber],
+                  ['TC issued on', student.closure.tcIssuedOn ? formatDate(student.closure.tcIssuedOn) : ''],
+                  ['Destination', student.closure.destination],
+                  ['Clearance', student.closure.clearance],
+                  ['Remarks', student.closure.remarks],
+                  ['Closed by', student.closure.closedBy],
+                  ['Closed on', formatDate(student.closure.closedOn)],
+                ]}
+              />
+            </SubSection>
+          )}
           <SubSection title="Enrollment">
             <DetailList
               items={[
@@ -346,7 +383,24 @@ function buildTabs(student: StudentDetail): TabDefinition[] {
 /** Identity header: photo + name + key identifiers + status. */
 function ProfileHeader({ student }: { student: StudentDetail }) {
   const { can } = usePermissions();
+  const [closing, setClosing] = useState(false);
+  const closed = isClosedStatus(student.status);
   return (
+    <>
+    {closed && student.closure && (
+      <div className="mb-4 flex flex-wrap items-center gap-2 rounded-control border border-[var(--border-strong)] bg-[var(--surface-sunken)] px-4 py-3">
+        <Archive className="size-4 shrink-0 text-[var(--text-muted)]" aria-hidden="true" />
+        <p className="text-body text-[var(--text)]">
+          <span className="font-medium">Admission closed</span> — {CLOSURE_TYPE_LABEL[student.closure.type] ?? student.closure.type} on{' '}
+          {formatDate(student.closure.effectiveDate)}. This record is read-only and preserved in the archive.
+        </p>
+        <PermissionGuard permission="batches.view">
+          <Link to={`/management/archive/${student.batchId}`} className="text-body-sm font-medium text-[var(--accent)] hover:underline">
+            View in archive
+          </Link>
+        </PermissionGuard>
+      </div>
+    )}
     <Card className="mb-4">
       <CardBody className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="shrink-0">
@@ -380,15 +434,24 @@ function ProfileHeader({ student }: { student: StudentDetail }) {
           </dl>
         </div>
 
-        <div className="shrink-0">
-          <PermissionGuard permission="students.update">
-            <Link to={`/management/students/${student.id}/edit`} className={buttonClasses({ variant: 'secondary' })}>
-              Edit
-            </Link>
-          </PermissionGuard>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          {!closed && (
+            <PermissionGuard permission="students.update">
+              <Link to={`/management/students/${student.id}/edit`} className={buttonClasses({ variant: 'secondary' })}>
+                Edit
+              </Link>
+              <button type="button" onClick={() => setClosing(true)} className={buttonClasses({ variant: 'danger' })}>
+                Close admission
+              </button>
+            </PermissionGuard>
+          )}
         </div>
       </CardBody>
     </Card>
+    {closing && (
+      <CloseAdmissionDialog studentId={student.id} studentName={student.name} onClose={() => setClosing(false)} />
+    )}
+    </>
   );
 }
 

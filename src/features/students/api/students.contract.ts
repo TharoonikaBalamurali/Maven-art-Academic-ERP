@@ -1,6 +1,7 @@
 import { endpoint } from '@/lib/api';
 import type { ListQuery, Paginated } from '@/shared/types';
 import type {
+  StudentClosureInput,
   StudentDetail,
   StudentFilterOptions,
   StudentInput,
@@ -54,6 +55,17 @@ export const studentsContract = {
    *
    * TBD — BACKEND CONTRACT: multipart upload + storage URL.
    */
+  /**
+   * Closes an admission (§ admission closure) — completion, transfer out or
+   * withdrawal. The record is preserved and archived, never deleted; the
+   * backend rejects closing an already-closed admission (409).
+   */
+  close: endpoint<StudentClosureInput, StudentDetail>({
+    method: 'POST',
+    path: '/students/:studentId/close',
+    auth: true,
+    permission: 'students.update',
+  }),
   updatePhoto: endpoint<{ photo: string | null }, StudentDetail>({
     method: 'POST',
     path: '/students/:studentId/photo',

@@ -175,6 +175,7 @@ describe('students mock API', () => {
       section: 'A',
       status: 'active',
       medical: { foodAllergies: '', otherAllergies: '', accessibility: '', emergencyContact: '', notes: '' },
+      previousInstitution: { name: '', lastClass: '', tcNumber: '', tcDate: '', boardOrUniversity: '', yearOfLeaving: '', reasonForLeaving: '' },
     };
 
     function create(body: unknown, token = admin()) {
@@ -292,5 +293,121 @@ describe('students mock API', () => {
         ),
       ).toThrowError(expect.objectContaining({ kind: 'forbidden' }));
     });
+  });
+});
+
+describe('admission closure + archive (§ admission closure, § archive)', () => {
+  function req(partial: Partial<ApiRequest> & Pick<ApiRequest, 'method' | 'path'>): ApiRequest {
+    return { auth: true, timeoutMs: 1000, ...partial };
+  }
+  const token = () => admin();
+
+  it('closes an admission, preserves the record and archives it', () => {
+    // Create a throwaway student so the shared store stays predictable.
+    const email = `closing.${Math.random().toString(36).slice(2)}@student.mavenart.test`;
+    const created = handleMockRequest(
+      req({
+        method: 'POST',
+        path: '/students',
+        body: {
+          name: 'Closing Candidate', gender: 'male', dateOfBirth: '2004-01-01', bloodGroup: 'O+',
+          email, phone: '+91 90000 00000', alternatePhone: '', rollNo: '', admissionNo: '',
+          address: { line1: '', line2: '', area: '', city: '', district: '', state: '', country: 'India', postalCode: '' },
+          courseId: 'crs-bfa', batchId: 'bat-bfa-1a', section: 'A', status: 'active',
+          medical: { foodAllergies: '', otherAllergies: '', accessibility: '', emergencyContact: '', notes: '' },
+          previousInstitution: { name: '', lastClass: '', tcNumber: '', tcDate: '', boardOrUniversity: '', yearOfLeaving: '', reasonForLeaving: '' },
+        },
+      }),
+      token(),
+    ) as StudentDetail;
+
+    const closed = handleMockRequest(
+      req({
+        method: 'POST',
+        path: `/students/${created.id}/close`,
+        body: { type: 'transfer', effectiveDate: '2026-08-31', reason: 'Family relocating', tcNumber: 'TC/2026/900', destination: 'Maven Art — Bengaluru' },
+      }),
+      token(),
+    ) as StudentDetail;
+
+    expect(closed.status).toBe('transferred');
+    expect(closed.closure?.type).toBe('transfer');
+    expect(closed.closure?.tcNumber).toBe('TC/2026/900');
+    expect(closed.closure?.destination).toBe('Maven Art — Bengaluru');
+    // Stamped from the identity, not the client.
+    expect(closed.closure?.closedBy).toBeTruthy();
+
+    // The record is preserved and still retrievable — never deleted.
+    const refetched = handleMockRequest(req({ method: 'GET', path: `/students/${created.id}` }), token()) as StudentDetail;
+    expect(refetched.name).toBe('Closing Candidate');
+    expect(refetched.closure).not.toBeNull();
+
+    // And it now appears in the archive's closed-student register — findable
+    // even though its batch is still active.
+    const archived = handleMockRequest(req({ method: 'GET', path: '/archive/students', query: { limit: 100 } }), token()) as {
+      data: { id: string; outcome: string; tcNumber: string }[];
+    };
+    expect(archived.data.some((s) => s.id === created.id && s.outcome === 'transferred')).toBe(true);
+  });
+
+  it('rejects closing an already-closed admission with 409', () => {
+    const email = `twice.${Math.random().toString(36).slice(2)}@student.mavenart.test`;
+    const created = handleMockRequest(
+      req({
+        method: 'POST',
+        path: '/students',
+        body: {
+          name: 'Twice Closed', gender: 'female', dateOfBirth: '2004-02-02', bloodGroup: 'A+',
+          email, phone: '+91 90000 00001', alternatePhone: '', rollNo: '', admissionNo: '',
+          address: { line1: '', line2: '', area: '', city: '', district: '', state: '', country: 'India', postalCode: '' },
+          courseId: 'crs-bfa', batchId: 'bat-bfa-1a', section: 'A', status: 'active',
+          medical: { foodAllergies: '', otherAllergies: '', accessibility: '', emergencyContact: '', notes: '' },
+          previousInstitution: { name: '', lastClass: '', tcNumber: '', tcDate: '', boardOrUniversity: '', yearOfLeaving: '', reasonForLeaving: '' },
+        },
+      }),
+      token(),
+    ) as StudentDetail;
+
+    const body = { type: 'withdrawal', effectiveDate: '2026-08-31', reason: 'Withdrew' };
+    handleMockRequest(req({ method: 'POST', path: `/students/${created.id}/close`, body }), token());
+
+    expect(() =>
+      handleMockRequest(req({ method: 'POST', path: `/students/${created.id}/close`, body }), token()),
+    ).toThrowError(expect.objectContaining({ kind: 'conflict', status: 409 }));
+  });
+
+  it('rejects a closure without a reason (422)', () => {
+    expect(() =>
+      handleMockRequest(
+        req({ method: 'POST', path: `/students/${firstId()}/close`, body: { type: 'withdrawal', effectiveDate: '2026-08-31', reason: '' } }),
+        token(),
+      ),
+    ).toThrowError(expect.objectContaining({ kind: 'validation' }));
+  });
+
+  it('requires students.update to close an admission', () => {
+    expect(() =>
+      handleMockRequest(
+        req({ method: 'POST', path: `/students/${firstId()}/close`, body: { type: 'withdrawal', effectiveDate: '2026-08-31', reason: 'x' } }),
+        loginAs('faculty@mavenart.test'),
+      ),
+    ).toThrowError(expect.objectContaining({ kind: 'forbidden' }));
+  });
+
+  it('lists passed-out batches in the archive with outcome counts', () => {
+    const archive = handleMockRequest(req({ method: 'GET', path: '/archive/batches' }), token()) as {
+      total: number;
+      data: { name: string; academicYear: string; totalStudents: number; completed: number }[];
+    };
+    expect(archive.total).toBeGreaterThan(0);
+    expect(archive.data[0]?.academicYear).toBeTruthy();
+    expect(archive.data[0]?.totalStudents).toBeGreaterThan(0);
+  });
+
+  it('captures the previous institution / TC at admission', () => {
+    // A seeded student untouched by the create/update tests above.
+    const detail = handleMockRequest(req({ method: 'GET', path: '/students/stu-005' }), token()) as StudentDetail;
+    expect(detail.previousInstitution.name).toBeTruthy();
+    expect(detail.previousInstitution.tcNumber).toMatch(/^TC\//);
   });
 });

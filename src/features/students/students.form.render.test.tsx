@@ -36,6 +36,7 @@ const OPTIONS: StudentFilterOptions = {
 const ADDRESS = { line1: '1, Studio Lane', line2: '', area: 'Besant Nagar', city: 'Chennai', district: 'Chennai', state: 'Tamil Nadu', country: 'India', postalCode: '600090' };
 const EMPTY_ADDRESS = { line1: '', line2: '', area: '', city: '', district: '', state: '', country: 'India', postalCode: '' };
 const MEDICAL = { foodAllergies: '', otherAllergies: '', accessibility: '', emergencyContact: '', notes: '' };
+const PREV = { name: '', lastClass: '', tcNumber: '', tcDate: '', boardOrUniversity: '', yearOfLeaving: '', reasonForLeaving: '' };
 
 const FILLED = {
   name: 'Test Candidate',
@@ -53,6 +54,7 @@ const FILLED = {
   section: 'A',
   status: 'active',
   medical: MEDICAL,
+  previousInstitution: PREV,
 };
 
 const EMPTY = {
@@ -71,6 +73,7 @@ const EMPTY = {
   section: '',
   status: 'active',
   medical: MEDICAL,
+  previousInstitution: PREV,
 };
 
 beforeEach(() => {
