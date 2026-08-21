@@ -1,18 +1,15 @@
 import { PageHeader } from '@/shared/layout/page';
-import { Card, CardBody, QueryBoundary, Skeleton } from '@/shared/ui';
+import { Badge, Card, CardBody, QueryBoundary, Skeleton } from '@/shared/ui';
 import { usePortalTimetable } from '../hooks/usePortal';
-import type { PortalTimetable } from '../types';
-
-const HEAD_CELL = 'px-4 py-2.5 text-left text-caption font-semibold tracking-wide text-[var(--text-muted)] uppercase';
-const CELL = 'px-4 py-3 align-top';
+import type { PortalTimetable, PortalTimetableDay, PortalTimetableSession } from '../types';
 
 /**
- * Portal timetable (§7) — the caller's weekly schedule as one table.
+ * Portal timetable (§7) — the caller's weekly schedule as a day board.
  *
- * Days are `tbody` groups under a single set of columns so the whole week
- * reads down one time axis, matching the tabular schedule on the dashboard.
- * The backend supplies each session already placed on its day; the frontend
- * only lays the rows out.
+ * Laid out as one column per teaching day with a card for each class, matching
+ * the management and faculty timetables so every schedule in the product reads
+ * the same way. The backend supplies each session already placed on its day;
+ * the frontend only lays the columns out — it never computes the schedule.
  */
 export function PortalTimetablePage() {
   const query = usePortalTimetable();
@@ -24,65 +21,63 @@ export function PortalTimetablePage() {
         isError={query.isError}
         error={query.error}
         onRetry={() => void query.refetch()}
-        loadingFallback={<Card><CardBody><Skeleton className="h-64 w-full" /></CardBody></Card>}
+        loadingFallback={<BoardSkeleton />}
       >
-        {query.data && <TimetableView timetable={query.data} />}
+        {query.data && <TimetableBoard timetable={query.data} />}
       </QueryBoundary>
     </>
   );
 }
 
-function TimetableView({ timetable }: { timetable: PortalTimetable }) {
+function TimetableBoard({ timetable }: { timetable: PortalTimetable }) {
   return (
-    <Card className="overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[36rem] border-collapse text-body">
-          <caption className="sr-only">Weekly class schedule</caption>
-          <thead>
-            <tr className="border-b border-[var(--border)] bg-[var(--surface-sunken)]">
-              <th scope="col" className={`${HEAD_CELL} w-40`}>Time</th>
-              <th scope="col" className={HEAD_CELL}>Subject</th>
-              <th scope="col" className={`${HEAD_CELL} w-52`}>Faculty</th>
-              <th scope="col" className={`${HEAD_CELL} w-40`}>Room</th>
-            </tr>
-          </thead>
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      {timetable.week.map((day) => (
+        <DayColumn key={day.day} day={day} />
+      ))}
+    </div>
+  );
+}
 
-          {timetable.week.map((day) => (
-            <tbody key={day.day} className="border-b border-[var(--border)] last:border-0">
-              <tr className="bg-[var(--surface-hover)]">
-                {/* The day heads its own group of rows. */}
-                <th scope="colgroup" colSpan={4} className="px-4 py-2 text-left text-body-sm font-semibold text-[var(--text)]">
-                  <span className="flex items-center justify-between gap-3">
-                    {day.day}
-                    <span className="font-normal text-caption text-[var(--text-muted)]">
-                      {day.sessions.length === 0
-                        ? 'No classes'
-                        : `${day.sessions.length} ${day.sessions.length === 1 ? 'class' : 'classes'}`}
-                    </span>
-                  </span>
-                </th>
-              </tr>
+function DayColumn({ day }: { day: PortalTimetableDay }) {
+  return (
+    <section className="flex flex-col gap-2" aria-label={day.day}>
+      <h2 className="rounded-control bg-[var(--surface-sunken)] px-3 py-1.5 text-body-sm font-semibold text-[var(--text)]">
+        {day.day}
+        <span className="ml-1 font-normal text-[var(--text-subtle)]">({day.sessions.length})</span>
+      </h2>
+      {day.sessions.length === 0 ? (
+        <p className="px-3 py-4 text-body-sm text-[var(--text-subtle)]">No classes</p>
+      ) : (
+        day.sessions.map((session, index) => <SessionCard key={index} session={session} />)
+      )}
+    </section>
+  );
+}
 
-              {day.sessions.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className={`${CELL} text-body-sm text-[var(--text-subtle)]`}>
-                    No classes scheduled.
-                  </td>
-                </tr>
-              ) : (
-                day.sessions.map((session, index) => (
-                  <tr key={index} className="border-t border-[var(--border)] first:border-t-0">
-                    <td className={`${CELL} tabular-nums text-[var(--text-muted)]`}>{session.time}</td>
-                    <td className={`${CELL} font-medium text-[var(--text)]`}>{session.subject}</td>
-                    <td className={`${CELL} text-[var(--text-muted)]`}>{session.faculty}</td>
-                    <td className={`${CELL} text-[var(--text-muted)]`}>{session.room}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          ))}
-        </table>
+function SessionCard({ session }: { session: PortalTimetableSession }) {
+  return (
+    <article className="surface-card flex flex-col gap-1 border-l-2 border-l-[var(--accent)] p-3">
+      <p className="text-body font-medium text-[var(--text)]">{session.subject}</p>
+      <p className="text-body-sm text-[var(--text-muted)]">{session.time}</p>
+      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+        <Badge tone="neutral">{session.room}</Badge>
       </div>
-    </Card>
+      <p className="mt-0.5 text-caption text-[var(--text-subtle)]">{session.faculty}</p>
+    </article>
+  );
+}
+
+function BoardSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="flex flex-col gap-2">
+          <Skeleton className="h-8 w-full" />
+          <Card><CardBody><Skeleton className="h-20 w-full" /></CardBody></Card>
+          <Card><CardBody><Skeleton className="h-20 w-full" /></CardBody></Card>
+        </div>
+      ))}
+    </div>
   );
 }

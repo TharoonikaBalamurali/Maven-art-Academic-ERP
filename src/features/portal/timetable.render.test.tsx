@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { Route, Routes } from 'react-router-dom';
 import { renderWithProviders, signIn } from '@/test/render';
 import type { PortalTimetable } from './types';
@@ -37,37 +37,34 @@ function renderPage() {
 }
 
 describe('PortalTimetablePage (§7)', () => {
-  it('lays the week out as one table with a shared set of columns', () => {
+  it('lays each day out as its own column, headed by the day and class count', () => {
     usePortalTimetable.mockReturnValue({ isPending: false, isError: false, error: null, data: timetable, refetch: vi.fn() });
     signIn('student', ['portal.timetable.view']);
     renderPage();
 
-    const table = screen.getByRole('table', { name: /weekly class schedule/i });
-    for (const column of ['Time', 'Subject', 'Faculty', 'Room']) {
-      expect(within(table).getByRole('columnheader', { name: column })).toBeInTheDocument();
-    }
+    // Each day is a labelled region (accessible section).
+    expect(screen.getByRole('region', { name: 'Monday' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Tuesday' })).toBeInTheDocument();
+    expect(screen.getByText('(2)')).toBeInTheDocument();
   });
 
-  it('groups each day’s sessions under the day, with its class count', () => {
+  it('shows each class as a card with subject, time, room and faculty', () => {
     usePortalTimetable.mockReturnValue({ isPending: false, isError: false, error: null, data: timetable, refetch: vi.fn() });
     signIn('student', ['portal.timetable.view']);
     renderPage();
 
-    expect(screen.getByText('Monday')).toBeInTheDocument();
-    expect(screen.getByText('2 classes')).toBeInTheDocument();
     expect(screen.getByText('Life Drawing')).toBeInTheDocument();
-    expect(screen.getByText('Meera Krishnan')).toBeInTheDocument();
-    expect(screen.getByText('Studio 1')).toBeInTheDocument();
     expect(screen.getByText('09:00 – 10:30')).toBeInTheDocument();
+    expect(screen.getByText('Studio 1')).toBeInTheDocument();
+    expect(screen.getByText('Meera Krishnan')).toBeInTheDocument();
   });
 
-  it('shows a free day as an empty row rather than omitting it', () => {
+  it('keeps a free day in the board with a no-classes note', () => {
     usePortalTimetable.mockReturnValue({ isPending: false, isError: false, error: null, data: timetable, refetch: vi.fn() });
     signIn('student', ['portal.timetable.view']);
     renderPage();
 
-    expect(screen.getByText('Tuesday')).toBeInTheDocument();
-    expect(screen.getByText('No classes')).toBeInTheDocument();
-    expect(screen.getByText('No classes scheduled.')).toBeInTheDocument();
+    const tuesday = screen.getByRole('region', { name: 'Tuesday' });
+    expect(tuesday).toHaveTextContent('No classes');
   });
 });
