@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { CalendarDays, ChevronLeft, ChevronRight, List, Columns3 } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, List, Columns3, Plus } from 'lucide-react';
 import { formatTimeRange } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/cn';
 import { FilterBar, PageHeader } from '@/shared/layout/page';
-import { Badge, Card, EmptyState, QueryBoundary, Select, Skeleton } from '@/shared/ui';
+import { Badge, Button, Card, EmptyState, QueryBoundary, Select, Skeleton } from '@/shared/ui';
+import { PermissionGuard } from '@/features/auth/PermissionGuard';
+import { ScheduleClassDialog } from './ScheduleClassDialog';
 import { useTimetable, useTimetableOptions } from '../hooks/useTimetable';
 import { WEEKDAYS, WEEKDAY_LABEL, type TimetableSlot, type Weekday } from '../types';
 
@@ -69,6 +71,9 @@ export function TimetablePage() {
     return idx >= 0 && idx < WEEKDAYS.length ? idx : 0;
   });
 
+  const [scheduling, setScheduling] = useState(false);
+  const [editingSlot, setEditingSlot] = useState<TimetableSlot | null>(null);
+
   const timetable = useTimetable(query);
   const options = useTimetableOptions();
 
@@ -112,7 +117,17 @@ export function TimetablePage() {
       <PageHeader
         title="Timetable"
         description="The published weekly schedule. Filter by batch, faculty or room."
-        actions={<ViewSwitcher view={view} onChange={setView} />}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <ViewSwitcher view={view} onChange={setView} />
+            <PermissionGuard permission="timetable.manage">
+              <Button onClick={() => setScheduling(true)}>
+                <Plus className="size-4" aria-hidden="true" />
+                Schedule class
+              </Button>
+            </PermissionGuard>
+          </div>
+        }
       />
 
       <Card className="mb-4 overflow-hidden">
@@ -165,7 +180,7 @@ export function TimetablePage() {
         ) : view === 'week' ? (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {WEEKDAYS.map((day) => (
-              <DayColumn key={day} day={day} slots={byDay[day]} />
+              <DayColumn key={day} day={day} slots={byDay[day]} onEdit={setEditingSlot} />
             ))}
           </div>
         ) : view === 'day' ? (
@@ -181,6 +196,9 @@ export function TimetablePage() {
           <AgendaView byDay={byDay} />
         )}
       </QueryBoundary>
+
+      {scheduling && <ScheduleClassDialog onClose={() => setScheduling(false)} />}
+      {editingSlot && <ScheduleClassDialog slot={editingSlot} onClose={() => setEditingSlot(null)} />}
     </>
   );
 }
@@ -192,7 +210,7 @@ function groupByDay(slots: readonly TimetableSlot[]): Record<Weekday, TimetableS
   return grouped;
 }
 
-function DayColumn({ day, slots }: { day: Weekday; slots: TimetableSlot[] }) {
+function DayColumn({ day, slots, onEdit }: { day: Weekday; slots: TimetableSlot[]; onEdit?: (slot: TimetableSlot) => void }) {
   return (
     <section className="flex flex-col gap-2" aria-label={WEEKDAY_LABEL[day]}>
       <h2 className="sticky top-14 z-10 rounded-control bg-[var(--surface-sunken)] px-3 py-1.5 text-body-sm font-semibold text-[var(--text)]">
@@ -202,7 +220,7 @@ function DayColumn({ day, slots }: { day: Weekday; slots: TimetableSlot[] }) {
       {slots.length === 0 ? (
         <p className="px-3 py-4 text-body-sm text-[var(--text-subtle)]">No classes</p>
       ) : (
-        slots.map((slot) => <SlotCard key={slot.id} slot={slot} />)
+        slots.map((slot) => <SlotCard key={slot.id} slot={slot} onEdit={onEdit} />)
       )}
     </section>
   );
@@ -323,7 +341,7 @@ function AgendaView({ byDay }: { byDay: Record<Weekday, TimetableSlot[]> }) {
   );
 }
 
-function SlotCard({ slot }: { slot: TimetableSlot }) {
+function SlotCard({ slot, onEdit }: { slot: TimetableSlot; onEdit?: (slot: TimetableSlot) => void }) {
   return (
     <article
       className={cn(
@@ -331,7 +349,16 @@ function SlotCard({ slot }: { slot: TimetableSlot }) {
         'border-l-[var(--accent)]',
       )}
     >
-      <p className="text-body font-medium text-[var(--text)]">{slot.subject}</p>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-body font-medium text-[var(--text)]">{slot.subject}</p>
+        {onEdit && (
+          <PermissionGuard permission="timetable.manage">
+            <button type="button" onClick={() => onEdit(slot)} className="shrink-0 text-caption font-medium text-[var(--accent)] hover:underline">
+              Edit
+            </button>
+          </PermissionGuard>
+        )}
+      </div>
       <p className="text-body-sm text-[var(--text-muted)]">{formatTimeRange(slot.start, slot.end)}</p>
       <div className="mt-1 flex flex-wrap items-center gap-1.5">
         <Badge tone="accent">{slot.batch}</Badge>

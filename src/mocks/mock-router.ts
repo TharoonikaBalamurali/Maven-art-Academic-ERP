@@ -22,7 +22,8 @@ import type { StudentClosureInput, StudentInput } from '@/features/students/type
 import { rosterFor, submitAttendance, todaysClassesFor } from './attendance-data';
 import type { AttendanceSubmission } from '@/features/attendance/types';
 import { getBatchDetail, listBatches } from './batches-data';
-import { listTimetable, timetableOptions } from './timetable-data';
+import { createSlot, listTimetable, removeSlot, timetableOptions, updateSlot } from './timetable-data';
+import type { TimetableSlotInput } from '@/features/timetable/types';
 import { getFacultyDetail, listFaculty } from './faculty-data';
 import { getCourseDetail, listCourses } from './courses-data';
 import {
@@ -83,7 +84,7 @@ import { getDisciplineCase, listDiscipline } from './discipline-data';
 import { decideLeave, getLeaveRequest, listLeave } from './leave-data';
 import type { LeaveAction } from '@/features/leave/types';
 import { createAnnouncement, getAnnouncement, listAnnouncements } from './announcements-data';
-import { getArchivedBatch, listArchivedBatches, listClosedStudents } from './archive-data';
+import { getArchivedBatch, getArchivedStudent, listArchivedBatches, listClosedStudents } from './archive-data';
 import type { AnnouncementInput } from '@/features/announcements/types';
 
 /**
@@ -377,6 +378,40 @@ const routes: Route[] = [
       const detail = updateStudentPhoto(params.studentId ?? '', photo);
       if (!detail) fail('not_found');
       return detail;
+    },
+  },
+  {
+    // Scheduling (§ scheduling) — the backend validates and detects clashes.
+    method: 'POST',
+    pattern: /^\/timetable$/,
+    handler: (ctx) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'timetable.manage');
+      const result = createSlot((ctx.request.body ?? {}) as TimetableSlotInput);
+      if (result.kind !== 'ok') fail('conflict', { status: 409, code: result.kind === 'conflict' ? result.message : undefined });
+      return result.slot;
+    },
+  },
+  {
+    method: 'PUT',
+    pattern: /^\/timetable\/(?<slotId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'timetable.manage');
+      const result = updateSlot(params.slotId ?? '', (ctx.request.body ?? {}) as TimetableSlotInput);
+      if (result.kind === 'not_found') fail('not_found');
+      if (result.kind !== 'ok') fail('conflict', { status: 409, code: result.message });
+      return result.slot;
+    },
+  },
+  {
+    method: 'DELETE',
+    pattern: /^\/timetable\/(?<slotId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'timetable.manage');
+      if (!removeSlot(params.slotId ?? '')) fail('not_found');
+      return { ok: true };
     },
   },
   {
@@ -1114,6 +1149,18 @@ const routes: Route[] = [
         ...listQueryFrom(ctx.request.query),
         filters: { outcome: typeof ctx.request.query?.outcome === 'string' ? ctx.request.query.outcome : undefined },
       });
+    },
+  },
+  {
+    // Specific path before the students list route below.
+    method: 'GET',
+    pattern: /^\/archive\/students\/(?<studentId>[^/]+)$/,
+    handler: (ctx, params) => {
+      const identity = identityFromToken(ctx.token);
+      requirePermission(identity, 'students.view');
+      const detail = getArchivedStudent(params.studentId ?? '');
+      if (!detail) fail('not_found');
+      return detail;
     },
   },
   {

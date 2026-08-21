@@ -478,6 +478,15 @@ const baseRoutes: RouteObject[] = [
     ),
   },
   {
+    // Specific path before `archive/:batchId`.
+    path: 'archive/students/:studentId',
+    element: (
+      <RequirePermission anyOf={['students.view']}>
+        {lazyRoute(() => import('@/features/archive/components/ArchiveStudentPage'), (m) => m.ArchiveStudentPage)}
+      </RequirePermission>
+    ),
+  },
+  {
     path: 'archive/:batchId',
     element: (
       <RequirePermission anyOf={['batches.view']}>

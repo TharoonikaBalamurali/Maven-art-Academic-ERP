@@ -1,6 +1,6 @@
 import { endpoint } from '@/lib/api';
 import type { KnownOr } from '@/shared/types';
-import type { TimetableOptions, TimetableSlot } from '../types';
+import type { TimetableOptions, TimetableSlot, TimetableSlotInput } from '../types';
 
 export interface TimetableQuery {
   batchId?: string;
@@ -26,5 +26,28 @@ export const timetableContract = {
     path: '/timetable/options',
     auth: true,
     permission: 'timetable.view',
+  }),
+  /**
+   * Schedules a class (§ scheduling). Needs `timetable.manage`; the backend
+   * validates the slot and rejects a clash (409).
+   */
+  create: endpoint<TimetableSlotInput, TimetableSlot>({
+    method: 'POST',
+    path: '/timetable',
+    auth: true,
+    permission: 'timetable.manage',
+  }),
+  /** Reassigns or reschedules an existing slot. */
+  update: endpoint<TimetableSlotInput, TimetableSlot>({
+    method: 'PUT',
+    path: '/timetable/:slotId',
+    auth: true,
+    permission: 'timetable.manage',
+  }),
+  remove: endpoint<void, { ok: true }>({
+    method: 'DELETE',
+    path: '/timetable/:slotId',
+    auth: true,
+    permission: 'timetable.manage',
   }),
 } as const;

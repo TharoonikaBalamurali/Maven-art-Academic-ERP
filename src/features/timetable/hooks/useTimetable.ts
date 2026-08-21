@@ -1,4 +1,5 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { TimetableSlotInput } from '../types';
 import { timetableService } from '../api/timetable.service';
 import type { TimetableQuery } from '../api/timetable.contract';
 
@@ -21,5 +22,30 @@ export function useTimetableOptions() {
     queryKey: timetableKeys.options(),
     queryFn: ({ signal }) => timetableService.options({ signal }),
     staleTime: 5 * 60_000,
+  });
+}
+
+/** Scheduling mutations (§ scheduling) — all gated on `timetable.manage`. */
+export function useScheduleClass() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: TimetableSlotInput) => timetableService.create(input),
+    onSuccess: () => { void queryClient.invalidateQueries({ queryKey: timetableKeys.all }); },
+  });
+}
+
+export function useUpdateClass(slotId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: TimetableSlotInput) => timetableService.update(slotId, input),
+    onSuccess: () => { void queryClient.invalidateQueries({ queryKey: timetableKeys.all }); },
+  });
+}
+
+export function useRemoveClass() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (slotId: string) => timetableService.remove(slotId),
+    onSuccess: () => { void queryClient.invalidateQueries({ queryKey: timetableKeys.all }); },
   });
 }

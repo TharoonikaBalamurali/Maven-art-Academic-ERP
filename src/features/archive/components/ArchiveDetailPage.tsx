@@ -18,12 +18,42 @@ const OUTCOME_LABEL: Record<string, string> = {
 };
 
 const studentColumns: readonly Column<ArchivedStudent>[] = [
-  { id: 'name', header: 'Student', cell: (row) => <span className="font-medium">{row.name}</span> },
-  { id: 'registerNo', header: 'Register no.', hideBelowMd: true, cell: (row) => <span className="tabular-nums text-body-sm">{row.registerNo}</span> },
+  {
+    id: 'name',
+    header: 'Student',
+    cell: (row) => (
+      <div className="min-w-0">
+        <Link to={`/management/archive/students/${row.id}`} className="font-medium text-[var(--accent)] hover:underline">
+          {row.name}
+        </Link>
+        <p className="truncate text-body-sm text-[var(--text-muted)]">{row.registerNo}</p>
+      </div>
+    ),
+  },
+  { id: 'group', header: 'Group studied', hideBelowMd: true, cell: (row) => row.group },
+  { id: 'rollNo', header: 'Roll no.', hideBelowMd: true, width: '9rem', cell: (row) => <span className="tabular-nums text-body-sm">{row.rollNo || '—'}</span> },
+  {
+    id: 'percentage',
+    header: 'Board %',
+    align: 'right',
+    width: '8rem',
+    // Backend-computed percentage — displayed verbatim.
+    cell: (row) =>
+      row.boardExam ? (
+        <span className="font-medium tabular-nums">{row.boardExam.percentage}%</span>
+      ) : (
+        <span className="text-[var(--text-subtle)]">—</span>
+      ),
+  },
+  {
+    id: 'grade',
+    header: 'Grade',
+    align: 'right',
+    width: '6rem',
+    cell: (row) => (row.boardExam ? <span className="font-semibold">{row.boardExam.grade}</span> : <span className="text-[var(--text-subtle)]">—</span>),
+  },
   { id: 'outcome', header: 'Outcome', width: '9rem', cell: (row) => <Badge tone={OUTCOME_TONE[row.outcome] ?? 'neutral'}>{OUTCOME_LABEL[row.outcome] ?? row.outcome}</Badge> },
-  { id: 'tcNumber', header: 'TC no.', hideBelowMd: true, cell: (row) => <span className="tabular-nums text-body-sm">{row.tcNumber || '—'}</span> },
-  { id: 'destination', header: 'Destination', hideBelowMd: true, cell: (row) => row.destination || '—' },
-  { id: 'effectiveDate', header: 'Effective', align: 'right', width: '9rem', cell: (row) => <time dateTime={row.effectiveDate}>{formatDate(row.effectiveDate)}</time> },
+  { id: 'tcNumber', header: 'TC no.', align: 'right', hideBelowMd: true, width: '10rem', cell: (row) => <span className="tabular-nums text-body-sm">{row.tcNumber || '—'}</span> },
 ];
 
 function Info({ label, children }: { label: string; children: React.ReactNode }) {
@@ -35,7 +65,7 @@ function Info({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
-/** An archived batch and the closed student records belonging to it. */
+/** An archived batch: its record, section headcounts, and the full leaving roster. */
 export function ArchiveDetailPage() {
   const { batchId = '' } = useParams();
   const query = useArchivedBatch(batchId);
@@ -65,16 +95,17 @@ function BatchView({ batch }: { batch: ArchivedBatchDetail }) {
     <>
       <PageHeader
         title={batch.name}
-        description={`${batch.courseCode} — ${batch.course} · Section ${batch.section}`}
+        description={`${batch.courseCode} — ${batch.course}`}
         meta={<Badge tone="neutral">{batch.academicYear}</Badge>}
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
         {[
           ['Students', formatNumber(batch.totalStudents)],
+          ['Sections', formatNumber(batch.sections.length)],
           ['Completed', formatNumber(batch.completed)],
           ['Transferred', formatNumber(batch.transferred)],
-          ['Withdrawn', formatNumber(batch.withdrawn)],
+          ['Batch average', batch.averagePercentage !== null ? `${batch.averagePercentage}%` : '—'],
         ].map(([label, value]) => (
           <Card key={label}>
             <CardBody className="flex flex-col gap-1">
@@ -89,25 +120,42 @@ function BatchView({ batch }: { batch: ArchivedBatchDetail }) {
         <Card>
           <CardBody className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             <Info label="Course">{`${batch.courseCode} — ${batch.course}`}</Info>
-            <Info label="Section">{batch.section}</Info>
             <Info label="Class teacher">{batch.facultyName}</Info>
+            <Info label="Academic year">{batch.academicYear}</Info>
             <Info label="Started">{batch.startedOn ? formatDate(batch.startedOn) : '—'}</Info>
             <Info label="Passed out">{batch.completedOn ? formatDate(batch.completedOn) : '—'}</Info>
+            <Info label="Withdrawn">{formatNumber(batch.withdrawn)}</Info>
           </CardBody>
         </Card>
       </ContentSection>
 
-      <ContentSection title="Closed student records" description="Students whose admission ended while in this batch.">
-        <Card className="overflow-hidden">
-          {batch.students.length === 0 ? (
-            <CardBody className="py-8 text-center text-body-sm text-[var(--text-subtle)]">
-              No closed records for this batch. Students who completed with the batch are counted above.
-            </CardBody>
-          ) : (
-            <DataTable caption="Closed student records" columns={studentColumns} rows={batch.students} rowKey={(row) => row.id} density="compact" />
-          )}
-        </Card>
-      </ContentSection>
+      {batch.sections.map((section) => (
+        <ContentSection
+          key={section.section}
+          title={`Section ${section.section}`}
+          description={`${formatNumber(section.studentCount)} ${section.studentCount === 1 ? 'student' : 'students'} passed out from this section.`}
+        >
+          <Card className="overflow-hidden">
+            <DataTable
+              caption={`Section ${section.section} leaving roster`}
+              columns={studentColumns}
+              rows={section.students}
+              rowKey={(row) => row.id}
+              density="compact"
+              renderMobileCard={(row) => (
+                <Link to={`/management/archive/students/${row.id}`} className="block border-b border-[var(--border)] px-3 py-3 last:border-0 hover:bg-[var(--surface-hover)]">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-medium">{row.name}</p>
+                    <Badge tone={OUTCOME_TONE[row.outcome] ?? 'neutral'}>{OUTCOME_LABEL[row.outcome] ?? row.outcome}</Badge>
+                  </div>
+                  <p className="mt-1 text-body-sm text-[var(--text-muted)]">{row.group}</p>
+                  {row.boardExam && <p className="mt-0.5 text-caption text-[var(--text-subtle)]">{row.boardExam.percentage}% · {row.boardExam.grade}</p>}
+                </Link>
+              )}
+            />
+          </Card>
+        </ContentSection>
+      ))}
     </>
   );
 }

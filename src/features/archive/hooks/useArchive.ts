@@ -7,6 +7,7 @@ export const archiveKeys = {
   batches: (query: ListQuery) => [...archiveKeys.all, 'batches', query] as const,
   batch: (id: Id) => [...archiveKeys.all, 'batch', id] as const,
   students: (query: ListQuery) => [...archiveKeys.all, 'students', query] as const,
+  student: (id: Id) => [...archiveKeys.all, 'student', id] as const,
 };
 
 export function useArchivedBatches(query: ListQuery) {
@@ -18,4 +19,8 @@ export function useArchivedBatch(id: Id) {
 
 export function useClosedStudents(query: ListQuery) {
   return useQuery({ queryKey: archiveKeys.students(query), queryFn: ({ signal }) => archiveService.students(query, { signal }), placeholderData: keepPreviousData });
+}
+
+export function useArchivedStudent(id: Id) {
+  return useQuery({ queryKey: archiveKeys.student(id), queryFn: ({ signal }) => archiveService.student(id, { signal }), enabled: id.length > 0 });
 }

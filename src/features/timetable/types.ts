@@ -40,3 +40,19 @@ export interface TimetableOptions {
   faculty: { id: Id; name: string }[];
   rooms: string[];
 }
+
+/**
+ * A slot the admin schedules (§ scheduling). The backend validates it —
+ * clash detection (same faculty, room or batch at the same time) and every
+ * other institutional scheduling rule are backend responsibilities; the
+ * frontend only submits the intent.
+ */
+export interface TimetableSlotInput {
+  day: Weekday;
+  batchId: Id;
+  subject: string;
+  room: string;
+  start: string;
+  end: string;
+  facultyId: Id;
+}

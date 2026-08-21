@@ -1,6 +1,6 @@
 import { endpoint } from '@/lib/api';
 import type { ListQuery, Paginated } from '@/shared/types';
-import type { ArchivedBatchDetail, ArchivedBatchListItem, ClosedStudentRecord } from '../types';
+import type { ArchivedBatchDetail, ArchivedBatchListItem, ArchivedStudentDetail, ClosedStudentRecord } from '../types';
 
 /**
  * Archive contract (§ archive) — read only. History is written by closing an
@@ -14,6 +14,10 @@ export const archiveContract = {
   }),
   batch: endpoint<void, ArchivedBatchDetail>({
     method: 'GET', path: '/archive/batches/:batchId', auth: true, permission: 'batches.view',
+  }),
+  /** One passed-out student's full leaving record. */
+  student: endpoint<void, ArchivedStudentDetail>({
+    method: 'GET', path: '/archive/students/:studentId', auth: true, permission: 'students.view',
   }),
   /** Closed student records, independent of whether their batch has passed out. */
   students: endpoint<void, Paginated<ClosedStudentRecord>, ListQuery>({
